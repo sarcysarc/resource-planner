@@ -6,7 +6,7 @@ const SOURCE = 'https://example.test/gamemaster.json';
 function entry(over: Record<string, unknown> = {}) {
   return {
     dex: 1, speciesId: 'sprout', speciesName: 'Sprout', baseStats: { atk: 100, def: 90, hp: 120 },
-    types: ['grass', 'none'], thirdMoveCost: 10000, released: true, tags: [],
+    types: ['grass', 'none'], fastMoves: ['VINE'], chargedMoves: ['SEED', 'PETAL'], thirdMoveCost: 10000, released: true, tags: [],
     family: { id: 'FAMILY_SPROUT', evolutions: ['bloom'] }, ...over,
   };
 }
@@ -23,6 +23,7 @@ describe('toSpeciesFile', () => {
       species: [{
         id: 'sprout', name: 'Sprout', dex: 1, base: { atk: 100, def: 90, hp: 120 },
         types: ['grass'], family: 'FAMILY_SPROUT', parent: null, secondMoveDust: 10000,
+        fast: ['VINE'], charged: ['SEED', 'PETAL'],
       }],
     });
   });
@@ -36,6 +37,11 @@ describe('toSpeciesFile', () => {
   it('falls back to the species id when there is no family', () => {
     const [loner] = toSpeciesFile(gameMaster([entry({ family: undefined })]), SOURCE).species;
     expect(loner?.family).toBe('sprout');
+  });
+
+  it('reads missing move lists as empty', () => {
+    const [bare] = toSpeciesFile(gameMaster([entry({ fastMoves: undefined, chargedMoves: undefined })]), SOURCE).species;
+    expect(bare).toMatchObject({ fast: [], charged: [] });
   });
 
   it('drops Shadow, Mega and unreleased entries', () => {

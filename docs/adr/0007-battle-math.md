@@ -29,13 +29,15 @@ with 1,154 entries, each with its recommended moveset.
   multiplies 1.6 per weakness, 0.625 per resistance and 0.390625 per double
   resistance (immunity). The PvP bonus is 1.3; PvE has none. Weather, friendship
   and charged-move minigame scores are left out.
-- **Shadow.** Attack ×1.2 and defence ×0.833 when dealing and taking damage. This
-  replaces the stat-product shortcut noted in ADR 0006.
+- **Shadow.** Attack ×1.2 and defence ×0.8333333 (the game master's values) when
+  dealing and taking damage. This replaces the stat-product shortcut noted in
+  ADR 0006.
 - **Type chart.** 18 types as a small table we keep in `src/data/types.ts`. It is
   public game mechanics and does not change.
 - **Moves.** The species build (ADR 0005, schema v3) adds each species' fast and
-  charged move ids and a separate moves file with PvPoke's PvP move stats. Frustration
-  and Return come from PvPoke's Shadow and Purified entries.
+  charged move ids. A separate `moves.json` holds each move's PvP stats from PvPoke
+  and its PvE stats (below). PvPoke's species lists leave out Frustration and Return,
+  so `chargedMoves()` adds Frustration for a Shadow and Return for a Purified.
 - **Meta opponents (F5).** The build keeps the top 30 of each league's PvPoke
   ranking, with species id and recommended moveset, in one small file per league.
   The app loads a league's file only when F5 needs it, so the main bundle stays the
@@ -43,14 +45,17 @@ with 1,154 entries, each with its recommended moveset.
 - **PvE move stats (F4): PokeMiners, credited.** The build downloads PokeMiners'
   `latest/latest.json` (about 19 MB) and keeps, per move, only the PvE power,
   duration and energy (`moveSettings`: `power`, `durationMs`, `energyDelta`), in a
-  file of about 15 KB. Nothing else from that file ships. Fast moves are matched to
-  PvPoke's ids by dropping the `_FAST` suffix. A move PvPoke lists with no PvE entry
-  (the `_PLUS` variants, Gulp Missile forms) is marked unknown, and F4 says so instead
-  of guessing. The app's data line and the docs credit PokeMiners alongside PvPoke,
-  and say the game data belongs to Niantic and The Pokémon Company.
+  `moves.json` (57 KB, 8 KB gzipped, with the PvP stats). Nothing else from that file
+  ships. Fast moves are matched to PvPoke's ids by dropping the `_FAST` suffix; every
+  PvPoke Hidden Power maps to the one PvE Hidden Power, and a short alias table covers
+  ids spelt differently (Future Sight, Pyro Ball, Techno Blast Douse). A move with no
+  PvE entry (24 of 355: the `_PLUS` variants, Gulp Missile and Aegislash forms and a
+  few others) is marked unknown, and F4 says so instead of guessing. The app's data
+  line and the docs credit PokeMiners alongside PvPoke, and say the game data belongs
+  to Niantic and The Pokémon Company.
 - **Freshness.** PokeMiners last updated on 2026-08-29. A mirror in the same format,
   `alexelgt/game_masters`, updates every few days and is what `pokemon-go-api`
-  reads. The build takes the source URL as a setting, so it can switch to the mirror
+  reads. The build takes the source URL as a setting (`PVE_SOURCE_URL`), so it can switch to the mirror
   (and credit it) if PokeMiners falls behind a move rebalance.
 
 ## PvE move stats: sources searched
@@ -86,15 +91,17 @@ terms, putting the player's account at risk.
 
 - `goals.ts` gains a move-aware value for raids (F4) and per-opponent results for
   PvP (F5). G4's `basis` gets new kinds, and the verdict is unchanged.
-- The species file grows by the move ids (about 30 KB). Moves and rankings are
-  separate files.
+- The species file grows by the move ids: 186 KB to 303 KB, or 31 KB to 50 KB
+  gzipped. Moves and rankings are separate files, loaded only by F4 and F5.
+- The app's data line gains the PokeMiners credit with F4, when the app first loads
+  `moves.json`.
 - A scheduled data rebuild (G1) keeps moves and rankings current.
 
 ## Alternatives Considered
 
 | Option | Pros | Cons | Why Not |
 |--------|------|------|---------|
-| Use PokeMiners' game master for PvE stats | Complete and exact | No licence | Same reason as ADR 0005 |
+| Keep move lists out of the species file, in a lazy file | Main bundle unchanged | A second lookup by species | 20 KB gzipped is small next to the OCR assets |
 | Ship whole PvPoke ranking files | No trimming | 1.2 MB per league | Only the top opponents matter for breakpoints |
 | Full battle simulation (shields, energy timing) | Closest to real battles | Large and slow; PvPoke already does it | Breakpoints need damage per hit, not whole battles |
 

@@ -89,6 +89,12 @@ not the data pipeline.
    or "Save to purify the current one".
 5. **Phase C — battle math.** G5, then F4, then F5. F5 is the largest feature: move
    choice per candidate, opponent list per league and a results view per opponent.
+   G5 is done: damage per hit for PvP and PvE (`src/core/damage.ts`), the type chart
+   (`src/data/types.ts`), species schema v3 with each species' move ids, and
+   `src/data/moves.json` with PvP stats from PvPoke and PvE stats from PokeMiners
+   (`src/data/moves.ts`, 24 of 355 moves without PvE stats). `chargedMoves()` adds
+   Frustration and Return. Meta opponent files wait for F5, the PokeMiners credit
+   for F4.
 
 ## Decisions to record
 

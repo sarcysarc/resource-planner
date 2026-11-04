@@ -3,7 +3,7 @@
 // Imports only packages, so Node can run it directly with type stripping.
 import { z } from 'zod';
 
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 const StatsSchema = z.object({ atk: z.number(), def: z.number(), hp: z.number() });
 
@@ -16,6 +16,9 @@ export const SpeciesSchema = z.object({
   family: z.string(),
   parent: z.string().nullable(),
   secondMoveDust: z.number().nullable(),
+  /** Move ids (see moves.ts). Frustration and Return are not listed (ADR 0007). */
+  fast: z.array(z.string()),
+  charged: z.array(z.string()),
 });
 
 export const SpeciesFileSchema = z.object({
@@ -35,6 +38,8 @@ const PvpokeEntry = z.object({
   speciesName: z.string(),
   baseStats: StatsSchema,
   types: z.array(z.string()),
+  fastMoves: z.array(z.string()).default([]),
+  chargedMoves: z.array(z.string()).default([]),
   // false in the source means the species cannot unlock a second charged move
   thirdMoveCost: z.union([z.number(), z.literal(false)]).optional(),
   released: z.boolean().optional(),
@@ -61,6 +66,8 @@ function slim(p: PvpokeEntry): Species {
     family: p.family?.id ?? p.speciesId,
     parent: p.family?.parent ?? null,
     secondMoveDust: typeof p.thirdMoveCost === 'number' ? p.thirdMoveCost : null,
+    fast: p.fastMoves,
+    charged: p.chargedMoves,
   };
 }
 
