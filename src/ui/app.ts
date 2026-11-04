@@ -80,16 +80,21 @@ function readInputs(els: Elements, index: SpeciesIndex): Result<Inputs> {
   if (!alternative.ok) return { ok: false, error: `Alternative: ${alternative.error}` };
   const resources = readResources(els.resources);
   if (!resources.ok) return { ok: false, error: `Resources: ${resources.error}` };
-  const compare = { current: { ...current.value, maxLevel }, alternative: { ...alternative.value, maxLevel }, resources: resources.value };
+  const compare = { candidates: [current.value, alternative.value].map((c) => ({ ...c, maxLevel })), resources: resources.value };
   return { ok: true, value: { compare, rare: account.value.rare } };
 }
+
+const OPTIONS = [
+  { heading: 'Current', name: 'the current one' },
+  { heading: 'Alternative', name: 'the alternative' },
+];
 
 function run(els: Elements, index: SpeciesIndex): void {
   const input = readInputs(els, index);
   els.error.textContent = input.ok ? '' : input.error;
   if (!input.ok) return;
   const { compare: sides, rare } = input.value;
-  renderComparisons({ container: els.results, rows: compare(sides), resources: sides.resources, rare });
+  renderComparisons({ container: els.results, options: OPTIONS, rows: compare(sides), resources: sides.resources, rare });
 }
 
 // After a candidate's fields are filled: the species, the form and the shared totals.

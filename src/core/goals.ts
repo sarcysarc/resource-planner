@@ -25,6 +25,15 @@ export interface Candidate {
   maxLevel?: number;
 }
 
+/** What a goal's value measures, so the UI can explain it (ADR 0006). */
+export type ValueBasis = 'statProduct' | 'attack' | 'shadowAttack';
+
+/** One part of the remaining cost. Free parts are left out. */
+export interface CostPart {
+  kind: 'powerUps' | 'secondMove' | 'evolve' | 'purify';
+  cost: Cost;
+}
+
 export type GoalResult =
   | { eligible: false; reason: 'over-cap' }
   | {
@@ -33,8 +42,10 @@ export type GoalResult =
       effectiveLevel: number;
       cp: number;
       value: number;
+      basis: ValueBasis;
       rank?: RankResult;
       cost: Cost;
+      parts: readonly CostPart[];
     };
 
 export interface GoalInput {
@@ -42,9 +53,15 @@ export interface GoalInput {
   goal: GoalId;
 }
 
-function extrasCost(c: Candidate): Cost {
-  const move = c.secondMoveUnlocked ? ZERO_COST : secondMoveCost({ dust: c.secondMoveDust, mods: c.mods });
-  return addCosts(move, { stardust: 0, candy: c.evolveCandy, xl: 0 });
+const isFree = (cost: Cost) => cost.stardust === 0 && cost.candy === 0 && cost.xl === 0;
+
+function costParts(c: Candidate, powerUps: Cost): CostPart[] {
+  const parts: CostPart[] = [
+    { kind: 'powerUps', cost: powerUps },
+    { kind: 'secondMove', cost: c.secondMoveUnlocked ? ZERO_COST : secondMoveCost({ dust: c.secondMoveDust, mods: c.mods }) },
+    { kind: 'evolve', cost: { stardust: 0, candy: c.evolveCandy, xl: 0 } },
+  ];
+  return parts.filter((part) => !isFree(part.cost));
 }
 
 // A Pokémon already above the trainer's limit stays where it is.
@@ -55,6 +72,11 @@ function targetEffectiveLevel(c: Candidate, cap: number): number | null {
   const bonus = c.bestBuddy ? 1 : 0;
   const level = maxLevelUnderCap({ base: c.base, ivs: c.ivs, cap, maxLevel: levelLimit(c) + bonus });
   return level === null || level < c.level + bonus ? null : level;
+}
+
+function basisOf(c: Candidate, goal: GoalId): ValueBasis {
+  if (goal !== 'raid') return 'statProduct';
+  return c.mods.variant === 'shadow' ? 'shadowAttack' : 'attack';
 }
 
 function goalValue(c: Candidate, goal: GoalId, level: number): number {
@@ -70,13 +92,16 @@ export function evaluateGoal({ candidate: c, goal }: GoalInput): GoalResult {
   const targetLevel = Math.max(c.level, effectiveLevel - (c.bestBuddy ? 1 : 0));
   const powerUps = powerUpCost({ from: c.level, to: targetLevel, mods: c.mods });
   const spread = { base: c.base, ivs: c.ivs, cap, maxLevel: MAX_POWER_UP_LEVEL + (c.bestBuddy ? 1 : 0) };
+  const parts = costParts(c, powerUps);
   return {
     eligible: true,
     targetLevel,
     effectiveLevel,
     cp: cp({ base: c.base, ivs: c.ivs, level: effectiveLevel }),
     value: goalValue(c, goal, effectiveLevel),
+    basis: basisOf(c, goal),
     rank: goal === 'raid' ? undefined : rankSpread(spread),
-    cost: addCosts(powerUps, extrasCost(c)),
+    cost: parts.map((part) => part.cost).reduce(addCosts, ZERO_COST),
+    parts,
   };
 }

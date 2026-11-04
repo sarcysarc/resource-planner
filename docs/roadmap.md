@@ -79,7 +79,10 @@ not the data pipeline.
    is kept while the page is open (`src/ui/evolveMemory.ts`), and "Candy to evolve" is
    filled with the total from the candidate's form to the target once every step on the
    way is known. Until then the status line names the step still missing.
-4. **Phase B — more options.** G4, then F3.
+4. **Phase B — more options.** G4, then F3. G4 is done: `compare` takes a list of
+   candidates, current first; `decide` picks one option by the ADR 0006 rules; each goal
+   result carries what its value measures and its cost split into parts, which the
+   results table lists per option column. F3 is left: add the purified option.
 5. **Phase C — battle math.** G5, then F4, then F5. F5 is the largest feature: move
    choice per candidate, opponent list per league and a results view per opponent.
 

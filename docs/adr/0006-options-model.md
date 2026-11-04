@@ -37,11 +37,13 @@ need to see why one option wins. Generalising once avoids reworking `compare`,
   4. The winner is the current one → `keep`. Otherwise `switch` to it when affordable,
      else `save` for it. The verdict names the winning option.
 
-  With two options this gives exactly the ADR 0003 result, so today's tests still hold.
+  With two options this gives the ADR 0003 result, and today's tests still hold. The 1%
+  line is now measured against the best value instead of the current one, which moves
+  it by under 0.01% of value.
 - **Results view.** One column per option. The verdict names the option ("Purify
   current", "Switch to alternative", "Save for purified alternative"). On a phone each
   option stacks as a card, as the table already does.
-- The value change shown is the winner's against the current option.
+- Each option's column shows its value change against the current option.
 
 ## Consequences
 

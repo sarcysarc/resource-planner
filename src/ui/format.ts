@@ -1,4 +1,4 @@
-import type { GoalId, GoalResult } from '../core/goals';
+import type { CostPart, GoalId, GoalResult } from '../core/goals';
 import type { Cost } from '../core/types';
 import type { Verdict } from '../core/verdict';
 import type { Rare } from './account';
@@ -12,11 +12,24 @@ export const GOAL_LABELS: Record<GoalId, string> = {
   raid: 'Raids & gym attack',
 };
 
-export const VERDICT_LABELS: Record<Verdict, string> = {
-  keep: 'Keep investing',
-  switch: 'Switch to the alternative',
-  save: 'Save for the alternative',
-  neither: 'Neither fits this goal',
+/** How an option is shown: its column heading and how a verdict names it. */
+export interface OptionLabel {
+  heading: string;
+  name: string;
+}
+
+export function formatVerdict(verdict: Verdict, options: OptionLabel[]): string {
+  if (verdict.kind === 'neither') return `${options.length === 2 ? 'Neither' : 'None'} fits this goal`;
+  if (verdict.kind === 'keep') return 'Keep investing';
+  const name = options[verdict.option].name;
+  return verdict.kind === 'switch' ? `Switch to ${name}` : `Save for ${name}`;
+}
+
+const PART_NAMES: Record<CostPart['kind'], string> = {
+  powerUps: 'Power-ups',
+  secondMove: 'second move',
+  evolve: 'evolve',
+  purify: 'purify',
 };
 
 const n = (value: number) => value.toLocaleString('en-US');
@@ -32,6 +45,12 @@ function costParts(cost: Cost): string[] {
 export function formatCost(cost: Cost): string {
   const parts = costParts(cost);
   return parts.length ? parts.join(' · ') : 'Nothing more to spend';
+}
+
+/** Where a cost comes from, when it has more than one part. */
+export function formatParts(parts: readonly CostPart[]): string {
+  if (parts.length < 2) return '';
+  return parts.map((part) => `${PART_NAMES[part.kind]} ${formatCost(part.cost)}`).join('; ');
 }
 
 // Rare Candy is only suggested: the player decides whether to spend it on this Pokémon.
@@ -55,12 +74,13 @@ export function formatShortfall(cost: Cost, resources: Cost, rare?: Rare): strin
 export function formatSummary(result: Eligible): string {
   const buddy = result.effectiveLevel > result.targetLevel ? ' (+1 Best Buddy)' : '';
   const head = `Power up to Lv ${result.targetLevel}${buddy} · CP ${n(result.cp)}`;
-  if (!result.rank) return `${head} · Attack ${result.value.toFixed(1)}`;
+  const bonus = result.basis === 'shadowAttack' ? ' with the Shadow bonus' : '';
+  if (!result.rank) return `${head} · Attack ${result.value.toFixed(1)}${bonus}`;
   return `${head} · Rank ${n(result.rank.rank)} (${result.rank.percent.toFixed(1)}%)`;
 }
 
 export function formatChange(change: number | null): string {
   if (change === null) return '';
   const sign = change >= 0 ? '+' : '';
-  return `Alternative ${sign}${(change * 100).toFixed(1)}% vs current`;
+  return `${sign}${(change * 100).toFixed(1)}% vs current`;
 }

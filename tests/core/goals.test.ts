@@ -81,3 +81,25 @@ describe('evaluateGoal: uncapped goals', () => {
     expect(r.cost).toEqual({ stardust: 0, candy: 0, xl: 0 });
   });
 });
+
+describe('evaluateGoal: explanation', () => {
+  it('splits the cost into the parts that make it up, leaving out what is free', () => {
+    const r = evaluateGoal({ candidate: candidate({ secondMoveUnlocked: false, evolveCandy: 100 }), goal: 'great' });
+    if (!r.eligible) throw new Error('expected eligible');
+    expect(r.parts).toEqual([
+      { kind: 'powerUps', cost: powerUpCost({ from: 20, to: 43, mods: normal }) },
+      { kind: 'secondMove', cost: { stardust: 50000, candy: 50, xl: 0 } },
+      { kind: 'evolve', cost: { stardust: 0, candy: 100, xl: 0 } },
+    ]);
+    const done = evaluateGoal({ candidate: candidate({ level: 50 }), goal: 'raid' });
+    expect(done.eligible && done.parts).toEqual([]);
+  });
+
+  it('says what the value measures', () => {
+    const basis = (goal: 'great' | 'raid', variant: 'normal' | 'shadow') => {
+      const r = evaluateGoal({ candidate: candidate({ mods: { variant, lucky: false } }), goal });
+      return r.eligible ? r.basis : undefined;
+    };
+    expect([basis('great', 'shadow'), basis('raid', 'normal'), basis('raid', 'shadow')]).toEqual(['statProduct', 'attack', 'shadowAttack']);
+  });
+});

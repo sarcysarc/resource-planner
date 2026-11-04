@@ -1,41 +1,66 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import { renderComparisons } from '../../src/ui/render';
-import { formatCost, formatShortfall } from '../../src/ui/format';
+import { formatCost, formatParts, formatShortfall } from '../../src/ui/format';
 import type { Comparison } from '../../src/core/compare';
 
 const ok = {
-  eligible: true, targetLevel: 43, effectiveLevel: 43, cp: 1499, value: 2e6,
+  eligible: true, targetLevel: 43, effectiveLevel: 43, cp: 1499, value: 2e6, basis: 'statProduct',
   rank: { rank: 12, percent: 99.4, bestProduct: 2.01e6 }, cost: { stardust: 150000, candy: 120, xl: 40 },
+  parts: [{ kind: 'powerUps', cost: { stardust: 150000, candy: 120, xl: 40 } }],
 } as const;
+const raid = { ...ok, rank: undefined, basis: 'shadowAttack' } as const;
 
 const rows: Comparison[] = [
-  { goal: 'great', current: { eligible: false, reason: 'over-cap' }, alternative: ok, verdict: 'save', valueChange: null },
-  {
-    goal: 'raid', current: { ...ok, rank: undefined, value: 150 }, alternative: { ...ok, rank: undefined, value: 160 },
-    verdict: 'switch', valueChange: 0.0667,
-  },
+  { goal: 'great', results: [{ eligible: false, reason: 'over-cap' }, ok], verdict: { kind: 'save', option: 1 }, changes: [null, null] },
+  { goal: 'raid', results: [{ ...raid, value: 150 }, { ...raid, value: 160 }], verdict: { kind: 'switch', option: 1 }, changes: [0, 0.0667] },
 ];
+const options = [{ heading: 'Current', name: 'the current one' }, { heading: 'Alternative', name: 'the alternative' }];
+const render = (input: Partial<Parameters<typeof renderComparisons>[0]> = {}) => {
+  const container = document.createElement('div');
+  renderComparisons({ container, options, rows, resources: { stardust: 100000, candy: 500, xl: 10 }, ...input });
+  return container;
+};
 
 describe('renderComparisons', () => {
   it('renders one row per goal with verdicts and details', () => {
-    const container = document.createElement('div');
-    renderComparisons({ container, rows, resources: { stardust: 100000, candy: 500, xl: 10 } });
+    const container = render();
     const text = container.textContent ?? '';
     expect(container.querySelectorAll('tbody tr')).toHaveLength(2);
     expect(text).toContain('Great League');
     expect(text).toContain('Over the CP cap');
     expect(text).toContain('Rank 12');
     expect(text).toContain('Save for the alternative');
-    expect(text).toContain('+6.7%');
+    expect(text).toContain('Switch to the alternative');
+    expect(text).toContain('+6.7% vs current');
     expect(text).toContain('Short');
-    expect(text).toContain('Attack 150.0');
+    expect(text).toContain('Attack 150.0 with the Shadow bonus');
+  });
+
+  it('has a column for each option', () => {
+    const three = [...options, { heading: 'Purified', name: 'the purified one' }];
+    const wide: Comparison[] = [{ ...rows[1], results: [...rows[1].results, ok], verdict: { kind: 'save', option: 2 }, changes: [0, 0.0667, -0.02] }];
+    const container = render({ options: three, rows: wide });
+    expect([...container.querySelectorAll('thead th')].map((th) => th.textContent)).toEqual(['Goal', 'Current', 'Alternative', 'Purified', 'Recommendation']);
+    expect(container.textContent).toContain('Save for the purified one');
+    expect(container.textContent).toContain('-2.0% vs current');
   });
 
   it('says what Rare Candy could cover', () => {
-    const container = document.createElement('div');
-    renderComparisons({ container, rows, resources: { stardust: Infinity, candy: 100, xl: 40 }, rare: { candy: 51, xl: 0 } });
+    const container = render({ resources: { stardust: Infinity, candy: 100, xl: 40 }, rare: { candy: 51, xl: 0 } });
     expect(container.textContent).toContain('Short 20 Candy; you have 51 Rare Candy');
+  });
+});
+
+describe('formatParts', () => {
+  it('lists the parts of a cost when there is more than one', () => {
+    const parts = [
+      { kind: 'powerUps', cost: { stardust: 100000, candy: 70, xl: 0 } },
+      { kind: 'secondMove', cost: { stardust: 50000, candy: 50, xl: 0 } },
+      { kind: 'evolve', cost: { stardust: 0, candy: 125, xl: 0 } },
+    ] as const;
+    expect(formatParts([...parts])).toBe('Power-ups 100,000 Stardust · 70 Candy; second move 50,000 Stardust · 50 Candy; evolve 125 Candy');
+    expect(formatParts([parts[0]])).toBe('');
   });
 });
 

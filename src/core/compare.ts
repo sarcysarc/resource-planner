@@ -3,36 +3,29 @@ import type { Cost } from './types';
 import { decide, type Verdict } from './verdict';
 
 export interface CompareInput {
-  current: Candidate;
-  alternative: Candidate;
-  /** Shared pool: both candidates are in the same family, so they draw on the same Candy. */
+  /** The options to compare, the current one first (ADR 0006). */
+  candidates: Candidate[];
+  /** Shared pool: every option is in the same family, so they draw on the same Candy. */
   resources: Cost;
 }
 
 export interface Comparison {
   goal: GoalId;
-  current: GoalResult;
-  alternative: GoalResult;
+  /** One per option, in the order given. */
+  results: GoalResult[];
   verdict: Verdict;
-  /** Alternative's value relative to the current one (0.02 = 2% better), or null. */
-  valueChange: number | null;
+  /** Each option's value relative to the current one (0.02 = 2% better), or null. */
+  changes: (number | null)[];
 }
 
-function valueChange(current: GoalResult, alternative: GoalResult): number | null {
-  if (!current.eligible || !alternative.eligible) return null;
-  return (alternative.value - current.value) / current.value;
+function changes(results: GoalResult[]): (number | null)[] {
+  const current = results[0];
+  return results.map((r) => (current.eligible && r.eligible ? (r.value - current.value) / current.value : null));
 }
 
-export function compare({ current, alternative, resources }: CompareInput): Comparison[] {
+export function compare({ candidates, resources }: CompareInput): Comparison[] {
   return GOALS.map((goal) => {
-    const a = evaluateGoal({ candidate: current, goal });
-    const b = evaluateGoal({ candidate: alternative, goal });
-    return {
-      goal,
-      current: a,
-      alternative: b,
-      verdict: decide({ current: a, alternative: b, resources }),
-      valueChange: valueChange(a, b),
-    };
+    const results = candidates.map((candidate) => evaluateGoal({ candidate, goal }));
+    return { goal, results, verdict: decide({ results, resources }), changes: changes(results) };
   });
 }
