@@ -2,13 +2,19 @@
 // after each change, and removed by Clear all.
 import type { Grid } from './grid';
 import { restoreGrid, snapshotGrid } from './gridSave';
+import type { SavedGrid } from './savedGrid';
 import { type GridStore, openGridStore } from './gridStore';
+import type { SavedSummary } from './steps';
 
 export interface Persist {
   grid: Grid;
   target: HTMLInputElement;
   /** Where changes are listened for, and where the Clear all button is. */
   area: HTMLElement;
+  /** After a grid with Pokémon in it was restored. */
+  onRestore?: (saved: SavedSummary) => void;
+  /** After the player cleared everything. */
+  onClear?: () => void;
 }
 
 const WAIT_MS = 500;
@@ -24,13 +30,15 @@ export function openStore(): GridStore | undefined {
 }
 
 function wireClear(p: Persist, store: GridStore | undefined): void {
-  p.area.querySelector('[data-clear-grid]')?.addEventListener('click', () => {
+  const clear = () => {
     if (!p.area.ownerDocument.defaultView!.confirm(ASK)) return;
     p.grid.clear();
     p.target.value = '';
     p.target.dispatchEvent(new Event('change'));
     void store?.clear().catch(() => undefined);
-  });
+    p.onClear?.();
+  };
+  p.area.querySelectorAll('[data-clear-grid]').forEach((button) => button.addEventListener('click', clear));
 }
 
 /** Restores the saved grid, then saves it after each change. Returns a save to call after other updates. */
@@ -41,7 +49,11 @@ export function persistGrid(p: Persist, store: GridStore | undefined): () => voi
     timer = setTimeout(() => void store?.save(snapshotGrid(p.grid, p.target.value)).catch(() => undefined), WAIT_MS);
   };
   const setTarget = (name: string) => ((p.target.value = name), p.target.dispatchEvent(new Event('change')));
-  void store?.load().then((saved) => restoreGrid(p.grid, saved, setTarget)).catch(() => undefined);
+  const restore = (saved: SavedGrid | undefined) => {
+    restoreGrid(p.grid, saved, setTarget);
+    if (saved?.tiles.length) p.onRestore?.({ target: saved.target, count: saved.tiles.length });
+  };
+  void store?.load().then(restore).catch(() => undefined);
   p.area.addEventListener('change', save);
   p.area.addEventListener('input', save);
   wireClear(p, store);

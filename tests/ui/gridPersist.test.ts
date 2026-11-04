@@ -8,14 +8,18 @@ import { openGridStore } from '../../src/ui/gridStore';
 let grid: Grid;
 const q = <T extends HTMLElement>(selector: string) => document.querySelector<T>(selector)!;
 const parts = () => ({ grid: q('[data-grid]'), details: q('[data-details]'), transfer: q('[data-transfers]') });
+const restored = vi.fn();
+const cleared = vi.fn();
 const persist = (store = openGridStore(`t${Math.random()}`)) =>
-  persistGrid({ grid, target: q('#target'), area: q('main') }, store);
+  persistGrid({ grid, target: q('#target'), area: q('main'), onRestore: restored, onClear: cleared }, store);
 
 describe('persistGrid', () => {
   beforeEach(() => {
     document.body.innerHTML = `<main><input id="target" />
       <div data-grid></div><div data-details></div><div data-transfers hidden><ul></ul></div>
-      <button type="button" data-clear-grid>Clear all</button></main>`;
+      <button type="button" data-clear-grid>Clear all</button><button type="button" data-clear-grid id="early">Clear</button></main>`;
+    restored.mockClear();
+    cleared.mockClear();
     grid = createGrid({ parts: parts(), prepare: (root) => (root.innerHTML = '<legend></legend><input name="cp" />'), describe: () => ({ title: '', notes: [] }) });
   });
 
@@ -47,6 +51,30 @@ describe('persistGrid', () => {
     // Starting again: the next screenshots pick the target afresh.
     expect(q<HTMLInputElement>('#target').value).toBe('');
     await vi.waitFor(async () => expect(await store.load()).toBeUndefined());
+    vi.unstubAllGlobals();
+  });
+
+  it('tells what it restored, and only when there was something', async () => {
+    const store = openGridStore(`t${Math.random()}`);
+    persist(store);
+    await store.save({ version: 1, target: 'Gengar', tiles: [] });
+    await new Promise((r) => setTimeout(r, 50));
+    expect(restored).not.toHaveBeenCalled();
+    grid.add();
+    persist(store)();
+    await vi.waitFor(async () => expect((await store.load())?.tiles).toHaveLength(1), { timeout: 2000 });
+    grid.clear();
+    persist(store);
+    await vi.waitFor(() => expect(restored).toHaveBeenCalledWith({ target: 'Gengar', count: 1 }));
+  });
+
+  it('clears from every Clear button, and says so', () => {
+    persist();
+    grid.add();
+    vi.stubGlobal('confirm', () => true);
+    q('#early').click();
+    expect(grid.roots()).toHaveLength(0);
+    expect(cleared).toHaveBeenCalledOnce();
     vi.unstubAllGlobals();
   });
 

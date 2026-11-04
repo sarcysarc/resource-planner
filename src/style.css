@@ -136,6 +136,9 @@ label.file input { padding: 8px 0; border: 0; background: transparent; }
 }
 .step > p.muted { margin: -4px 0 10px; }
 [data-shots] > p { margin: 4px 0; }
+.saved { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0 12px; margin: 0 0 10px; padding: 8px 12px; border: 1px solid var(--accent); border-radius: 10px; }
+.saved p { margin: 0; }
+.saved button.link { margin-top: 0; }
 .todo { margin: 6px 0 12px; padding-left: 20px; }
 .todo li { margin: 4px 0; }
 label.pick {

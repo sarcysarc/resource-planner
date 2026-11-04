@@ -6,6 +6,7 @@ import { wireFinder } from './finder';
 import { wireFormChoices } from './formChoices';
 import { createGrid, type Grid } from './grid';
 import { openStore, persistGrid } from './gridPersist';
+import { hideSaved, type SavedSummary, showSaved } from './steps';
 import { wireGridShots } from './gridShots';
 import { wireMoves } from './moves';
 import { wirePvp } from './pvpWiring';
@@ -60,7 +61,8 @@ export function mountApp(doc: Document): void {
   const useEvolve = wireEvolve({ index, target, area });
   const grid = mountGrid(page);
   trackEdits(area);
-  const save = persistGrid({ grid, target, area: form }, openStore());
+  const saved = { onRestore: (summary: SavedSummary) => showSaved(doc, summary), onClear: () => hideSaved(doc) };
+  const save = persistGrid({ grid, target, area: form, ...saved }, openStore());
   wireGridShots({ doc, grid, index, target, resources: page.resources, useEvolve, save });
   fillSpeciesList(q(doc, '#species-list'), index);
   q(doc, '#data-info').textContent = dataCredit(index.timestamp);

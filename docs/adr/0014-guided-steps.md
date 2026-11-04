@@ -34,6 +34,21 @@ planner wants, or which fields matter.
 - After a successful comparison, the results are scrolled into view, because on a
   phone they are below a long form.
 
+### Amendment (2026-11-04): a saved grid opens the later steps
+
+Since 0015 the grid is kept on the device. On the next visit it came back hidden in
+step 2, which opened only after a new screenshot was read; a player starting a new
+evolution line found the old Pokémon only after uploading, and the only Clear all
+button was in step 2, so they had to clear and upload again.
+
+- When a grid with Pokémon in it is restored, step 1 says so first: "Saved from last
+  time: 2 Pokémon (Palossand). New screenshots join them.", with a **Clear and start
+  again** button that does what Clear all does (0015).
+- Steps 2 and 3 open at once, so the saved tiles can be checked and compared without
+  a new screenshot. With nothing saved, a visit opens on step 1 alone as before.
+- Clearing hides the note. The later steps stay open; new screenshots fill them.
+- Clear all also moved from below the resources to beside the "Your Pokémon" heading.
+
 ## Consequences
 
 - A first visit shows only step 1: a short list of what to do and one button.
