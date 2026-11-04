@@ -51,8 +51,18 @@ describe('inkCrop', () => {
     expect(at(inkCrop(px, { box, ink: 'colour' }), [40, 40])).toBe(0);
   });
 
+  it('reads a cost in teal, or in red when there is not enough Candy, but not its coin icon', () => {
+    const px = blankScreen(100, 100);
+    paint(px, [50, 40], [255, 94, 99]);
+    paint(px, [52, 40], TEAL);
+    paint(px, [54, 40], [57, 60, 63]);
+    const out = inkCrop(px, { box, ink: 'cost' });
+    expect([at(out, [40, 40]), at(out, [44, 40]), at(out, [48, 40])]).toEqual([0, 0, 255]);
+  });
+
   it('keeps the crop inside the image', () => {
     const out = inkCrop(blankScreen(100, 100), { box: { x0: 0.9, y0: 0.9, x1: 1.5, y1: 1.5 }, ink: 'teal' });
     expect([out.width, out.height]).toEqual([2 * 10 + 40, 2 * 10 + 40]);
   });
 });
+

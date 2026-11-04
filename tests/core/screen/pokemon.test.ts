@@ -62,6 +62,16 @@ describe('readPokemon', () => {
     expect(readPokemon(scrolled, normal)).toEqual({ dust: 7000 });
   });
 
+  it('ignores the CP band when it holds the HP line, on a screen scrolled just past CP', () => {
+    const scrolled = scan('132/132HP\nWEIGHT DRAGON / FLYING', { cpText: '132/132HP\n59.72kg' });
+    expect(readPokemon(scrolled, normal).cp).toBeUndefined();
+  });
+
+  it('accepts a cost one above the table, as the game rounds some Shadow costs up', () => {
+    const shadow = { variant: 'shadow', lucky: false } as const;
+    expect(read('POWER UP 1,921 3', shadow).dust).toBe(1920);
+  });
+
   it('accepts the small CP letters read as "cpr" or "cr"', () => {
     expect(['cpr545', 'cr370', 'cp546'].map((t) => read(t).cp)).toEqual([545, 370, 546]);
   });
@@ -72,10 +82,11 @@ describe('readPokemon', () => {
 });
 
 describe('pokemonRegions', () => {
-  it('asks for the area right of POWER UP to be re-read, white text on the button', () => {
-    const { cost } = pokemonRegions(wordsOf('POWER UP 9,000 12'));
-    expect(cost?.ink).toBe('white');
+  it('asks for the costs right of POWER UP and EVOLVE to be re-read, in teal or red', () => {
+    const { cost, evolve } = pokemonRegions(wordsOf('POWER UP 9,000 12\nEVOLVE 25'));
+    expect([cost?.ink, evolve?.ink]).toEqual(['cost', 'cost']);
     expect(cost?.box.x0).toBeCloseTo(0.21);
+    expect(evolve?.box.x0).toBeCloseTo(0.17);
   });
 
   it('asks for nothing when there is no POWER UP button', () => {
@@ -86,6 +97,10 @@ describe('pokemonRegions', () => {
 describe('readCp', () => {
   it('takes the first number in the cropped CP band', () => {
     expect(['«615 ou.', '+1335', '+545 ou'].map(readCp)).toEqual([615, 1335, 545]);
+  });
+
+  it('reads a slash before a digit as the 7 it was in the large CP font', () => {
+    expect(['cr/14\nee\n', 'CP2/7/'].map(readCp)).toEqual([714, 277]);
   });
 
   it('returns nothing when the band has no number', () => {

@@ -3,10 +3,10 @@ import { describe, expect, it, vi } from 'vitest';
 import { appraisalScreen, blankScreen } from './fakeScreen';
 
 // Made-up words; the place name is not real.
-const line = (...words: [string, number][]) => ({ words: words.map(([text, x0]) => ({ text, bbox: { x0, y0: 700, x1: x0 + 60, y1: 720 } })) });
+const line = (y0: number, ...words: [string, number][]) => ({ words: words.map(([text, x0]) => ({ text, bbox: { x0, y0, x1: x0 + 60, y1: y0 + 20 } })) });
 const PAGE = {
   text: 'not used',
-  blocks: [{ paragraphs: [{ lines: [line(['POWER', 100], ['UP', 170], ['§7,O00', 400]), line(['CAUGHT', 100], ['IN', 170]), line(['Springfield', 100])] }] }],
+  blocks: [{ paragraphs: [{ lines: [line(700, ['POWER', 100], ['UP', 170], ['§7,O00', 400]), line(760, ['CAUGHT', 100], ['IN', 170]), line(820, ['Springfield', 100])] }] }],
 };
 const CROP = 'image/png';
 
@@ -38,13 +38,21 @@ describe('readScreenshot', () => {
   });
 
   it('re-reads the resource totals above their labels', async () => {
-    const labels = { text: '', blocks: [{ paragraphs: [{ lines: [line(['STARDUST', 100], ['ARON', 300], ['CANDY', 370])] }] }] };
+    const labels = { text: '', blocks: [{ paragraphs: [{ lines: [line(700, ['STARDUST', 100], ['ARON', 300], ['CANDY', 370])] }] }] };
     worker.recognize.mockResolvedValueOnce({ data: labels });
     expect((await readScreenshot(new Blob())).digits).toEqual({ stardust: '7,000 8', candy: '7,000 8' });
   });
 
+  it('adds the labels only a dark-ink copy of the screen shows, and re-reads their totals', async () => {
+    const labels = { text: '', blocks: [{ paragraphs: [{ lines: [line(700, ['STARDUST', 100], ['ARON', 300], ['CANDY', 370])] }] }] };
+    worker.recognize.mockResolvedValueOnce({ data: { text: '', blocks: null } }).mockResolvedValueOnce({ data: labels });
+    const scan = await readScreenshot(new Blob());
+    expect(scan.words.map((w) => w.text)).toEqual(['STARDUST', 'ARON', 'CANDY']);
+    expect(scan.digits).toEqual({ stardust: '7,000 8', candy: '7,000 8' });
+  });
+
   it('re-reads the trainer level above its label', async () => {
-    const labels = { text: '', blocks: [{ paragraphs: [{ lines: [line(['LEVEL', 100])] }] }] };
+    const labels = { text: '', blocks: [{ paragraphs: [{ lines: [line(700, ['LEVEL', 100])] }] }] };
     worker.recognize.mockResolvedValueOnce({ data: labels });
     expect((await readScreenshot(new Blob())).digits).toEqual({ trainerLevel: '7,000 8' });
   });

@@ -58,7 +58,21 @@ describe('readEvolveCandy', () => {
     expect(readEvolveCandy(lines('MEGA EVOLVE 200'))).toBeUndefined();
   });
 
+  it('prefers the digits re-read next to EVOLVE, such as a red cost the first pass garbled', () => {
+    expect(readEvolveCandy(lines('sa EVOLVE s%5'), '25\n')).toBe(25);
+    expect(readEvolveCandy(lines('EVOLVE 50'), '37')).toBe(50);
+  });
+
+  it('drops the round button beside the cost, read as a trailing digit', () => {
+    expect(readEvolveCandy(lines('EVOLVE'), '258\n')).toBe(25);
+  });
+
+  it('ignores re-read digits next to Mega Evolution', () => {
+    expect(readEvolveCandy(lines('MEGA\nEVOLVE ¥'), '25')).toBeUndefined();
+  });
+
   it('says nothing when there is no EVOLVE button', () => {
     expect(readEvolveCandy(lines('POWER UP 9,000 12'))).toBeUndefined();
+    expect(readEvolveCandy(lines('POWER UP 9,000 12'), '25')).toBeUndefined();
   });
 });

@@ -32,11 +32,23 @@ describe('applySpecies', () => {
     expect([target.value, select().value]).toEqual(['Lairon', 'lairon']);
   });
 
+  it('marks the form read as chosen, so a later target keeps it', () => {
+    apply({ name: 'Aron' });
+    expect(select().dataset.chosen).toBe('aron');
+  });
+
   it('keeps the chosen target and selects the form read when it is in that line', () => {
     target.value = 'Aggron';
     refresh();
     apply({ name: 'Aron' });
     expect([target.value, select().value]).toEqual(['Aggron', 'aron']);
+  });
+
+  it('raises the target to a later evolution read, since none evolves backwards', () => {
+    target.value = 'Aron';
+    refresh();
+    expect(apply({ name: 'Aggron' })).toBe(true);
+    expect([target.value, select().value, status()]).toEqual(['Aggron', 'aggron', 'Read CP 600.']);
   });
 
   it('says so when the species is not in the target line', () => {

@@ -1,10 +1,12 @@
 import { createWorker, OEM, PSM, type Worker } from 'tesseract.js';
 import { levelRegion } from '../core/screen/account';
 import { pokemonRegions } from '../core/screen/pokemon';
+import { combinePasses } from '../core/screen/passes';
 import { dropLocation } from '../core/screen/privacy';
 import { totalRegions } from '../core/screen/totals';
 import type { Region, RegionName, Scan, Word } from '../core/screen/types';
 import { inkCrop } from './crop';
+import { textInk } from './ink';
 import { imagePixels, pixelsBlob } from './image';
 import { appraisalBars, cpBand, type Pixels } from './pixels';
 import { toWords } from './words';
@@ -15,10 +17,15 @@ const asset = (file = '') => new URL(`ocr/${file}`, document.baseURI).href;
 const startWorker = () =>
   createWorker('eng', OEM.LSTM_ONLY, { workerPath: asset('worker.min.js'), corePath: asset(), langPath: asset() });
 
-// First pass: every word with its box. Location words are dropped straight away (ADR 0009).
-async function readWords(worker: Worker, image: Blob, width: number): Promise<Word[]> {
-  const { data } = await worker.recognize(image, {}, { blocks: true });
-  return dropLocation(toWords(data, width));
+const pageWords = async (worker: Worker, image: Blob, width: number) =>
+  toWords((await worker.recognize(image, {}, { blocks: true })).data, width);
+
+// First pass: every word with its box, read from the plain image (white button text) and
+// from a dark-ink copy (small grey labels). Location words are dropped straight away (ADR 0009).
+async function readWords(worker: Worker, image: Blob, px: Pixels): Promise<Word[]> {
+  const plain = await pageWords(worker, image, px.width);
+  const dark = await pageWords(worker, await pixelsBlob(textInk(px)), px.width);
+  return dropLocation(combinePasses(dark, plain));
 }
 
 // Second pass: numbers next to icons read badly in the first pass, so re-read their
@@ -41,7 +48,7 @@ export async function readScreenshot(image: Blob): Promise<Scan> {
   const px = await imagePixels(image);
   const worker = await startWorker();
   try {
-    const words = await readWords(worker, image, px.width);
+    const words = await readWords(worker, image, px);
     const cpText = (await worker.recognize(await pixelsBlob(cpBand(px)))).data.text;
     const digits = await readDigits(worker, px, words);
     const ivs = appraisalBars(px);

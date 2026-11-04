@@ -84,6 +84,11 @@ describe('wireEvolve', () => {
     expect(roots[0].querySelector('[data-scan-status]')!.textContent).toContain('125 Candy to evolve into Dragonite.');
   });
 
+  it('tells the other candidate which step it still lacks, since its total stays as typed', () => {
+    onRead(roots[1], { name: 'Dragonair', evolveCandy: 100 });
+    expect(roots[0].querySelector('[data-scan-status]')!.textContent).toContain('The Candy to evolve Dratini is not known yet');
+  });
+
   it('learns nothing from a reading without a cost or a single species', () => {
     onRead(roots[0], { name: 'Dratini' });
     onRead(roots[0], { evolveCandy: 25 });

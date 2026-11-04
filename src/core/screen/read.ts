@@ -14,14 +14,14 @@ function defined<T extends object>(values: T): Partial<T> {
   return Object.fromEntries(Object.entries(values).filter(([, v]) => v !== undefined)) as Partial<T>;
 }
 
-function readDetails(lines: string[]): Details {
+function readDetails(lines: string[], scan: Scan): Details {
   return defined({
     name: readName(lines),
     family: readFamily(lines),
     variant: readVariant(lines),
     lucky: readLucky(lines),
     secondMove: readSecondMove(lines),
-    evolveCandy: readEvolveCandy(lines),
+    evolveCandy: readEvolveCandy(lines, scan.digits.evolve),
   });
 }
 
@@ -38,7 +38,7 @@ export function readScan(scan: Scan, mods: Modifiers): Reading {
   const kinds = classify(scan.words);
   if (kinds.includes('bag') || kinds.includes('profile')) return readAccount(scan, kinds);
   if (!kinds.includes('pokemon') && !kinds.includes('appraisal')) return scan.ivs ? { ivs: scan.ivs } : {};
-  const details = readDetails(textLines(scan.words));
+  const details = readDetails(textLines(scan.words), scan);
   // What the screen shows beats the form when judging which Stardust costs exist.
   const seen = { variant: details.variant ?? mods.variant, lucky: details.lucky ?? mods.lucky };
   const totals = readTotals(scan);

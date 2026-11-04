@@ -57,14 +57,25 @@ function fillSpeciesList(list: HTMLDataListElement, index: SpeciesIndex): void {
   list.replaceChildren(...options);
 }
 
+const formSelect = (root: ParentNode) => root.querySelector<HTMLSelectElement>('select[name="form"]')!;
+
+// A form someone or a screenshot chose is kept while it is still in the new line, so
+// moving the target up a line leaves an earlier stage alone.
 function updateFormChoices(els: Elements, index: SpeciesIndex): void {
   const target = findSpecies(index, els.target.value);
   if (!target) return;
   const line = evolutionLine(index, target);
-  for (const side of [els.current, els.alternative]) {
-    const select = side.querySelector<HTMLSelectElement>('select[name="form"]')!;
+  for (const select of [els.current, els.alternative].map(formSelect)) {
+    const chosen = select.dataset.chosen;
     select.replaceChildren(...line.map((s) => new Option(s.name, s.id)));
-    select.value = target.id;
+    select.value = line.some((s) => s.id === chosen) ? chosen! : target.id;
+  }
+}
+
+function wireFormChoices(els: Elements, index: SpeciesIndex): void {
+  els.target.addEventListener('change', () => updateFormChoices(els, index));
+  for (const select of [els.current, els.alternative].map(formSelect)) {
+    select.addEventListener('change', () => (select.dataset.chosen = select.value));
   }
 }
 
@@ -167,10 +178,10 @@ export function mountApp(doc: Document): void {
   const els = queryElements(doc);
   const roots = [els.current, els.alternative];
   // The form choices follow the target before the evolve totals are refilled.
-  els.target.addEventListener('change', () => updateFormChoices(els, index));
+  roots.forEach(buildCandidateFields);
+  wireFormChoices(els, index);
   const onRead = useReading(els, index, wireEvolve({ index, target: els.target, roots }));
   for (const root of roots) {
-    buildCandidateFields(root);
     wireFinder({ root, index });
     wireScreenshot(root, (reading) => onRead(root, reading));
   }

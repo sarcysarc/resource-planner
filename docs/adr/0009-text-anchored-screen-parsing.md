@@ -44,6 +44,25 @@ different sizes and formats (720×1604 PNG, 942×2048 JPEG).
   checked against game data (real power-up costs) instead.
 - Pixel readers from ADR 0008 (appraisal bars, CP band) stay as they are.
 
+### Amendment (2026-11-04): a second whole-page pass in text ink
+
+A test on a real phone found that, on some screens, the plain page pass never saw the
+small grey labels (STARDUST, CANDY), the white text on buttons (POWER UP, EVOLVE) or a
+red "not enough Candy" cost. The colourful top of the screen threw tesseract off, so no
+label was found and nothing was re-read.
+
+- **Read the whole page twice.** The second read is of `textInk` (`src/ocr/ink.ts`), a
+  black-on-white copy of the screen. Dark and red pixels become black. So do narrow
+  white strokes with button colour on both sides, which are letters on a button rather
+  than the white card.
+- **Merge the two word lists** (`src/core/screen/passes.ts`). Where both passes read
+  the same spot, the ink word wins. Lines are renumbered top to bottom so readers see
+  one page. The location filter runs after the merge.
+- The cost crops accept red as well as teal (`cost` ink).
+
+Cost: one more full OCR pass per screenshot. On a laptop, 8 real screenshots took
+about 10–12 s in the app instead of about 6 s.
+
 ## Consequences
 
 - Works at any scroll position, on any phone, as long as the label is on screen.

@@ -88,6 +88,24 @@ describe('mountApp', () => {
     expect(options.map((o) => o.textContent)).toEqual(['Azurill', 'Marill', 'Azumarill']);
   });
 
+  it('keeps a chosen form that is still in the line when the target evolves further', () => {
+    setField('#target', 'Marill');
+    setField('[data-candidate="current"] select[name="form"]', 'azurill');
+    setField('#target', 'Azumarill');
+    const form = (side: string) => document.querySelector<HTMLSelectElement>(`[data-candidate="${side}"] select[name="form"]`)!.value;
+    expect([form('current'), form('alternative')]).toEqual(['azurill', 'azumarill']);
+  });
+
+  it('keeps the form a screenshot read when the target moves up its line', async () => {
+    const input = document.querySelector<HTMLInputElement>('[data-candidate="current"] [name="screenshot"]')!;
+    Object.defineProperty(input, 'files', { value: [new File(['x'], 'screen.png')] });
+    input.dispatchEvent(new Event('change'));
+    const form = document.querySelector<HTMLSelectElement>('[data-candidate="current"] select[name="form"]')!;
+    await vi.waitFor(() => expect(form.value).toBe('lairon'));
+    setField('#target', 'Aggron');
+    expect(form.value).toBe('lairon');
+  });
+
   it('shows a comparison after submitting', () => {
     setField('#target', 'Azumarill');
     fillSide('current', ['15', '15', '15']);

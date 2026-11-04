@@ -89,6 +89,7 @@ export function formatSummary(result: Eligible): string {
 
 export function formatChange(change: number | null): string {
   if (change === null) return '';
-  const sign = change >= 0 ? '+' : '';
-  return `${sign}${(change * 100).toFixed(1)}% vs current`;
+  const shown = (change * 100).toFixed(1);
+  if (Number(shown) === 0) return 'Same as current';
+  return `${change > 0 ? '+' : ''}${shown}% vs current`;
 }

@@ -19,9 +19,10 @@ export type ScreenKind = 'pokemon' | 'appraisal' | 'bag' | 'profile';
 
 /**
  * Text colour to keep when re-reading a region: white on buttons, dark teal for labels,
- * and any strong colour for the trainer level, which takes the team's colour.
+ * teal or red for a button's cost (red when there is not enough), and any strong colour
+ * for the trainer level, which takes the team's colour.
  */
-export type Ink = 'white' | 'teal' | 'colour';
+export type Ink = 'white' | 'teal' | 'cost' | 'colour';
 
 /** An area to read again, digits only, after the first pass found its label. */
 export interface Region {
@@ -35,7 +36,7 @@ export type TotalName = 'stardust' | 'candy' | 'xl';
 export type AccountName = 'rareCandy' | 'rareXl' | 'trainerLevel';
 export type Totals = Partial<Record<TotalName | AccountName, number>>;
 
-export type RegionName = 'cost' | TotalName | 'trainerLevel';
+export type RegionName = 'cost' | 'evolve' | TotalName | 'trainerLevel';
 
 /** What OCR produced for one screenshot. Location text is already removed. */
 export interface Scan {

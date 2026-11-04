@@ -77,7 +77,6 @@ export function wireEvolve(w: EvolveWiring): (root: HTMLElement, reading: Readin
   for (const root of w.roots) root.addEventListener('change', (event) => affects(event) && fill(root));
   return (root, reading) => {
     rememberReading({ index: w.index, memory }, root, reading);
-    w.roots.filter((r) => r !== root).forEach(fill);
-    addStatus(root, fill(root) ?? '');
+    for (const r of w.roots) addStatus(r, fill(r) ?? '');
   };
 }

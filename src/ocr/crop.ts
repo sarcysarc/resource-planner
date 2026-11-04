@@ -4,9 +4,14 @@ import type { Pixels } from './pixels';
 // Measured on real screenshots: white text on buttons, dark teal for labels and totals.
 // Teal needs its blue-green tint too: Candy XL icons have dark grey or brown stripes
 // (tint 0 to 7) that are otherwise close enough to pass, while the text has 24 or more.
+const white = (r: number, g: number, b: number) => Math.min(r, g, b) > 215;
+const teal = (r: number, g: number, b: number) => Math.abs(r - 68) + Math.abs(g - 105) + Math.abs(b - 108) < 120 && Math.min(g, b) - r >= 16;
+// The cost a player cannot afford is red, (255, 94, 99) on a real screenshot.
+const red = (r: number, g: number, b: number) => r - Math.max(g, b) > 80;
 const isInk: Record<Ink, (r: number, g: number, b: number) => boolean> = {
-  white: (r, g, b) => Math.min(r, g, b) > 215,
-  teal: (r, g, b) => Math.abs(r - 68) + Math.abs(g - 105) + Math.abs(b - 108) < 120 && Math.min(g, b) - r >= 16,
+  white,
+  teal,
+  cost: (r, g, b) => teal(r, g, b) || red(r, g, b),
   // The profile's pale background differs from white by 20 or less; team colours by 140 or more.
   colour: (r, g, b) => Math.max(r, g, b) - Math.min(r, g, b) > 80,
 };
@@ -32,3 +37,4 @@ export function inkCrop(px: Pixels, region: Region): Pixels {
   }
   return out;
 }
+
