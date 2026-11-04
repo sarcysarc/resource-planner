@@ -23,52 +23,62 @@ const render = (input: Partial<Parameters<typeof renderComparisons>[0]> = {}) =>
 };
 
 describe('renderComparisons', () => {
-  it('renders one row per goal with verdicts and details', () => {
+  const cards = (container: HTMLElement) => [...container.querySelectorAll('section.goal')];
+
+  it('renders one card per goal that leads with the answer and why', () => {
+    const [great, raidCard] = cards(render());
+    expect(great.querySelector('h3')!.textContent).toBe('Great League');
+    expect(great.textContent).toContain('Trainer battles for Pokémon up to 1,500 CP');
+    expect(great.querySelector('.answer')!.textContent).toBe('Save up for the alternative');
+    expect(great.querySelector('.reason')!.textContent).toMatch(/^The current one is already over this league’s CP limit\./);
+    expect(raidCard.querySelector('.answer')!.textContent).toBe('Switch to the alternative');
+    expect(raidCard.className).toContain('verdict-switch');
+  });
+
+  it('keeps the numbers behind a closed toggle', () => {
     const container = render();
+    const why = container.querySelector<HTMLDetailsElement>('details.why')!;
+    expect(why.open).toBe(false);
+    expect(why.querySelector('summary')!.textContent).toBe('See the numbers');
     const text = container.textContent ?? '';
-    expect(container.querySelectorAll('tbody tr')).toHaveLength(2);
-    expect(text).toContain('Great League');
-    expect(text).toContain('Over the CP cap');
-    expect(text).toContain('Rank 12');
-    expect(text).toContain('Save for the alternative');
-    expect(text).toContain('Switch to the alternative');
-    expect(text).toContain('+6.7% vs current');
-    expect(text).toContain('Short');
+    expect(text).toContain('Already over the CP limit');
+    expect(text).toContain('its IVs rank 12 of 4,096 for this league');
+    expect(text).toContain('6.7% stronger than the current one');
+    expect(text).toContain('You are short');
     expect(text).toContain('Attack 150.0 with the Shadow bonus');
   });
 
-  it('adds each option’s matchups under its league result', () => {
+  it('adds each option’s matchups under its league numbers', () => {
     const view = document.createElement('details');
-    view.textContent = 'With Splash against the top 30 opponents';
-    const container = render({ extras: { great: [null, view] } });
-    const cells = container.querySelectorAll('tbody tr:first-child td');
-    expect(cells[1].querySelector('details')).toBe(view);
-    expect(cells[0].querySelector('details')).toBeNull();
+    view.textContent = 'With Splash against the 30 most-used opponents';
+    const blocks = render({ extras: { great: [null, view] } }).querySelectorAll('section.goal:first-of-type .option');
+    expect(blocks[1].querySelector('details')).toBe(view);
+    expect(blocks[0].querySelector('details')).toBeNull();
   });
 
-  it('has a column for each option', () => {
+  it('has a block for each option', () => {
     const three = [...options, { heading: 'Purified', name: 'the purified one' }];
     const wide: Comparison[] = [{ ...rows[1], results: [...rows[1].results, ok], verdict: { kind: 'save', option: 2 }, changes: [0, 0.0667, -0.02] }];
     const container = render({ options: three, rows: wide });
-    expect([...container.querySelectorAll('thead th')].map((th) => th.textContent)).toEqual(['Goal', 'Current', 'Alternative', 'Purified', 'Recommendation']);
-    expect(container.textContent).toContain('Save for the purified one');
-    expect(container.textContent).toContain('-2.0% vs current');
+    expect([...container.querySelectorAll('.option h4')].map((h) => h.textContent)).toEqual(['Current', 'Alternative', 'Purified']);
+    expect(container.textContent).toContain('Save up for the purified one');
+    expect(container.textContent).toContain('2.0% weaker than the current one');
   });
 
   it('says to purify when a purified option wins', () => {
     const purify = [options[0], { heading: 'Current, purified', name: 'the purified current one', action: 'purify the current one' }];
     const two = (kind: 'switch' | 'save'): Comparison[] => [{ ...rows[1], verdict: { kind, option: 1 } }];
     expect(render({ options: purify, rows: two('switch') }).textContent).toContain('Purify the current one');
-    expect(render({ options: purify, rows: two('save') }).textContent).toContain('Save to purify the current one');
+    expect(render({ options: purify, rows: two('save') }).textContent).toContain('Save up to purify the current one');
   });
 
-  it('shows notes above the table', () => {
+  it('shows notes above the cards', () => {
     expect(render({ notes: ['A note.'] }).querySelector('p.muted')!.textContent).toBe('A note.');
   });
 
   it('says what Rare Candy could cover', () => {
     const container = render({ resources: { stardust: Infinity, candy: 100, xl: 40 }, rare: { candy: 51, xl: 0 } });
-    expect(container.textContent).toContain('Short 20 Candy; you have 51 Rare Candy');
+    expect(container.textContent).toContain('You are short 20 Candy; you have 51 Rare Candy');
   });
 });
 
@@ -91,14 +101,14 @@ describe('formatShortfall', () => {
   const resources = { stardust: Infinity, candy: 100, xl: 10 };
 
   it('notes the Rare Candy for each kind that is short, without changing the shortfall', () => {
-    expect(formatShortfall(cost, resources, { candy: 51, xl: 38 })).toBe('Short 20 Candy · 30 XL; you have 51 Rare Candy and 38 Rare Candy XL');
-    expect(formatShortfall(cost, { ...resources, candy: 200 }, { candy: 51, xl: 38 })).toBe('Short 30 XL; you have 38 Rare Candy XL');
+    expect(formatShortfall(cost, resources, { candy: 51, xl: 38 })).toBe('You are short 20 Candy · 30 XL; you have 51 Rare Candy and 38 Rare Candy XL');
+    expect(formatShortfall(cost, { ...resources, candy: 200 }, { candy: 51, xl: 38 })).toBe('You are short 30 XL; you have 38 Rare Candy XL');
   });
 
   it('leaves the note out when there is no Rare Candy or nothing is short', () => {
-    expect(formatShortfall(cost, resources, { candy: 0, xl: 0 })).toBe('Short 20 Candy · 30 XL');
-    expect(formatShortfall(cost, resources)).toBe('Short 20 Candy · 30 XL');
-    expect(formatShortfall(cost, { stardust: 0, candy: 500, xl: 500 }, { candy: 51, xl: 38 })).toBe('Affordable now');
+    expect(formatShortfall(cost, resources, { candy: 0, xl: 0 })).toBe('You are short 20 Candy · 30 XL');
+    expect(formatShortfall(cost, resources)).toBe('You are short 20 Candy · 30 XL');
+    expect(formatShortfall(cost, { stardust: 0, candy: 500, xl: 500 }, { candy: 51, xl: 38 })).toBe('You have enough');
   });
 });
 

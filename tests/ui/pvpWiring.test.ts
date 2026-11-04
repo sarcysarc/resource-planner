@@ -34,6 +34,6 @@ describe('wirePvp', () => {
     expect(moves?.fast.great.name).toBeTruthy();
     const row = { goal: 'great', results: [result], verdict: { kind: 'keep' }, changes: [null] } as unknown as Comparison;
     const details = pvp.details([row], [candidate({ pvpMoves: moves })]);
-    expect(details.great?.[0]?.textContent).toContain('against the top 30 opponents');
+    expect(details.great?.[0]?.textContent).toContain('against the 30 most-used opponents');
   });
 });

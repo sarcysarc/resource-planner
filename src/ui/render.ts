@@ -1,7 +1,6 @@
 import type { Comparison } from '../core/compare';
 import type { GoalId, GoalResult } from '../core/goals';
-import type { Cost } from '../core/types';
-import type { Rare } from './account';
+import { type Budget, explainVerdict } from './explain';
 import { formatChange, formatCost, formatParts, formatShortfall, formatSummary, formatVerdict, GOAL_LABELS, type OptionLabel } from './format';
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, text = '', className = ''): HTMLElementTagNameMap[K] {
@@ -11,59 +10,67 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, text = '', className 
   return node;
 }
 
-function cell(label: string, ...children: Node[]): HTMLTableCellElement {
-  const td = el('td');
-  td.dataset.label = label;
-  td.append(...children.filter((child) => child.textContent));
-  return td;
-}
-
-/** What the player has to spend. */
-interface Budget {
-  resources: Cost;
-  rare?: Rare;
-}
-
 /** One option's result for one goal, and its value change against the current one. */
 interface OptionResult {
+  label: OptionLabel;
   result: GoalResult;
   change: string;
   /** Shown last, e.g. its matchups (ADR 0012). */
   extra?: HTMLElement | null;
 }
 
-function resultCell(label: string, { result, change, extra }: OptionResult, budget: Budget): HTMLTableCellElement {
-  if (!result.eligible) return cell(label, el('span', 'Over the CP cap', 'muted'));
-  return cell(
-    label,
-    el('div', formatSummary(result)),
-    el('div', change, 'muted'),
-    el('div', formatCost(result.cost), 'cost'),
-    el('div', formatParts(result.parts), 'muted'),
-    el('div', formatShortfall(result.cost, budget.resources, budget.rare), 'muted'),
-    ...(extra ? [extra] : []),
-  );
+const costLine = (cost: string) => (/^\d/.test(cost) ? `Costs ${cost}` : cost);
+
+function lines(result: GoalResult, change: string, budget: Budget): HTMLElement[] {
+  if (!result.eligible) return [el('p', 'Already over the CP limit', 'muted')];
+  return [
+    el('p', formatSummary(result)),
+    el('p', change, 'muted'),
+    el('p', costLine(formatCost(result.cost)), 'cost'),
+    el('p', formatParts(result.parts), 'muted'),
+    el('p', formatShortfall(result.cost, budget.resources, budget.rare), 'muted'),
+  ].filter((line) => line.textContent);
+}
+
+function optionBlock({ label, result, change, extra }: OptionResult, budget: Budget): HTMLElement {
+  const block = el('div', '', 'option');
+  block.append(el('h4', label.heading), ...lines(result, change, budget), ...(extra ? [extra] : []));
+  return block;
 }
 
 /** Per goal, one extra element per option (null for none). */
 export type Extras = Partial<Record<GoalId, (HTMLElement | null)[]>>;
 
-interface RowInput {
+interface CardInput {
   row: Comparison;
   options: OptionLabel[];
   budget: Budget;
   extras: Extras;
 }
 
-function goalRow({ row, options, budget, extras }: RowInput): HTMLTableRowElement {
-  const tr = el('tr');
-  const results = row.results.map((result, i) => {
+// The numbers behind the answer, closed so they don't get in the way.
+function numbers({ row, options, budget, extras }: CardInput): HTMLDetailsElement {
+  const why = el('details', '', 'why');
+  why.append(el('summary', 'See the numbers'));
+  row.results.forEach((result, i) => {
     const change = i === 0 ? '' : formatChange(row.changes[i]);
-    return resultCell(options[i].heading, { result, change, extra: extras[row.goal]?.[i] }, budget);
+    why.append(optionBlock({ label: options[i], result, change, extra: extras[row.goal]?.[i] }, budget));
   });
-  const verdict = el('strong', formatVerdict(row.verdict, options), `verdict verdict-${row.verdict.kind}`);
-  tr.append(el('th', GOAL_LABELS[row.goal]), ...results, cell('Recommendation', verdict));
-  return tr;
+  return why;
+}
+
+function goalCard(input: CardInput): HTMLElement {
+  const { row, options } = input;
+  const card = el('section', '', `goal verdict-${row.verdict.kind}`);
+  const { title, about } = GOAL_LABELS[row.goal];
+  card.append(
+    el('h3', title),
+    el('p', about, 'muted about'),
+    el('p', formatVerdict(row.verdict, options), 'answer'),
+    el('p', explainVerdict(input), 'reason'),
+    numbers(input),
+  );
+  return card;
 }
 
 export interface RenderInput extends Budget {
@@ -71,17 +78,13 @@ export interface RenderInput extends Budget {
   /** One per option, in the order of each row's results. */
   options: OptionLabel[];
   rows: Comparison[];
-  /** Shown above the table, e.g. why an option is left out. */
+  /** Shown above the cards, e.g. why an option is left out. */
   notes?: string[];
   extras?: Extras;
 }
 
 export function renderComparisons({ container, options, rows, resources, rare, notes = [], extras = {} }: RenderInput): void {
-  const table = el('table', '', 'results');
-  const head = el('tr');
-  ['Goal', ...options.map((o) => o.heading), 'Recommendation'].forEach((h) => head.append(el('th', h)));
-  table.createTHead().append(head);
-  const body = table.createTBody();
-  rows.forEach((row) => body.append(goalRow({ row, options, budget: { resources, rare }, extras })));
-  container.replaceChildren(...notes.map((note) => el('p', note, 'muted')), table);
+  const budget = { resources, rare };
+  const cards = rows.map((row) => goalCard({ row, options, budget, extras }));
+  container.replaceChildren(...notes.map((note) => el('p', note, 'muted')), ...cards);
 }

@@ -121,8 +121,8 @@ describe('mountApp', () => {
     setField('[data-candidate="current"] [name="variant"]', 'shadow');
     fillSide('alternative', ['15', '15', '15']);
     submit();
-    const headings = [...document.querySelectorAll('#results thead th')].map((th) => th.textContent);
-    expect(headings).toEqual(['Goal', 'Current', 'Current, purified', 'Alternative', 'Recommendation']);
+    const headings = [...document.querySelectorAll('#results section.goal:first-of-type .option h4')].map((th) => th.textContent);
+    expect(headings).toEqual(['Current', 'Current, purified', 'Alternative']);
     expect(document.querySelector('#results')!.textContent).toContain('Purify 3,000 Stardust · 3 Candy');
   });
 
@@ -133,8 +133,8 @@ describe('mountApp', () => {
     setField('[name="trainerLevel"]', '25');
     submit();
     const results = document.querySelector('#results')!.textContent!;
-    expect(results).toContain('Power up to Lv 35');
-    expect(results).not.toContain('Lv 50');
+    expect(results).toContain('Power up to level 35');
+    expect(results).not.toContain('level 50');
   });
 
   it('shows an error for a trainer level out of range', () => {

@@ -70,7 +70,7 @@ function view(side: Side, opponents: OpponentFighter[], current: Side | null): H
   const details = document.createElement('details');
   details.className = 'matchups';
   const summary = details.appendChild(document.createElement('summary'));
-  const head = `With ${side.fast} against the top ${opponents.length} opponents`;
+  const head = `With ${side.fast} against the ${opponents.length} most-used opponents`;
   summary.textContent = current ? `${head}: ${tallyText(tally(current.matchups, side.matchups))}` : head;
   const list = details.appendChild(document.createElement('ul'));
   side.matchups.forEach((m, i) => {

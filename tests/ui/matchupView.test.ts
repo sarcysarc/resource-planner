@@ -49,14 +49,14 @@ describe('matchupDetails', () => {
 
   it('lists the current option’s damage per fast move against each opponent', () => {
     const current = details.great![0]!;
-    expect(current.querySelector('summary')!.textContent).toBe('With Splash against the top 3 opponents');
+    expect(current.querySelector('summary')!.textContent).toBe('With Splash against the 3 most-used opponents');
     expect(current.querySelectorAll('li')).toHaveLength(3);
     expect(current.querySelector('li')!.textContent).toMatch(/^Ember \(Scorch\): deals \d+, takes \d+$/);
   });
 
   it('compares another option with the current one', () => {
     const shadow = details.great![1]!;
-    expect(shadow.querySelector('summary')!.textContent).toMatch(/^With Splash against the top 3 opponents: deals more to \d/);
+    expect(shadow.querySelector('summary')!.textContent).toMatch(/^With Splash against the 3 most-used opponents: deals more to \d/);
     expect(shadow.querySelector('li')!.textContent).toMatch(/· current deals \d+, takes \d+$/);
   });
 
@@ -64,12 +64,12 @@ describe('matchupDetails', () => {
     const over: GoalResult = { eligible: false, reason: 'over-cap' };
     const out = matchupDetails({ rows: [row([over, result(30)])], candidates: [candidate(), candidate({ pvpMoves })], opponents });
     expect(out.great![0]).toBeNull();
-    expect(out.great![1]!.querySelector('summary')!.textContent).toBe('With Splash against the top 3 opponents');
+    expect(out.great![1]!.querySelector('summary')!.textContent).toBe('With Splash against the 3 most-used opponents');
   });
 
   it('says when an option matches the current one everywhere', () => {
     const same = matchupDetails({ rows: [row([result(30), result(30)])], candidates: [candidates[0], candidates[0]], opponents });
-    expect(same.great![1]!.querySelector('summary')!.textContent).toBe('With Splash against the top 3 opponents: the same as the current one');
+    expect(same.great![1]!.querySelector('summary')!.textContent).toBe('With Splash against the 3 most-used opponents: the same as the current one');
   });
 
   it('skips the raid goal', () => {
