@@ -31,6 +31,10 @@ const FIELDS = `
   <label class="check"><input type="checkbox" name="lucky" /> Lucky</label>
   <label class="check"><input type="checkbox" name="bestBuddy" /> Best Buddy</label>
   <label class="check"><input type="checkbox" name="secondMove" /> Second charged move unlocked</label>
+  <div class="row">
+    <label>Raid fast move <select name="fastMove"><option value="">Best</option></select></label>
+    <label>Raid charged move <select name="chargedMove"><option value="">Best</option></select></label>
+  </div>
   <label>Candy to evolve <input name="evolveCandy" type="number" min="0" value="0" inputmode="numeric" /></label>
   <details class="finder">
     <summary>Don't know the IVs?</summary>

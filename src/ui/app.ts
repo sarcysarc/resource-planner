@@ -11,6 +11,7 @@ import { fillCandidate, wireScreenshot } from './screenshot';
 import { type Side, wireScreenshots } from './screenshots';
 import { formOf, readCandidate, readResources, type Result } from './form';
 import type { OptionLabel } from './format';
+import { type RaidMovesOf, wireMoves } from './moves';
 import { buildOptions, type OptionSide } from './options';
 import { fillResources } from './scanResources';
 import { readingFamily } from './scanSpecies';
@@ -78,24 +79,33 @@ interface SideSource {
   index: SpeciesIndex;
   target: Species;
   label: string;
+  raidMovesOf: RaidMovesOf;
 }
 
-function readSide({ label, ...source }: SideSource): Result<OptionSide> {
+function readSide({ label, raidMovesOf, ...source }: SideSource): Result<OptionSide> {
   const read = readCandidate(source);
   if (!read.ok) return { ok: false, error: `${label}: ${read.error}` };
   const form = formOf(source)!;
-  return { ok: true, value: { candidate: read.value, purify: purifyCost(form.secondMoveDust), formName: form.name } };
+  const candidate = { ...read.value, raidMoves: raidMovesOf(source.root, source.target) };
+  return { ok: true, value: { candidate, purify: purifyCost(form.secondMoveDust), formName: form.name } };
 }
 
-function readInputs(els: Elements, index: SpeciesIndex): Result<Inputs> {
+// What reading the form needs: the page, the species and each side's raid moves.
+interface App {
+  els: Elements;
+  index: SpeciesIndex;
+  raidMovesOf: RaidMovesOf;
+}
+
+function readInputs({ els, index, raidMovesOf }: App): Result<Inputs> {
   const target = findSpecies(index, els.target.value);
   if (!target) return { ok: false, error: 'Pick the Pokémon you will battle with from the list' };
   const account = readAccount(els.resources);
   if (!account.ok) return { ok: false, error: `Resources: ${account.error}` };
   const maxLevel = powerUpLimit(account.value.trainerLevel);
-  const current = readSide({ root: els.current, index, target, label: 'Current' });
+  const current = readSide({ root: els.current, index, target, label: 'Current', raidMovesOf });
   if (!current.ok) return current;
-  const alternative = readSide({ root: els.alternative, index, target, label: 'Alternative' });
+  const alternative = readSide({ root: els.alternative, index, target, label: 'Alternative', raidMovesOf });
   if (!alternative.ok) return alternative;
   const resources = readResources(els.resources);
   if (!resources.ok) return { ok: false, error: `Resources: ${resources.error}` };
@@ -104,8 +114,9 @@ function readInputs(els: Elements, index: SpeciesIndex): Result<Inputs> {
   return { ok: true, value: { compare, rare: account.value.rare, labels, notes } };
 }
 
-function run(els: Elements, index: SpeciesIndex): void {
-  const input = readInputs(els, index);
+function run(app: App): void {
+  const { els } = app;
+  const input = readInputs(app);
   els.error.textContent = input.ok ? '' : input.error;
   if (!input.ok) return;
   const { compare: sides, rare, labels, notes } = input.value;
@@ -136,6 +147,11 @@ function wireShared(els: Elements, index: SpeciesIndex, onRead: OnRead): void {
   void receiveShared(window).then(read);
 }
 
+// Where the game data comes from, and whose it is (ADR 0011).
+const dataCredit = (timestamp: string) =>
+  `Game data: PvPoke game master, ${timestamp}; raid move stats from PokeMiners. ` +
+  'The game data belongs to Niantic and The Pokémon Company.';
+
 export function mountApp(doc: Document): void {
   const index = loadBundledIndex();
   const els = queryElements(doc);
@@ -150,10 +166,8 @@ export function mountApp(doc: Document): void {
   }
   wireShared(els, index, onRead);
   fillSpeciesList(els.speciesList, index);
-  els.dataInfo.textContent = `Game data: PvPoke game master, ${index.timestamp}.`;
+  els.dataInfo.textContent = dataCredit(index.timestamp);
   wireSearches({ target: els.target, root: els.searches, index });
-  els.form.addEventListener('submit', (event) => {
-    event.preventDefault();
-    run(els, index);
-  });
+  const app = { els, index, raidMovesOf: wireMoves({ target: els.target, roots, index }) };
+  els.form.addEventListener('submit', (event) => (event.preventDefault(), run(app)));
 }

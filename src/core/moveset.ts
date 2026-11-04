@@ -2,7 +2,7 @@ import type { Variant } from './types';
 
 // PvPoke's species lists leave out the moves a Shadow or Purified Pokémon gets by
 // being one (ADR 0007).
-const VARIANT_MOVES: Record<Variant, string[]> = {
+export const VARIANT_MOVES: Record<Variant, string[]> = {
   normal: [],
   shadow: ['FRUSTRATION'],
   purified: ['RETURN'],

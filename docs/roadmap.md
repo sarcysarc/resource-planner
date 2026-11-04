@@ -93,8 +93,11 @@ not the data pipeline.
    (`src/data/types.ts`), species schema v3 with each species' move ids, and
    `src/data/moves.json` with PvP stats from PvPoke and PvE stats from PokeMiners
    (`src/data/moves.ts`, 24 of 355 moves without PvE stats). `chargedMoves()` adds
-   Frustration and Return. Meta opponent files wait for F5, the PokeMiners credit
-   for F4.
+   Frustration and Return. Meta opponent files wait for F5.
+   F4 is done (ADR 0011): raids are valued by the damage per second of the species'
+   best fast and charged pair against a neutral target (`src/core/raid.ts`), with
+   optional move pickers per candidate and the moves named in the result. The moves
+   load as their own chunk (`src/ui/moves.ts`) and the data line credits PokeMiners.
 
 ## Decisions to record
 
@@ -106,6 +109,7 @@ not the data pipeline.
 | 0007 | Battle math formulas, move data (PvE from PokeMiners, credited) and meta opponents (accepted) | Before G5 |
 | 0008 | Screenshot reading runs on the device, nothing uploaded | Before F7 |
 | 0009 | Read screens by their labels, not by position (accepted) | Before screenshot-first S1 |
+| 0011 | Raid value from the best moveset's damage per second, with an override (accepted) | Before F4 |
 
 ## Next: screenshot-first input
 

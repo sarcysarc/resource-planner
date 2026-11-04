@@ -1,9 +1,11 @@
 import { MAX_POWER_UP_LEVEL } from '../data/powerUpCosts';
 import { addCosts, powerUpCost, secondMoveCost, ZERO_COST } from './cost';
+import { SHADOW_ATTACK } from './damage';
 import { maxLevelUnderCap } from './levels';
+import { bestRaidPair, type RaidMoves } from './raid';
 import { rankSpread, type RankResult } from './rank';
 import { battleStats, cp, statProduct } from './stats';
-import type { BaseStats, Cost, IVs, Modifiers } from './types';
+import type { BaseStats, Cost, IVs, Modifiers, Stats } from './types';
 
 export type GoalId = 'great' | 'ultra' | 'master' | 'raid';
 
@@ -25,10 +27,18 @@ export interface Candidate {
   purifyCost?: Cost;
   /** The highest level the trainer can power up to (see powerUpLimit); 50 when unset. */
   maxLevel?: number;
+  /** Its types and moves for raid damage per second (ADR 0011); Attack when unset. */
+  raidMoves?: RaidMoves;
 }
 
 /** What a goal's value measures, so the UI can explain it (ADR 0006). */
-export type ValueBasis = 'statProduct' | 'attack' | 'shadowAttack';
+export type ValueBasis = 'statProduct' | 'attack' | 'shadowAttack' | 'raidDps';
+
+/** The moves a raidDps value used, by name. */
+export interface MoveNames {
+  fast: string;
+  charged: string;
+}
 
 /** One part of the remaining cost. Free parts are left out. */
 export interface CostPart {
@@ -45,6 +55,7 @@ export type GoalResult =
       cp: number;
       value: number;
       basis: ValueBasis;
+      moves?: MoveNames;
       rank?: RankResult;
       cost: Cost;
       parts: readonly CostPart[];
@@ -77,15 +88,23 @@ function targetEffectiveLevel(c: Candidate, cap: number): number | null {
   return level === null || level < c.level + bonus ? null : level;
 }
 
-function basisOf(c: Candidate, goal: GoalId): ValueBasis {
-  if (goal !== 'raid') return 'statProduct';
-  return c.mods.variant === 'shadow' ? 'shadowAttack' : 'attack';
+interface GoalValue {
+  value: number;
+  basis: ValueBasis;
+  moves?: MoveNames;
 }
 
-function goalValue(c: Candidate, goal: GoalId, level: number): number {
+function raidValue(c: Candidate, stats: Stats): GoalValue {
+  const variant = c.mods.variant;
+  const pair = c.raidMoves && bestRaidPair({ stats, types: c.raidMoves.types, variant }, c.raidMoves);
+  if (pair) return { value: pair.dps, basis: 'raidDps', moves: { fast: pair.fast.name, charged: pair.charged.name } };
+  const shadow = variant === 'shadow';
+  return { value: stats.atk * (shadow ? SHADOW_ATTACK : 1), basis: shadow ? 'shadowAttack' : 'attack' };
+}
+
+function goalValue(c: Candidate, goal: GoalId, level: number): GoalValue {
   const stats = battleStats({ base: c.base, ivs: c.ivs, level });
-  if (goal !== 'raid') return statProduct(stats);
-  return stats.atk * (c.mods.variant === 'shadow' ? 1.2 : 1);
+  return goal === 'raid' ? raidValue(c, stats) : { value: statProduct(stats), basis: 'statProduct' };
 }
 
 export function evaluateGoal({ candidate: c, goal }: GoalInput): GoalResult {
@@ -101,8 +120,7 @@ export function evaluateGoal({ candidate: c, goal }: GoalInput): GoalResult {
     targetLevel,
     effectiveLevel,
     cp: cp({ base: c.base, ivs: c.ivs, level: effectiveLevel }),
-    value: goalValue(c, goal, effectiveLevel),
-    basis: basisOf(c, goal),
+    ...goalValue(c, goal, effectiveLevel),
     rank: goal === 'raid' ? undefined : rankSpread(spread),
     cost: parts.map((part) => part.cost).reduce(addCosts, ZERO_COST),
     parts,

@@ -79,6 +79,9 @@ export function formatShortfall(cost: Cost, resources: Cost, rare?: Rare): strin
 export function formatSummary(result: Eligible): string {
   const buddy = result.effectiveLevel > result.targetLevel ? ' (+1 Best Buddy)' : '';
   const head = `Power up to Lv ${result.targetLevel}${buddy} · CP ${n(result.cp)}`;
+  if (result.moves) {
+    return `${head} · ${result.value.toFixed(1)} damage per second with ${result.moves.fast} and ${result.moves.charged}`;
+  }
   const bonus = result.basis === 'shadowAttack' ? ' with the Shadow bonus' : '';
   if (!result.rank) return `${head} · Attack ${result.value.toFixed(1)}${bonus}`;
   return `${head} · Rank ${n(result.rank.rank)} (${result.rank.percent.toFixed(1)}%)`;
