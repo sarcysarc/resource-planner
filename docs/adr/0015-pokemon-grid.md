@@ -42,6 +42,12 @@ What limits the app to two is the page.
   when its text gives no sign. Its CP band is trusted without an HP line only when
   the band also shows the CP label, and the number after the label wins: on a Lucky's
   gold background the band can hold junk digits too (seen: "384" above "cr2488").
+  **Bars alone are not enough** (amended 2026-11-04, cause A in the stress test, ADR
+  0016). A list and a terms page have three long stripes low on the screen that measure
+  as empty bars, which made a Pokémon with IVs 0/0/0. When the text gives no sign of a
+  Pokémon screen, the bars count only if something else of a Pokémon was read: a name,
+  CP, HP, family, Lucky or variant label. An appraisal where OCR read nothing at all is
+  lost, but its tile could show only IVs anyway.
 - **An appraisal never joins a Pokémon by guesswork.** An appraisal without CP or HP
   was misread, so the time order used for scrolled-down screens doesn't apply. It
   joins only the single Pokémon of its own known family that has no IVs yet;
@@ -54,6 +60,13 @@ What limits the app to two is the page.
 - If something can't be settled from the screenshots, step 1 asks before moving on.
   For example, a name that could be any stage of the line, or two screenshots that
   disagree.
+- **A name the data only has as forms** (amended 2026-11-04, cause B in the stress test,
+  ADR 0016). The game shows "Giratina"; the data has only "Giratina (Altered)" and
+  "Giratina (Origin)". A read name (or Candy label) that matches no species is matched to
+  the forms whose name without the bracket is near it. When only one form fits the CP, HP
+  and IVs, it is taken. Otherwise step 1 asks which form it is, like a stage question,
+  rather than guessing the first form and noting it on the tile: every question is asked
+  before the grid.
 
 ### The grid
 

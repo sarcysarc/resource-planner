@@ -35,6 +35,36 @@ describe('resolveSpecies', () => {
     expect(ids({ family: 'SNORLAX', cp: 1177, hp: 163, dust: 1920, variant: 'shadow', lucky: true })).toEqual(['snorlax']);
   });
 
+  // The game shows "Giratina"; the data only has its forms (ADR 0016, cause B).
+  describe('a name the data only has as forms', () => {
+    const shows = (id: string) => {
+      const pokemon = { base: findSpecies(index, id)!.base, ivs: { atk: 12, def: 15, hp: 13 }, level: 30 };
+      return { cp: cp(pokemon), hp: battleStats(pokemon).hp, ivs: pokemon.ivs };
+    };
+
+    it('takes the one form whose stats fit the numbers', () => {
+      expect(ids({ name: 'Giratina', ...shows('giratina_origin') })).toEqual(['giratina_origin']);
+      expect(ids({ name: 'Giratina', ...shows('giratina_altered') })).toEqual(['giratina_altered']);
+      expect(ids({ name: 'Indeedee', ...shows('indeedee_male') })).toEqual(['indeedee_male']);
+    });
+
+    it('keeps every form when the numbers do not decide, so step 1 asks', () => {
+      expect(ids({ name: 'Giratina' })).toEqual(['giratina_altered', 'giratina_origin']);
+    });
+
+    it('allows a misread letter', () => {
+      expect(ids({ name: 'Glratina', ...shows('giratina_origin') })).toEqual(['giratina_origin']);
+    });
+
+    it('finds the forms from the Candy label too', () => {
+      expect(ids({ family: 'GIRATINA' })).toEqual(['giratina_altered', 'giratina_origin']);
+    });
+
+    it('groups by the form found', () => {
+      expect(readingFamily(index, { name: 'Giratina', ...shows('giratina_origin') })).toBe('giratina_origin');
+    });
+  });
+
   it('finds nothing for an unknown name and family', () => {
     expect(ids({ name: 'Rocky', family: 'QZQX' })).toEqual([]);
   });
