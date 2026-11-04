@@ -2,6 +2,7 @@ import 'fake-indexeddb/auto';
 import { describe, expect, it } from 'vitest';
 import { openGridStore } from '../../src/ui/gridStore';
 import { parseSaved, type SavedGrid } from '../../src/ui/savedGrid';
+import type { SavedBook } from '../../src/ui/savedBook';
 
 const saved: SavedGrid = {
   version: 1,
@@ -30,11 +31,13 @@ describe('parseSaved', () => {
 });
 
 describe('openGridStore', () => {
-  it('saves, loads and clears the grid', async () => {
+  const book: SavedBook = { version: 2, open: 'FAMILY_DRATINI', lines: [{ family: 'FAMILY_DRATINI', target: 'Dragonite', tiles: saved.tiles }] };
+
+  it('saves, loads and clears the lines', async () => {
     const store = openGridStore('test-grid');
     expect(await store.load()).toBeUndefined();
-    await store.save(saved);
-    expect(await store.load()).toEqual(saved);
+    await store.save(book);
+    expect(await store.load()).toEqual(book);
     await store.clear();
     expect(await store.load()).toBeUndefined();
   });

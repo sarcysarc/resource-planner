@@ -104,6 +104,10 @@ The live site (current master build) was then run in Chrome on the phone, a moto
 - **Fix:** the line comes from the screenshots, not from the first one or the saved grid.
   When an upload holds more than one line, or another line than the saved grid, offer a
   grid per line (or a new grid), and say on step 1 which screenshots were left out and why.
+- **Done, first slices** (ADR 0017): each Candy family read opens its own line, with its
+  own grid, target and Candy; step 2 lists the lines by Pokédex number when there are two
+  or more, and tapping one opens it. The book of lines is saved; a saved one-line grid is
+  read as one line. Rows without a call yet, duplicates and per-line Clear are later slices.
 
 ### E. Reading takes about 4–5 s per screenshot
 
@@ -134,6 +138,10 @@ The live site (current master build) was then run in Chrome on the phone, a moto
 
 After A, B and the answer-key fix: reading 21 misses, grid 3 failures (was 15): Drifblim
 and Skarmory (cause C) and every line at once (cause D).
+
+After the first slices of D: reading 19 misses, grid 3 failures, all cause C. Every line at
+once now gives 43 tiles in their own lines; only Drifblim and Skarmory differ, by their CP
+as when uploaded alone. The grid check opens each line in step 2's list to see its tiles.
 
 ## Ranked fixes
 

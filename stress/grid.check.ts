@@ -38,6 +38,13 @@ const tiles = () =>
     thumb: t.querySelector('img')?.getAttribute('src') ?? undefined,
   }));
 
+// Every line's tiles: each line in step 2's list is opened in turn (ADR 0017).
+function allTiles(): ReturnType<typeof tiles> {
+  const rows = () => [...document.querySelectorAll<HTMLButtonElement>('[data-lines] button')];
+  if (rows().length < 2) return tiles();
+  return rows().flatMap((_, i) => (rows()[i].click(), tiles()));
+}
+
 async function upload(names: string[]): Promise<Omit<Outcome, 'scenario' | 'want'>> {
   mount();
   choose(names);
@@ -45,7 +52,7 @@ async function upload(names: string[]): Promise<Omit<Outcome, 'scenario' | 'want
   await vi.waitFor(() => expect(status()).not.toMatch(/^Reading/), { timeout: 20_000 });
   const asked = q('[data-questions]').textContent?.trim() ?? '';
   if (!asked) await vi.waitFor(() => expect(q('[data-step="check"]').hidden).toBe(false));
-  return { status: status(), asked, tiles: tiles() };
+  return { status: status(), asked, tiles: allTiles() };
 }
 
 describe.skipIf(!truth)('the grid after uploading', () => {

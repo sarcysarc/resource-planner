@@ -1,10 +1,10 @@
 // Keeps the grid in the browser's IndexedDB (ADR 0015), so it is there on the next visit.
-// One record, replaced on every save.
-import { parseSaved, type SavedGrid } from './savedGrid';
+// One record, replaced on every save: the book of lines (ADR 0017).
+import { parseBook, type SavedBook } from './savedBook';
 
 export interface GridStore {
-  load(): Promise<SavedGrid | undefined>;
-  save(grid: SavedGrid): Promise<void>;
+  load(): Promise<SavedBook | undefined>;
+  save(book: SavedBook): Promise<void>;
   clear(): Promise<void>;
 }
 
@@ -30,8 +30,8 @@ export function openGridStore(name = 'candy-planner'): GridStore {
   const run = async <T>(mode: IDBTransactionMode, act: (store: IDBObjectStore) => IDBRequest<T>) =>
     done(act((await db).transaction(STORE, mode).objectStore(STORE)));
   return {
-    load: async () => parseSaved(await run('readonly', (s) => s.get(KEY))),
-    save: async (grid) => void (await run('readwrite', (s) => s.put(grid, KEY))),
+    load: async () => parseBook(await run('readonly', (s) => s.get(KEY))),
+    save: async (book) => void (await run('readwrite', (s) => s.put(book, KEY))),
     clear: async () => void (await run('readwrite', (s) => s.delete(KEY))),
   };
 }

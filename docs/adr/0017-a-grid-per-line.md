@@ -62,6 +62,18 @@ Pokémon (10–50 at a time) and share them all; each line then gets its own adv
 - The saved record holds every line (target, Candy and tiles) and each tile's
   fingerprints. A saved one-line grid (version 1) is read as one line.
 
+## Implementation notes
+
+- **Slice 1 (2026-11-04): lines and the step 2 list.** The page keeps one grid. A book of
+  lines is held in memory and saved (version 2: the open family and each line's target,
+  tiles, Candy and XL Candy). Opening a line saves the open one into the book, empties the
+  grid and restores the other's target, tiles and Candy; Stardust and the account values
+  stay. Each Pokémon read goes to its family's line; one of no known family goes to the
+  open line. A batch is put in line by line, and the first line read is open after it.
+  Step 2 lists lines by Pokédex number, `Name line · count`, once there are two; the open
+  one is marked. Not yet: row summaries and ordering by call, the final-evolution target
+  and branching question, duplicates and fingerprints, per-line Clear.
+
 ## Order of work
 
 1. Cause A (fake 0/0/0 from menus) and cause B (forms named "New Pokémon"), each with its

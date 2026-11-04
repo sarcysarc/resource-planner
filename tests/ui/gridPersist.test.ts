@@ -11,12 +11,13 @@ const parts = () => ({ grid: q('[data-grid]'), details: q('[data-details]'), tra
 const restored = vi.fn();
 const cleared = vi.fn();
 const persist = (store = openGridStore(`t${Math.random()}`)) =>
-  persistGrid({ grid, target: q('#target'), area: q('main'), onRestore: restored, onClear: cleared }, store);
+  persistGrid({ grid, target: q('#target'), resources: q('[data-resources]'), area: q('main'), onRestore: restored, onClear: cleared }, store);
 
 describe('persistGrid', () => {
   beforeEach(() => {
     document.body.innerHTML = `<main><input id="target" />
       <div data-grid></div><div data-details></div><div data-transfers hidden><ul></ul></div>
+      <div data-resources><input name="candy" /><input name="xl" /></div>
       <button type="button" data-clear-grid>Clear all</button><button type="button" data-clear-grid id="early">Clear</button></main>`;
     restored.mockClear();
     cleared.mockClear();
@@ -25,11 +26,11 @@ describe('persistGrid', () => {
 
   it('saves after a change and restores on the next visit', async () => {
     const store = openGridStore(`t${Math.random()}`);
-    const save = persist(store);
+    const { save } = persist(store);
     grid.add().querySelector('input')!.value = '900';
     q<HTMLInputElement>('#target').value = 'Dragonite';
     save();
-    await vi.waitFor(async () => expect((await store.load())?.tiles).toHaveLength(1), { timeout: 2000 });
+    await vi.waitFor(async () => expect((await store.load())?.lines[0]?.tiles).toHaveLength(1), { timeout: 2000 });
     grid.clear();
     persist(store);
     await vi.waitFor(() => expect(grid.roots()).toHaveLength(1));
@@ -38,7 +39,7 @@ describe('persistGrid', () => {
 
   it('clears the grid and the device only when the player confirms', async () => {
     const store = openGridStore(`t${Math.random()}`);
-    await store.save({ version: 1, target: 'Dragonite', tiles: [] });
+    await store.save({ version: 2, open: '', lines: [] });
     persist(store);
     grid.add();
     q<HTMLInputElement>('#target').value = 'Dragonite';
@@ -56,16 +57,18 @@ describe('persistGrid', () => {
 
   it('tells what it restored, and only when there was something', async () => {
     const store = openGridStore(`t${Math.random()}`);
+    await store.save({ version: 2, open: '', lines: [{ family: '', target: 'Gengar', tiles: [] }] });
     persist(store);
-    await store.save({ version: 1, target: 'Gengar', tiles: [] });
     await new Promise((r) => setTimeout(r, 50));
     expect(restored).not.toHaveBeenCalled();
-    grid.add();
-    persist(store)();
-    await vi.waitFor(async () => expect((await store.load())?.tiles).toHaveLength(1), { timeout: 2000 });
-    grid.clear();
-    persist(store);
-    await vi.waitFor(() => expect(restored).toHaveBeenCalledWith({ target: 'Gengar', count: 1 }));
+    const tile = (id: string) => ({ id, values: {}, current: false, transfer: false, known: [] });
+    const gastly = { family: 'FAMILY_GASTLY', target: 'Gengar', tiles: [tile('t1')] };
+    const aron = { family: 'FAMILY_ARON', target: 'Aggron', tiles: [tile('t1'), tile('t2')] };
+    await store.save({ version: 2, open: 'FAMILY_GASTLY', lines: [gastly, aron] });
+    const { lines } = persist(store);
+    // Every Pokémon is counted; the open line is shown.
+    await vi.waitFor(() => expect(restored).toHaveBeenCalledWith({ target: 'Gengar', count: 3 }));
+    expect([lines.family(), grid.roots().length]).toEqual(['FAMILY_GASTLY', 1]);
   });
 
   it('clears from every Clear button, and says so', () => {
@@ -79,7 +82,7 @@ describe('persistGrid', () => {
   });
 
   it('works without a store', () => {
-    const save = persistGrid({ grid, target: q('#target'), area: q('main') }, undefined);
+    const { save } = persistGrid({ grid, target: q('#target'), resources: q('[data-resources]'), area: q('main') }, undefined);
     expect(save).not.toThrow();
   });
 });

@@ -1,9 +1,11 @@
 // Fills the grid from step 1 (ADR 0015): each Pokémon read from screenshots goes into its
-// tile with a thumbnail; the "by hand" buttons add empty tiles to type into.
+// tile with a thumbnail, in its own line (ADR 0017); the "by hand" buttons add empty tiles
+// to type into the open line.
 import type { Group } from '../core/screen/merge';
 import type { Reading, Totals } from '../core/screen/types';
 import { receiveShared } from '../share/receive';
 import type { Grid } from './grid';
+import type { Lines } from './lines';
 import { fillResources } from './scanResources';
 import { readingFamily, resolveSpecies } from './scanSpecies';
 import { addStatus, applySpecies } from './scanTarget';
@@ -25,6 +27,12 @@ export interface GridShots {
   useEvolve: (root: HTMLElement, reading: Reading) => void;
   /** Saves the grid. */
   save: () => void;
+  lines: Lines;
+}
+
+// The line first read in a batch is the one shown once the batch is in.
+interface Batch {
+  first?: string;
 }
 
 // After a tile's fields are filled: the species, the form and the shared totals.
@@ -38,13 +46,27 @@ function onRead(g: GridShots): (root: HTMLElement, reading: Reading) => void {
   };
 }
 
-function useGroup(g: GridShots): (group: Group, shot?: File) => void {
+// The thumbnail is made first, so its tile can't be in a line closed by the time it is ready.
+// A Pokémon of no known family goes into the open line.
+function useGroup(g: GridShots, batch: Batch): (group: Group, shot?: File) => Promise<void> {
   const fill = { grid: g.grid, familyOf: (r: Reading) => readingFamily(g.index, r), onRead: onRead(g) };
-  return (group, shot) => {
+  return async (group, shot) => {
+    const src = shot && (await makeThumb(shot));
+    const family = fill.familyOf(group.reading);
+    if (family) g.lines.open(family);
+    batch.first ??= g.lines.family();
     const root = fillTile(fill, group);
+    if (src) setThumb(g.grid.tileOf(root), src);
     g.save();
-    if (!shot) return;
-    void makeThumb(shot).then((src) => src && (setThumb(g.grid.tileOf(root), src), g.save()));
+  };
+}
+
+function done(g: GridShots, batch: Batch, reveal: () => void): () => void {
+  return () => {
+    if (batch.first !== undefined) g.lines.open(batch.first);
+    batch.first = undefined;
+    g.save();
+    reveal();
   };
 }
 
@@ -69,14 +91,15 @@ function wireHand(g: GridShots): void {
 
 export function wireGridShots(g: GridShots): void {
   const { reveal } = wireSteps(g.doc);
+  const batch: Batch = {};
   wireHand(g);
   const read = wireScreenshots({
     root: g.doc.querySelector('[data-shots]')!,
     familyOf: (r) => readingFamily(g.index, r),
     stagesOf: (r) => resolveSpecies(g.index, r),
-    use: useGroup(g),
+    use: useGroup(g, batch),
     useAccount: (totals: Totals) => fillResources(g.resources, totals, false),
-    onDone: reveal,
+    onDone: done(g, batch, reveal),
   });
   // Screenshots shared from the gallery to the installed app (ADR 0010).
   void receiveShared(window).then(read);

@@ -1,7 +1,7 @@
 // What is kept of the grid on the device (ADR 0015), checked when it is read back.
 import { z } from 'zod';
 
-const SavedTile = z.object({
+export const SavedTile = z.object({
   id: z.string().regex(/^t\d+$/),
   /** Field name to value, as typed; checkboxes as true or false. */
   values: z.record(z.string(), z.union([z.string(), z.boolean()])),

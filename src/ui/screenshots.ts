@@ -15,7 +15,7 @@ export interface ShotsWiring {
   familyOf: FamilyOf;
   stagesOf: StagesOf;
   /** Puts one Pokémon into the grid; `shot` is a screenshot of it for its thumbnail. */
-  use: (group: Group, shot?: File) => void;
+  use: (group: Group, shot?: File) => void | Promise<void>;
   /** Fills the account values a bag or profile screenshot showed; returns a status note. */
   useAccount: (totals: Totals) => string;
   /** Called once the screenshots have been read and any Pokémon added. */
@@ -40,10 +40,17 @@ async function settle(w: ShotsWiring, groups: Group[]): Promise<Group[]> {
   return answer(groups, await askQuestions(q(w.root, '[data-questions]'), questions));
 }
 
-function useAll(w: ShotsWiring, groups: Group[], shots: { readings: Reading[]; fileOf: Map<Reading, File> }): void {
-  for (const group of groups) {
+// Each line's Pokémon together, lines in the order first read, so each line opens once.
+function byLine(groups: Group[], familyOf: FamilyOf): Group[] {
+  const order = [...new Set(groups.map((g) => familyOf(g.reading)))];
+  const at = (g: Group) => order.indexOf(familyOf(g.reading));
+  return [...groups].sort((a, b) => at(a) - at(b));
+}
+
+async function useAll(w: ShotsWiring, groups: Group[], shots: { readings: Reading[]; fileOf: Map<Reading, File> }): Promise<void> {
+  for (const group of byLine(groups, w.familyOf)) {
     const at = pickShot(shots.readings, group);
-    w.use(group, at === undefined ? undefined : shots.fileOf.get(shots.readings[at]));
+    await w.use(group, at === undefined ? undefined : shots.fileOf.get(shots.readings[at]));
   }
   w.onDone?.();
 }
@@ -57,7 +64,7 @@ async function readAll(w: ShotsWiring, files: File[]): Promise<void> {
   const groups = groupReadings(pokemon, w.familyOf);
   const accountNote = Object.keys(account).length ? ` ${w.useAccount(account)}` : '';
   setStatus(w, readNote(files.length, groups, accountNote) + failedNote(images.failed));
-  useAll(w, await settle(w, groups), { readings: pokemon, fileOf });
+  await useAll(w, await settle(w, groups), { readings: pokemon, fileOf });
 }
 
 /**

@@ -57,6 +57,6 @@ export function scenarios(truth: Truth): Scenario[] {
   return [
     ...ids.map((id) => group(truth, `one: ${id}`, [id])),
     ...shared.flatMap(([line, members]) => lineScenarios(truth, line, members)),
-    group(truth, 'every line at once (a grid holds one line)', ids),
+    group(truth, 'every line at once', ids),
   ];
 }
