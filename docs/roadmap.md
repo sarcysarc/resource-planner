@@ -31,7 +31,7 @@ allows more than two candidates (G4).
 (ADR 0005):
 - PvPoke `gamemaster.json` and `moves.json` (MIT): stats, family, second move cost,
   plus types, moves and legendary/mythical tags for F3–F5.
-- A small table we keep ourselves: purification cost per species class (F3).
+- A small table we keep ourselves: purification cost by second-move cost tier (F3).
 - Evolution Candy (F2) is read from the Pokémon screenshot (S2) or typed, not shipped
   as data. PokeMiners' game master has no licence, so it is not used.
 
@@ -113,4 +113,4 @@ groundwork beyond G6, so it can run before or alongside Phase A's second half.
 
 ## Still open
 
-- The purify cost table needs checking against in-game purify screens.
+Nothing at the moment.

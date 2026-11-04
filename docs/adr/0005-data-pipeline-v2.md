@@ -1,4 +1,4 @@
-# 0005 - Data pipeline v2: PvPoke only, plus small tables we keep ourselves
+# 0005 - Data pipeline v2: PvPoke only, plus a small purify table we keep ourselves
 
 **Status:** accepted
 **Date:** 2026-11-03
@@ -21,17 +21,24 @@ already reads the evolve cost from a Pokémon screen, so F2 no longer needs a da
 ## Decision
 
 - **One downloaded source: PvPoke.** `scripts/build-species.mjs` grows into the v2
-  build. It keeps what it has now and adds, for F4 and F5: types, fast and charged
-  move lists, and PvPoke's `legendary`, `mythical` and `ultrabeast` tags. Moves come
-  from PvPoke's `moves.json` (also MIT).
+  build. It keeps what it has now and adds, for F4 and F5: types and fast and charged
+  move lists. Moves come from PvPoke's `moves.json` (also MIT).
 - **One schema, checked by Zod.** The built file carries a `schemaVersion` and its
   source timestamp. The app parses it with a Zod schema at load, so a bad refresh fails
   the build's tests instead of the page.
-- **Purify cost from a table we write.** A small hand-kept table in `src/data/` gives
-  the purify Stardust and Candy per species class (normal, legendary or mythical,
-  and any other class the game prices apart). The class comes from PvPoke's tags.
-  Each value is checked against an in-game purify screen before it is relied on, as
-  `powerUpCosts.ts` is checked against published totals.
+- **Purify cost from the second-move tier.** A four-row table in `src/data/` maps a
+  species' second-move Stardust cost (already in `species.json`) to its purify cost:
+
+  | Second move | Purify |
+  |-------------|--------|
+  | 10,000 | 1,000 Stardust, 1 Candy |
+  | 50,000 | 3,000 Stardust, 3 Candy |
+  | 75,000 | 5,000 Stardust, 5 Candy |
+  | 100,000 | 20,000 Stardust, 20 Candy |
+
+  Read from the purify screens of nine Shadows on 2026-11-03, covering all four
+  tiers (including two legendaries). It is a pattern we observed, not one the game
+  publishes, so a purify screenshot that disagrees with the table wins.
 - **Evolve Candy is not a data file.** It comes from the screenshot (S2) or the user
   types it. F2 becomes: keep the value read from a screenshot for that species while
   the page is open, so it is not asked for twice.
@@ -42,12 +49,12 @@ already reads the evolve cost from a Pokémon screen, so F2 no longer needs a da
 ## Consequences
 
 - No dependency on an unlicensed file. PvPoke's MIT licence covers what we download.
-- The purify table is ours to keep correct. It is a handful of numbers that rarely
-  change, so the risk is small, but an event that changes purify prices needs a
-  manual edit.
+- The purify table is ours to keep correct. It is four rows that rarely change, but
+  an event that changes purify prices needs a manual edit, and a species priced
+  apart from its tier would be wrong until someone notices.
 - Players without a screenshot still type the evolve cost, as today.
-- A species class PvPoke does not tag (a new category of Pokémon) falls back to the
-  normal purify price until the table is updated. Tests cover that fallback.
+- A species with no second-move cost, or a cost outside the four tiers, has no
+  known purify cost. F3 then asks for it instead of guessing. Tests cover that case.
 - 0002's note "evolution Candy cost is entered by the user" stays true, now with
   screenshot reading in front of it.
 
@@ -59,6 +66,7 @@ already reads the evolve cost from a Pokémon screen, so F2 no longer needs a da
 | pokemongo-json-pokedex (Apache-2.0) | Licensed | Archived in 2019, years out of date | Wrong data is worse than none |
 | Hand-kept evolve Candy table for every species | F2 works without a screenshot | Hundreds of entries to keep correct | Screenshots already give the value |
 | Ask the user for purify cost too | No table at all | One more field for a value that barely varies | F3 should need no extra typing |
+| Purify cost by species class (legendary, mythical tags) | Tags are in PvPoke | Nine screens showed four prices, not two; Axew and Snorlax cost more than Carvanha | Does not match the game |
 
 ## Links
 
