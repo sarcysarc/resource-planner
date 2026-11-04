@@ -33,7 +33,8 @@ allows more than two candidates (G4).
   plus types, moves and legendary/mythical tags for F3–F5.
 - A small table we keep ourselves: purification cost by second-move cost tier (F3).
 - Evolution Candy (F2) is read from the Pokémon screenshot (S2) or typed, not shipped
-  as data. PokeMiners' game master has no licence, so it is not used.
+  as data. PokeMiners' game master has no licence; ADR 0007 uses it, credited, for
+  PvE move stats only, since no licensed source has them.
 
 Rankings of meta opponents for F5 come from PvPoke's per-league ranking files. They
 are split per league and loaded only when needed, so the main bundle stays small.
@@ -96,7 +97,7 @@ not the data pipeline.
 | 0004 | Hosting on GitHub Pages, CI on GitHub Actions | Before G1 |
 | 0005 | Data pipeline v2: PvPoke plus our own purify table (supersedes 0002) | Before G3 |
 | 0006 | Options model and per-goal explanations (amends 0003, accepted) | Before G4 |
-| 0007 | Battle math formulas and meta opponent source | Before G5 |
+| 0007 | Battle math formulas, move data (PvE from PokeMiners, credited) and meta opponents (accepted) | Before G5 |
 | 0008 | Screenshot reading runs on the device, nothing uploaded | Before F7 |
 | 0009 | Read screens by their labels, not by position (accepted) | Before screenshot-first S1 |
 

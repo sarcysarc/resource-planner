@@ -1,6 +1,6 @@
 # 0005 - Data pipeline v2: PvPoke only, plus a small purify table we keep ourselves
 
-**Status:** accepted
+**Status:** accepted (amended by 0007: PvE move stats from PokeMiners, credited)
 **Date:** 2026-11-03
 **Spec:** [roadmap](../roadmap.md) G3, F2, F3
 **Deciders:** project owner, Claude
