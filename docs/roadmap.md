@@ -27,13 +27,13 @@ candidate fieldset twice. F3–F6 each add fields (moves, purify toggle, apprais
 Building the fieldset from one template means each new field is added once. It also
 allows more than two candidates (G4).
 
-**G3. Data pipeline v2.** One build script and one versioned, Zod-checked schema that
-merges two sources:
-- PvPoke `gamemaster.json` (MIT): stats, family, second move cost, plus types and
-  moves for F4/F5. Already downloaded; types and moves are present but not kept yet.
-- Niantic's game master as published by PokeMiners: evolution Candy (F2) and
-  purification cost (F3). PvPoke's file has neither. Licence needs checking before
-  we depend on it.
+**G3. Data pipeline v2.** One build script and one versioned, Zod-checked schema
+(ADR 0005):
+- PvPoke `gamemaster.json` and `moves.json` (MIT): stats, family, second move cost,
+  plus types, moves and legendary/mythical tags for F3–F5.
+- A small table we keep ourselves: purification cost per species class (F3).
+- Evolution Candy (F2) is read from the Pokémon screenshot (S2) or typed, not shipped
+  as data. PokeMiners' game master has no licence, so it is not used.
 
 Rankings of meta opponents for F5 come from PvPoke's per-league ranking files. They
 are split per league and loaded only when needed, so the main bundle stays small.
@@ -84,7 +84,7 @@ not the data pipeline.
 | ADR | Decision | When |
 |-----|----------|------|
 | 0004 | Hosting on GitHub Pages, CI on GitHub Actions | Before G1 |
-| 0005 | Data pipeline v2 with two sources (supersedes 0002) | Before G3 |
+| 0005 | Data pipeline v2: PvPoke plus our own purify table (supersedes 0002) | Before G3 |
 | 0006 | Options model and per-goal explanations (amends 0003) | Before G4 |
 | 0007 | Battle math formulas and meta opponent source | Before G5 |
 | 0008 | Screenshot reading runs on the device, nothing uploaded | Before F7 |
@@ -113,4 +113,4 @@ groundwork beyond G6, so it can run before or alongside Phase A's second half.
 
 ## Still open
 
-- Licence of the PokeMiners game master, needed for G3. Check before Phase A, second half.
+- The purify cost table needs checking against in-game purify screens.

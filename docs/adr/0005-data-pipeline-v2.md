@@ -1,0 +1,66 @@
+# 0005 - Data pipeline v2: PvPoke only, plus small tables we keep ourselves
+
+**Status:** accepted
+**Date:** 2026-11-03
+**Spec:** [roadmap](../roadmap.md) G3, F2, F3
+**Deciders:** project owner, Claude
+
+## Context
+
+The roadmap planned G3 as a merge of two sources: PvPoke's game master (MIT) and
+Niantic's game master as published by PokeMiners, which has the two values PvPoke
+lacks: the Candy cost to evolve (F2) and the cost to purify a Shadow (F3).
+
+The PokeMiners repository has no licence. Its README says it is for educational use
+only and that all content belongs to The Pokémon Company and Niantic. No one grants
+permission to redistribute it, and our build ships its output inside a public site.
+
+Meanwhile the app became screenshot-first (`docs/design/screenshot-first.md`). S2
+already reads the evolve cost from a Pokémon screen, so F2 no longer needs a data file.
+
+## Decision
+
+- **One downloaded source: PvPoke.** `scripts/build-species.mjs` grows into the v2
+  build. It keeps what it has now and adds, for F4 and F5: types, fast and charged
+  move lists, and PvPoke's `legendary`, `mythical` and `ultrabeast` tags. Moves come
+  from PvPoke's `moves.json` (also MIT).
+- **One schema, checked by Zod.** The built file carries a `schemaVersion` and its
+  source timestamp. The app parses it with a Zod schema at load, so a bad refresh fails
+  the build's tests instead of the page.
+- **Purify cost from a table we write.** A small hand-kept table in `src/data/` gives
+  the purify Stardust and Candy per species class (normal, legendary or mythical,
+  and any other class the game prices apart). The class comes from PvPoke's tags.
+  Each value is checked against an in-game purify screen before it is relied on, as
+  `powerUpCosts.ts` is checked against published totals.
+- **Evolve Candy is not a data file.** It comes from the screenshot (S2) or the user
+  types it. F2 becomes: keep the value read from a screenshot for that species while
+  the page is open, so it is not asked for twice.
+- **No PokeMiners data** is downloaded, copied or used to derive values.
+- Refreshing stays one command (`npm run update-data`). A scheduled CI job may run it
+  later (G1).
+
+## Consequences
+
+- No dependency on an unlicensed file. PvPoke's MIT licence covers what we download.
+- The purify table is ours to keep correct. It is a handful of numbers that rarely
+  change, so the risk is small, but an event that changes purify prices needs a
+  manual edit.
+- Players without a screenshot still type the evolve cost, as today.
+- A species class PvPoke does not tag (a new category of Pokémon) falls back to the
+  normal purify price until the table is updated. Tests cover that fallback.
+- 0002's note "evolution Candy cost is entered by the user" stays true, now with
+  screenshot reading in front of it.
+
+## Alternatives Considered
+
+| Option | Pros | Cons | Why Not |
+|--------|------|------|---------|
+| PokeMiners game master (the roadmap's plan) | Exact evolve and purify costs for every species | No licence; "educational use only" | We cannot rely on permission we were never given |
+| pokemongo-json-pokedex (Apache-2.0) | Licensed | Archived in 2019, years out of date | Wrong data is worse than none |
+| Hand-kept evolve Candy table for every species | F2 works without a screenshot | Hundreds of entries to keep correct | Screenshots already give the value |
+| Ask the user for purify cost too | No table at all | One more field for a value that barely varies | F3 should need no extra typing |
+
+## Links
+
+- Supersedes: 0002
+- Related: 0004, 0006 (options model, F3), 0007 (battle math, F4/F5), 0008, 0009

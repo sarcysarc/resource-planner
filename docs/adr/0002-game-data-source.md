@@ -1,6 +1,6 @@
 # 0002 - Game data from PvPoke game master, cost tables hand-maintained
 
-**Status:** proposed
+**Status:** superseded by 0005
 **Date:** 2026-11-03
 **Spec:** N/A
 **Deciders:** project owner, Claude
