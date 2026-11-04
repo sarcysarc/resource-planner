@@ -11,6 +11,7 @@ import { fillResources } from './scanResources';
 import { readingFamily } from './scanSpecies';
 import { addStatus, applySpecies } from './scanTarget';
 import { renderComparisons } from './render';
+import { wireSearches } from './searchHelp';
 import { evolutionLine, findSpecies, type SpeciesIndex, loadBundledIndex } from './species';
 
 interface Elements {
@@ -21,6 +22,7 @@ interface Elements {
   alternative: HTMLElement;
   resources: HTMLElement;
   shots: HTMLElement;
+  searches: HTMLElement;
   results: HTMLElement;
   error: HTMLElement;
   dataInfo: HTMLElement;
@@ -36,6 +38,7 @@ function queryElements(doc: Document): Elements {
     alternative: q('[data-candidate="alternative"]'),
     resources: q('[data-resources]'),
     shots: q('[data-shots]'),
+    searches: q('[data-searches]'),
     results: q('#results'),
     error: q('#error'),
     dataInfo: q('#data-info'),
@@ -89,7 +92,8 @@ function run(els: Elements, index: SpeciesIndex): void {
 
 // After a candidate's fields are filled: the species, the form and the shared totals.
 function useReading(els: Elements, index: SpeciesIndex, root: HTMLElement): (reading: Reading) => void {
-  const refresh = () => updateFormChoices(els, index);
+  // As if typed, so everything that follows the target updates.
+  const refresh = () => els.target.dispatchEvent(new Event('change'));
   return (reading) => {
     const sameFamily = applySpecies({ index, target: els.target, root, refresh }, reading);
     addStatus(root, fillResources(els.resources, reading.totals ?? {}, sameFamily));
@@ -118,6 +122,7 @@ export function mountApp(doc: Document): void {
   fillSpeciesList(els.speciesList, index);
   els.dataInfo.textContent = `Game data: PvPoke game master, ${index.timestamp}.`;
   els.target.addEventListener('change', () => updateFormChoices(els, index));
+  wireSearches({ target: els.target, root: els.searches, index });
   els.form.addEventListener('submit', (event) => {
     event.preventDefault();
     run(els, index);

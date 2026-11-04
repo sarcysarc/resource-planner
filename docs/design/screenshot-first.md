@@ -167,6 +167,7 @@ Sizes follow the project quality gates (files ≤ 200 lines, ≤ 10 functions).
 | `src/core/screen/pokemon.ts` | Pokémon screen reader |
 | `src/core/screen/account.ts` | bag and profile readers; keeps their values out of Pokémon grouping |
 | `src/ui/account.ts` | Rare Candy and trainer level fields |
+| `src/ui/searches.ts`, `src/ui/searchHelp.ts` | search strings for the target's family, and their list |
 | `src/core/screen/identity.ts` | printed name and Candy family |
 | `src/core/screen/traits.ts` | Shadow/Purified, Lucky, evolve cost |
 | `src/core/screen/moves.ts` | second charged move locked or unlocked |
@@ -207,7 +208,7 @@ against the new readers.
 | S3 | Resource totals (Stardust, Candy, XL) fill the shared fields (done) | XL label wrapping; solved by reading the family on the line above. Totals on appraisal screens are not read yet |
 | S4 | Several screenshots at once, grouping and conflict questions (done) | Scrolled-down screenshots of the same species; solved by power-up cost, then time order. Source badges per field are not shown yet |
 | S5 | Bag (Rare Candy) and profile (trainer level) (done) | Rare Candy shown as a separate "could cover" note; trainer level caps the power-up target. Typed fields too |
-| S6 | Suggested search strings, e.g. `!@3move`, `4*`, `shadow` | None; static help text |
+| S6 | Suggested search strings, e.g. `!@3move`, `4*`, `shadow` (done) | None; shown under the target with copy buttons |
 | S7 | Share screenshots straight from the gallery (PWA share target) | Manifest and service worker; iOS support |
 
 Each phase ships on its own and keeps the manual form working.

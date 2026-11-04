@@ -140,9 +140,24 @@ Other terms, with counts on this account:
 | `buddy4` | 0 | Near the Best Buddy +1 level |
 | `xxl` | 8 | Size label |
 
-List tiles also show markers: a purple flame for shadow, a light-blue sparkle
-for purified, dark sparkles for shiny, a gold star for favourite, and a speech
-bubble on the buddy.
+List tiles also show markers: a purple flame for shadow, a light-blue sparkle on
+the left for purified, dark sparkles for shiny, a gold star for favourite, and a
+speech bubble on the buddy. A light-blue flower at the bottom right is something
+else: `purified` does not match it.
+
+Combining terms, checked on varied families (a branching one, a shadow and
+purified one, and a four-member one):
+
+- `+name` lists the whole family from any member's name, every branch included:
+  a final stage's name finds the first stage and its other evolutions too.
+- `&` is AND, `,` is OR and binds tighter: `+x&3*,4*` is `+x` and (3* or 4*).
+  `!` is NOT, as in `+x&!shadow`.
+- `3*-` means 3 stars or more; `cp-1500` means 1,500 CP or less.
+- Names need the game's punctuation (`mr. mime`). Forms share a name, and region
+  words like `alola` mean the region a species comes from, not its form, so
+  regional forms cannot be searched apart.
+- `buddy0` to `buddy5` (5 is Best Buddy) are in the official help but were not
+  checked: this account has no buddy at those levels.
 
 ## Item bag
 
@@ -171,8 +186,10 @@ adding them to the budget.
   species name and five hearts at the top. The number filled in gives the
   buddy level; Best Buddy adds one Pokémon level.
 
-The app could suggest search strings like this so players can find the right
-Pokémon to screenshot.
+The app suggests search strings under the target (`+name`, `&cp-1500`,
+`&cp-2500`, `&3*-`, `&!@3move`, `&shadow,purified`) so players can find the right
+Pokémon to screenshot. Nidoran's ♀ and ♂ are hard to type, so the next stage's
+name is used for those families.
 
 ## Popups
 

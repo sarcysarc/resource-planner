@@ -52,6 +52,12 @@ describe('mountApp', () => {
     expect(document.querySelector<HTMLInputElement>('#target')!.value).toBe('Lairon');
     const resource = (name: string) => document.querySelector<HTMLInputElement>(`[data-resources] [name="${name}"]`)!.value;
     expect([resource('stardust'), resource('candy')]).toEqual(['123456', '9']);
+    expect(document.querySelector('[data-searches] code')!.textContent).toBe('+lairon');
+  });
+
+  it('suggests searches for a typed target', () => {
+    setField('#target', 'Azumarill');
+    expect(document.querySelector<HTMLElement>('[data-searches]')!.hidden).toBe(false);
   });
 
   it('fills Current from the shared screenshot picker', async () => {

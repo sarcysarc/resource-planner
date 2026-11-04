@@ -32,6 +32,12 @@
             <input id="target" name="target" list="species-list" placeholder="e.g. Azumarill" autocomplete="off" />
           </label>
           <datalist id="species-list"></datalist>
+          <details class="searches" data-searches open hidden>
+            <summary>Find them in the game</summary>
+            <p class="muted">Paste one into the Pokémon search, then screenshot the ones you might use.
+              Regional forms share a search; the game cannot tell them apart.</p>
+            <ul data-searches-list></ul>
+          </details>
         </section>
         <div class="pair">
           <fieldset class="card" data-candidate="current" data-legend="Current Pokémon"></fieldset>
