@@ -26,7 +26,7 @@ function mount(): void {
 
 function choose(names: string[]): void {
   const input = q('[data-shots] [name="screenshots"]') as HTMLInputElement;
-  const files = names.map((name, i) => new File(['x'], name, { lastModified: i }));
+  const files = names.map((name, i) => new File([name], name, { lastModified: i }));
   Object.defineProperty(input, 'files', { value: files });
   input.dispatchEvent(new Event('change'));
 }

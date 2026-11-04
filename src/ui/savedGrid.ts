@@ -13,8 +13,11 @@ export const SavedTile = z.object({
   thumb: z.string().startsWith('data:image/jpeg;base64,').optional(),
   /** Fields read from screenshots or set by the player. */
   known: z.array(z.string()),
-  /** What was first read (cp, hp, family) to find the tile again, and the fields edited by hand. */
-  marks: z.partialRecord(z.enum(['cp', 'hp', 'family', 'edited']), z.string()).optional(),
+  /**
+   * What was first read (cp, hp, family, ivs) to find the tile again, the fields edited by hand,
+   * the fingerprints of the screenshots it was read from, and the IVs of a look-alike tile (ADR 0017).
+   */
+  marks: z.partialRecord(z.enum(['cp', 'hp', 'family', 'ivs', 'edited', 'shots', 'alike']), z.string()).optional(),
 });
 
 const SavedGridSchema = z.object({

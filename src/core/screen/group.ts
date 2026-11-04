@@ -5,10 +5,13 @@ import type { Reading } from './types';
 const hasNumbers = (r: Reading) => r.cp !== undefined || r.hp !== undefined;
 const agrees = (a?: number, b?: number) => a === undefined || b === undefined || a === b;
 
-// Same Pokémon: CP and HP agree, at least one of them is on both, and the families don't clash.
+// IVs are read from the bars' pixels, so two appraisals with other IVs are two Pokémon (ADR 0017).
+const sameIvs = (a: Reading, b: Reading) => !a.ivs || !b.ivs || (a.ivs.atk === b.ivs.atk && a.ivs.def === b.ivs.def && a.ivs.hp === b.ivs.hp);
+
+// Same Pokémon: CP and HP agree, at least one of them is on both, and the families and IVs don't clash.
 function samePokemon(a: Reading, b: Reading, familyOf: FamilyOf): boolean {
   const shared = (a.cp !== undefined && b.cp !== undefined) || (a.hp !== undefined && b.hp !== undefined);
-  return shared && agrees(a.cp, b.cp) && agrees(a.hp, b.hp) && sameFamily(familyOf(a), familyOf(b));
+  return shared && agrees(a.cp, b.cp) && agrees(a.hp, b.hp) && sameIvs(a, b) && sameFamily(familyOf(a), familyOf(b));
 }
 
 const sameFamily = (a?: string, b?: string) => a === undefined || b === undefined || a === b;
@@ -62,5 +65,5 @@ export function groupReadings(readings: Reading[], familyOf: FamilyOf): Group[] 
   for (const r of order.filter(hasNumbers)) join(r, groups.find((g) => g.every((s) => samePokemon(s, r, familyOf))));
   for (const r of order.filter((s) => !hasNumbers(s))) join(r, owner(groups, r, { familyOf, order }));
   const inOrder = (group: Reading[]) => [...group].sort((x, y) => order.indexOf(x) - order.indexOf(y));
-  return groups.map((group) => mergeReadings(inOrder(group).map((r) => fullFamily(r, familyOf))));
+  return groups.map(inOrder).map((sources) => ({ ...mergeReadings(sources.map((r) => fullFamily(r, familyOf))), sources }));
 }

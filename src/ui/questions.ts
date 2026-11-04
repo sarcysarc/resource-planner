@@ -7,7 +7,8 @@ import { CONFLICT_NAMES, formatValue } from './conflicts';
 export interface Question {
   /** Which group it is about. */
   group: number;
-  field: Conflict['field'];
+  /** `was`: whether it is a Pokémon already added, at another CP (see poweredUp). */
+  field: Conflict['field'] | 'was';
   text: string;
   /** Each value is JSON, so any reading value fits in a select. */
   choices: { label: string; value: string }[];
@@ -45,10 +46,15 @@ export function questionsFor(groups: readonly Group[], stagesOf: StagesOf): Ques
 /** The groups with each answer applied. The groups given are left as they were. */
 export function answer(groups: readonly Group[], answers: readonly [Question, string][]): Group[] {
   const settled = groups.map((g) => ({ ...g, reading: { ...g.reading }, conflicts: [...g.conflicts] }));
-  for (const [q, value] of answers) {
-    const group = settled[q.group];
-    Object.assign(group.reading, { [q.field]: JSON.parse(value) as unknown });
-    group.conflicts = group.conflicts.filter((c) => c.field !== q.field);
-  }
+  for (const [q, value] of answers) apply(settled[q.group], q.field, JSON.parse(value) as unknown);
   return settled;
+}
+
+function apply(group: Group, field: Question['field'], value: unknown): void {
+  if (field === 'was') {
+    group.was = typeof value === 'number' ? value : undefined;
+    return;
+  }
+  Object.assign(group.reading, { [field]: value });
+  group.conflicts = group.conflicts.filter((c) => c.field !== field);
 }

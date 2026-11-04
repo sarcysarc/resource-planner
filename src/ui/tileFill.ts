@@ -5,7 +5,8 @@ import type { Reading } from '../core/screen/types';
 import type { Grid } from './grid';
 import { fillCandidate } from './screenshot';
 import { markKnown } from './tileDescribe';
-import { matchTile, type TileKey } from './tileMatch';
+import { tileOf } from './tileFind';
+import { ivsText } from './tileMatch';
 
 export interface TileFill {
   grid: Grid;
@@ -17,7 +18,6 @@ export interface TileFill {
 type Field = HTMLInputElement | HTMLSelectElement;
 const editedOf = (root: HTMLElement) => (root.dataset.edited ? root.dataset.edited.split(',') : []);
 const fieldOf = (root: HTMLElement, name: string) => root.querySelector<Field>(`[name="${name}"]`)!;
-const number = (text?: string) => (text ? Number(text) : undefined);
 
 /** Records each field the player types in or ticks, on every tile under `area`. */
 export function trackEdits(area: HTMLElement): void {
@@ -30,8 +30,6 @@ export function trackEdits(area: HTMLElement): void {
   });
 }
 
-const keyOf = (root: HTMLElement): TileKey => ({ id: root.dataset.tile!, cp: number(root.dataset.cp), hp: number(root.dataset.hp), family: root.dataset.family });
-
 // A Pokémon screen (its Stardust or move list) shows the Shadow and Lucky labels if they apply.
 // Its own evolve Candy on screen is marked as evolveStep, so the tile asks for the next form's.
 function readFields({ variant, lucky, secondMove, dust, evolveCandy }: Reading): string[] {
@@ -42,9 +40,15 @@ function readFields({ variant, lucky, secondMove, dust, evolveCandy }: Reading):
 }
 
 function remember(root: HTMLElement, reading: Reading, family?: string): void {
-  const keys = { cp: reading.cp, hp: reading.hp, family };
+  const keys = { cp: reading.cp, hp: reading.hp, family, ivs: ivsText(reading.ivs) };
   for (const [key, value] of Object.entries(keys)) if (value !== undefined && !root.dataset[key]) root.dataset[key] = String(value);
   markKnown(root, readFields(reading));
+}
+
+// The screenshots it was read from, so the same files shared again are skipped (ADR 0017).
+function rememberShots(root: HTMLElement, prints: readonly string[]): void {
+  const shots = new Set([...(root.dataset.shots?.split(',') ?? []), ...prints]);
+  if (shots.size) root.dataset.shots = [...shots].join(',');
 }
 
 function fillKeepingEdits(root: HTMLElement, group: Group): void {
@@ -54,11 +58,11 @@ function fillKeepingEdits(root: HTMLElement, group: Group): void {
 }
 
 /** Fills the tile this Pokémon belongs to, adding one if it is new. Returns its fieldset. */
-export function fillTile({ grid, familyOf, onRead }: TileFill, group: Group): HTMLElement {
-  const id = matchTile(grid.roots().map(keyOf), group.reading, familyOf);
-  const root = grid.roots().find((r) => r.dataset.tile === id) ?? grid.add();
+export function fillTile({ grid, familyOf, onRead }: TileFill, group: Group, prints: readonly string[] = []): HTMLElement {
+  const root = tileOf(grid, group, familyOf);
   fillKeepingEdits(root, group);
   remember(root, group.reading, familyOf(group.reading));
+  rememberShots(root, prints);
   onRead(root, group.reading);
   grid.refresh(root);
   return root;

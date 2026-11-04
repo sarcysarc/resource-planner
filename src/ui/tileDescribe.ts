@@ -28,8 +28,9 @@ export function describeTile(root: HTMLElement): TileView {
   const select = root.querySelector<HTMLSelectElement>('select[name="form"]');
   const ivs = [valueOf(root, 'atk'), valueOf(root, 'def'), valueOf(root, 'hp')] as const;
   const name = select?.selectedOptions[0]?.text ?? '';
+  const gaps = { ivs: ivs.every((v) => v !== ''), needsEvolve: needsEvolve(root), known: new Set(knownOf(root)), later: laterForm(root) };
   return {
     title: tileTitle({ name, cp: valueOf(root, 'cp'), level: valueOf(root, 'level'), ivs }),
-    notes: tileNotes({ ivs: ivs.every((v) => v !== ''), needsEvolve: needsEvolve(root), known: new Set(knownOf(root)), later: laterForm(root) }),
+    notes: tileNotes({ ...gaps, alike: root.dataset.alike }),
   };
 }

@@ -28,6 +28,8 @@ export interface TileGaps {
   known: ReadonlySet<string>;
   /** The next form, when its own step's Candy was read, so a later step's is missing. */
   later?: string;
+  /** The IVs of another tile a screenshot without IVs could also have been (ADR 0017). */
+  alike?: string;
 }
 
 function scrolledDown({ needsEvolve, known, later }: TileGaps): string | undefined {
@@ -55,5 +57,6 @@ export function tileNotes(gaps: TileGaps): string[] {
   if (gaps.needsEvolve && gaps.later) notes.push(`Add a ${gaps.later}’s screen scrolled down for the Candy to evolve it, or type the total.`);
   const scrolled = scrolledDown(gaps);
   if (scrolled) notes.push(scrolled);
+  if (gaps.alike) notes.push(`A screenshot without IVs went to this one, but could be the one at ${gaps.alike}.`);
   return notes;
 }

@@ -48,6 +48,13 @@ describe('groupReadings', () => {
   it('groups screenshots of the same Pokémon by CP and HP', () => {
     const groups = groupReadings([top, other, appraisal], familyOf);
     expect(groups.map((g) => [g.reading.name, g.shots])).toEqual([['Lairon', 2], ['Snorlax', 1]]);
+    // Each Pokémon keeps the screenshots it was read from, so their files can be named.
+    expect(groups.map((g) => g.sources)).toEqual([[top, appraisal], [other]]);
+  });
+
+  it('keeps two Pokémon with the same CP and HP apart when their IVs differ', () => {
+    const twin: Reading = { ...appraisal, ivs: { atk: 15, def: 2, hp: 3 } };
+    expect(groupReadings([appraisal, top, twin], familyOf).map((g) => [g.reading.ivs?.atk, g.shots])).toEqual([[1, 2], [15, 1]]);
   });
 
   it('keeps Pokémon of a different family apart even at the same CP and HP', () => {

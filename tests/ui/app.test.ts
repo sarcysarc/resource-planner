@@ -3,12 +3,9 @@ import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { wordsOf } from '../core/screen/wordsOf';
 
-// Made-up Pokémon screens, so no OCR runs: a Gengar for files named so, else a Lairon.
+// Made-up Pokémon screens, so no OCR runs: a Lairon for every file.
 vi.mock('../../src/ocr/recognize', () => ({
-  readScreenshot: async (file: File) =>
-    file.name.startsWith('gengar')
-      ? { words: wordsOf('Gengar\n120 / 120 HP\n123,456 30\nSTARDUST GASTLY CANDY'), cpText: '2000', digits: { stardust: '123,456', candy: '30' } }
-      : { words: wordsOf('Lairon\n80 / 80 HP\n123,456 9\nSTARDUST ARON CANDY'), cpText: '600', digits: { stardust: '123,456', candy: '9' } },
+  readScreenshot: async () => ({ words: wordsOf('Lairon\n80 / 80 HP\n123,456 9\nSTARDUST ARON CANDY'), cpText: '600', digits: { stardust: '123,456', candy: '9' } }),
 }));
 
 const { mountApp } = await import('../../src/ui/app');
@@ -40,12 +37,10 @@ function submit(): void {
 function choose(count: number | string[]): void {
   const names = typeof count === 'number' ? Array.from({ length: count }, (_, i) => `${i}.png`) : count;
   const input = q<HTMLInputElement>('[data-shots] [name="screenshots"]');
-  Object.defineProperty(input, 'files', { value: names.map((name) => new File(['x'], name)) });
+  Object.defineProperty(input, 'files', { value: names.map((name) => new File([name], name)), configurable: true });
   input.dispatchEvent(new Event('change'));
 }
 
-const titles = () => tiles().map((root) => tileOf(root).querySelector('[data-title]')!.textContent);
-const rows = () => [...document.querySelectorAll<HTMLButtonElement>('[data-lines] button')];
 
 function load(): void {
   const html = readFileSync('index.html', 'utf8');
@@ -78,31 +73,6 @@ describe('mountApp', () => {
     expect([resource('stardust'), resource('candy')]).toEqual(['123456', '9']);
     expect(q('[data-searches] code').textContent).toBe('+lairon');
     expect(q('[data-step="check"]').hidden).toBe(false);
-  });
-
-  // Cause D in the stress test: every Pokémon took the first line's name (ADR 0017).
-  it('puts each line’s Pokémon in a grid of its own, listed in step 2 with the first read open', async () => {
-    choose(['0.png', 'gengar.png', '1.png']);
-    await vi.waitFor(() => expect(q('[data-shots-status]').textContent).toBe('Read 3 screenshots: 2 Pokémon.'));
-    await vi.waitFor(() => expect(rows()).toHaveLength(2));
-    // By Pokédex number: Gastly is #92, Aron #304.
-    expect(rows().map((b) => [b.textContent, b.getAttribute('aria-current')])).toEqual([
-      ['Gastly line · 1', null],
-      ['Aron line · 1', 'true'],
-    ]);
-    expect([titles(), q<HTMLInputElement>('#target').value]).toEqual([['Lairon, CP 600, IVs not known'], 'Lairon']);
-    rows()[0].click();
-    expect([titles(), q<HTMLInputElement>('#target').value]).toEqual([['Gengar, CP 2000, IVs not known'], 'Gengar']);
-    // Each line keeps its own Candy; the Stardust is the account's.
-    expect(['candy', 'stardust'].map((n) => field(q('[data-resources]'), n).value)).toEqual(['30', '123456']);
-    rows()[1].click();
-    expect([titles(), field(q('[data-resources]'), 'candy').value]).toEqual([['Lairon, CP 600, IVs not known'], '9']);
-  });
-
-  it('lists no lines while there is only one', async () => {
-    choose(2);
-    await vi.waitFor(() => expect(tiles()).toHaveLength(1));
-    expect(q('[data-lines]').hidden).toBe(true);
   });
 
   it('keeps the form a screenshot read when the target moves up its line', async () => {

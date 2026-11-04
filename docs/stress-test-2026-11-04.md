@@ -108,6 +108,9 @@ The live site (current master build) was then run in Chrome on the phone, a moto
   own grid, target and Candy; step 2 lists the lines by Pokédex number when there are two
   or more, and tapping one opens it. The book of lines is saved; a saved one-line grid is
   read as one line. Rows without a call yet, duplicates and per-line Clear are later slices.
+- **Done, duplicates** (ADR 0017): screenshots already read are skipped by fingerprint;
+  one read again at another CP with the same IVs is asked about in step 1; a look-alike
+  read without IVs is noted on the tile it joined.
 
 ### E. Reading takes about 4–5 s per screenshot
 
@@ -157,3 +160,6 @@ as when uploaded alone. The grid check opens each line in step 2's list to see i
 
 Each fix chosen gets an ADR amendment and a failing test first. The stress checks are run
 again after each fix.
+
+After duplicates: unchanged, reading 19 misses and grid 3 failures, all cause C; no
+question is asked on the stress set.

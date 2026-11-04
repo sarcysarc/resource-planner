@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseBook, putLine, type SavedBook, type SavedLine } from '../../src/ui/savedBook';
+import { knownOf, parseBook, printsOf, putLine, type SavedBook, type SavedLine } from '../../src/ui/savedBook';
 import type { SavedGrid } from '../../src/ui/savedGrid';
 
 const tile = (id: string, family?: string) => ({
@@ -7,6 +7,26 @@ const tile = (id: string, family?: string) => ({
 });
 const aron: SavedLine = { family: 'FAMILY_ARON', target: 'Aggron', tiles: [tile('t1', 'FAMILY_ARON')] };
 const book: SavedBook = { version: 2, open: 'FAMILY_ARON', lines: [aron] };
+
+describe('what the book knows of its tiles', () => {
+  const read = (id: string, marks: object, chosen?: string) => ({ ...tile(id), marks, chosen });
+  const lines: SavedLine[] = [
+    { family: 'A', target: '', tiles: [read('t1', { family: 'A', ivs: '1/2/3', cp: '500', shots: 'p1,p2' }, 'GYARADOS'), read('t2', { family: 'A', cp: '9' })] },
+    { family: 'B', target: '', tiles: [read('t1', { family: 'B', ivs: '4/5/6', cp: '20', shots: 'p3' })] },
+  ];
+  const many: SavedBook = { version: 2, open: 'A', lines };
+
+  it('lists the screenshots read into every line', () => {
+    expect(printsOf(many)).toEqual(['p1', 'p2', 'p3']);
+  });
+
+  it('lists every tile read with its IVs and CP, named by its species', () => {
+    expect(knownOf(many, (id) => (id === 'GYARADOS' ? 'Gyarados' : undefined))).toEqual([
+      { family: 'A', ivs: '1/2/3', cp: 500, name: 'Gyarados' },
+      { family: 'B', ivs: '4/5/6', cp: 20, name: undefined },
+    ]);
+  });
+});
 
 describe('parseBook', () => {
   it('accepts a saved book of lines', () => {

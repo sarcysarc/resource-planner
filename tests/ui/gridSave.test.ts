@@ -13,7 +13,7 @@ const saved: SavedGrid = {
   target: 'Dragonite',
   tiles: [
     { id: 't2', values: { cp: '900', lucky: true, form: 'b', fast: 'DRAGON_BREATH' }, chosen: 'b', current: false, transfer: true, thumb: 'data:image/jpeg;base64,AA', known: ['cp'],
-      marks: { cp: '900', hp: '120', family: 'FAMILY_DRATINI', edited: 'fast' } },
+      marks: { cp: '900', hp: '120', family: 'FAMILY_DRATINI', edited: 'fast', shots: 'ba7816bf8f01cfea414140de5dae2223', ivs: '1/2/3', alike: '4/5/6' } },
     { id: 't5', values: { cp: '1200', lucky: false, form: 'c', fast: '' }, current: true, transfer: false, known: [] },
   ],
 };

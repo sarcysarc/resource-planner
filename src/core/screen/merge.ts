@@ -13,6 +13,10 @@ export interface Group {
   reading: Reading;
   conflicts: Conflict[];
   shots: number;
+  /** The screenshots it was read from, oldest first, when sorted by `groupReadings`. */
+  sources?: Reading[];
+  /** The CP of the tile it is, from before it was powered up or evolved (ADR 0017). */
+  was?: number;
 }
 
 /** The Candy family a reading belongs to, when it can be told. */

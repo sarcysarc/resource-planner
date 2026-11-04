@@ -2,6 +2,7 @@
 // lines, each with its target and tiles, and which one is open. A grid saved before lines
 // (version 1) is read as one line.
 import { z } from 'zod';
+import type { KnownTile } from './poweredUp';
 import { parseSaved, SavedTile, type SavedGrid } from './savedGrid';
 
 const SavedLineSchema = z.object({
@@ -37,6 +38,19 @@ export function parseBook(value: unknown): SavedBook | undefined {
   if (parsed.success) return parsed.data;
   const old = parseSaved(value);
   return old && bookOf(old);
+}
+
+/** The fingerprints of every screenshot read into any line. */
+export function printsOf(book: SavedBook): string[] {
+  return book.lines.flatMap((l) => l.tiles.flatMap((t) => t.marks?.shots?.split(',') ?? []));
+}
+
+/** Every tile read with its IVs and CP, in any line; `nameOf` names its species. */
+export function knownOf(book: SavedBook, nameOf: (id: string) => string | undefined): KnownTile[] {
+  const tiles = book.lines.flatMap((l) => l.tiles);
+  return tiles.flatMap(({ marks: m, chosen }) =>
+    m?.family && m.ivs && m.cp ? [{ family: m.family, ivs: m.ivs, cp: Number(m.cp), name: chosen ? nameOf(chosen) : undefined }] : [],
+  );
 }
 
 /** The book with this line in it, in place of the saved line of the same family. */

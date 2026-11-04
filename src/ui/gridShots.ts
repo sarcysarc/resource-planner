@@ -6,11 +6,12 @@ import type { Reading, Totals } from '../core/screen/types';
 import { receiveShared } from '../share/receive';
 import type { Grid } from './grid';
 import type { Lines } from './lines';
+import { knownOf, printsOf } from './savedBook';
 import { fillResources } from './scanResources';
 import { readingFamily, resolveSpecies } from './scanSpecies';
 import { addStatus, applySpecies } from './scanTarget';
 import { wireScreenshots } from './screenshots';
-import type { SpeciesIndex } from './species';
+import { findSpecies, type SpeciesIndex } from './species';
 import { wireSteps } from './steps';
 import { makeThumb } from './thumb';
 import { markKnown } from './tileDescribe';
@@ -48,14 +49,14 @@ function onRead(g: GridShots): (root: HTMLElement, reading: Reading) => void {
 
 // The thumbnail is made first, so its tile can't be in a line closed by the time it is ready.
 // A Pokémon of no known family goes into the open line.
-function useGroup(g: GridShots, batch: Batch): (group: Group, shot?: File) => Promise<void> {
+function useGroup(g: GridShots, batch: Batch): (group: Group, shot?: File, prints?: string[]) => Promise<void> {
   const fill = { grid: g.grid, familyOf: (r: Reading) => readingFamily(g.index, r), onRead: onRead(g) };
-  return async (group, shot) => {
+  return async (group, shot, prints) => {
     const src = shot && (await makeThumb(shot));
     const family = fill.familyOf(group.reading);
     if (family) g.lines.open(family);
     batch.first ??= g.lines.family();
-    const root = fillTile(fill, group);
+    const root = fillTile(fill, group, prints);
     if (src) setThumb(g.grid.tileOf(root), src);
     g.save();
   };
@@ -99,6 +100,8 @@ export function wireGridShots(g: GridShots): void {
     stagesOf: (r) => resolveSpecies(g.index, r),
     use: useGroup(g, batch),
     useAccount: (totals: Totals) => fillResources(g.resources, totals, false),
+    seen: () => printsOf(g.lines.book()),
+    known: () => knownOf(g.lines.book(), (id) => findSpecies(g.index, id)?.name),
     onDone: done(g, batch, reveal),
   });
   // Screenshots shared from the gallery to the installed app (ADR 0010).

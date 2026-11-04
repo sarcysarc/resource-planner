@@ -45,6 +45,31 @@ describe('fillTile', () => {
     expect(a.dataset.known!.split(',').sort()).toEqual(['cp', 'evolveStep', 'lucky', 'secondMove', 'variant']);
   });
 
+  it('adds another tile for one at the same CP and HP with other IVs, and keeps the prints', () => {
+    const a = fillTile({ grid, familyOf: (r) => r.family, onRead }, group({ cp: 900, hp: 100, ivs: { atk: 1, def: 2, hp: 3 } }), ['p1']);
+    expect([a.dataset.ivs, a.dataset.shots]).toEqual(['1/2/3', 'p1']);
+    expect(use({ cp: 900, hp: 100, ivs: { atk: 15, def: 2, hp: 3 } })).not.toBe(a);
+    expect(fillTile({ grid, familyOf: (r) => r.family, onRead }, group({ cp: 900, hp: 100 }), ['p2', 'p1'])).toBe(a);
+    expect(a.dataset.shots).toBe('p1,p2');
+  });
+
+  it('updates the tile of the CP it had before it was powered up', () => {
+    const ivs = { atk: 12, def: 3, hp: 14 };
+    const a = use({ cp: 2802, hp: 150, family: 'magikarp', ivs });
+    const powered = { ...group({ cp: 2950, hp: 160, family: 'magikarp', ivs }), was: 2802 };
+    expect(fillTile({ grid, familyOf: (r) => r.family, onRead }, powered)).toBe(a);
+    expect([field(a, 'cp').value, a.dataset.cp, a.dataset.hp]).toEqual(['2950', '2950', '160']);
+    expect(use({ cp: 2950, hp: 160, family: 'magikarp', ivs })).toBe(a);
+  });
+
+  it('joins a screenshot without IVs to the first of two it fits, and notes the other', () => {
+    const a = use({ cp: 900, hp: 100, family: 'dratini', ivs: { atk: 1, def: 2, hp: 3 } });
+    const b = use({ cp: 900, hp: 100, family: 'dratini', ivs: { atk: 4, def: 5, hp: 6 } });
+    expect(use({ cp: 900, hp: 100, family: 'dratini', secondMove: true })).toBe(a);
+    expect([a.dataset.alike, b.dataset.alike]).toEqual(['4/5/6', undefined]);
+    expect(grid.tileOf(a).querySelector('[data-notes]')!.textContent).toContain('could be the one at 4/5/6');
+  });
+
   it('counts a Shadow label as knowing the type, but not luck', () => {
     const a = use({ cp: 900, variant: 'shadow' });
     expect(a.dataset.known).toBe('variant');

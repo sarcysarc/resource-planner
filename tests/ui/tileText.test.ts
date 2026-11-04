@@ -22,6 +22,12 @@ describe('tileNotes', () => {
     expect(tileNotes({ ivs: true, needsEvolve: false, known: all })).toEqual([]);
   });
 
+  it('says when a screenshot without IVs could be another tile', () => {
+    expect(tileNotes({ ivs: true, needsEvolve: false, known: all, alike: '4/5/6' })).toEqual([
+      'A screenshot without IVs went to this one, but could be the one at 4/5/6.',
+    ]);
+  });
+
   it('names only the traits still guessed', () => {
     const notes = (known: string[]) => tileNotes({ ivs: true, needsEvolve: false, known: new Set([...known, 'secondMove']) });
     expect(notes(['lucky'])).toEqual(['Taken as not Shadow or Purified. Add its Pokémon screen to check.']);

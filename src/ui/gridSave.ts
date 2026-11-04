@@ -7,7 +7,7 @@ import { isMarked, setThumb } from './tileView';
 const formSelect = (root: ParentNode) => root.querySelector<HTMLSelectElement>('select[name="form"]');
 const currentMark = (tile: Element) => tile.querySelector<HTMLInputElement>('[name="currentTile"]')!;
 const transferMark = (tile: Element) => tile.querySelector<HTMLInputElement>('[data-transfer]')!;
-const MARKS = ['cp', 'hp', 'family', 'edited'] as const;
+const MARKS = ['cp', 'hp', 'family', 'ivs', 'edited', 'shots', 'alike'] as const;
 
 // What finds the tile for a later screenshot (see tileFill), and what was fixed by hand.
 function marksOf(root: HTMLElement): SavedTile['marks'] {

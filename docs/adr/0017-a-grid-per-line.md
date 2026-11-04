@@ -73,6 +73,16 @@ Pokémon (10–50 at a time) and share them all; each line then gets its own adv
   Step 2 lists lines by Pokédex number, `Name line · count`, once there are two; the open
   one is marked. Not yet: row summaries and ordering by call, the final-evolution target
   and branching question, duplicates and fingerprints, per-line Clear.
+- **Slice 2 (2026-11-04): duplicates.** A fingerprint is the first 16 bytes of the
+  file's SHA-256, kept in the tile's marks (`shots`) with its IVs (`ivs`). Files whose
+  fingerprint is in any line, or that were chosen twice, are skipped before OCR; with
+  none left, step 1 says only "Skipped N already added." Screenshots read together, and
+  later ones joining a tile, are kept apart when both have IVs that differ. The changed-CP
+  question is asked with step 1's other questions, against every line's tiles; it says
+  "evolved" when the tile's species differs. Yes finds the tile by its old CP, then gives
+  it the new CP and HP; No adds a tile. A look-alike keeps the other tiles' IVs in its
+  marks (`alike`) and notes "A screenshot without IVs went to this one, but could be the
+  one at 4/5/6."
 
 ## Order of work
 
