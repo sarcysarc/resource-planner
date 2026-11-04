@@ -8,7 +8,7 @@ interface TessBox {
   y1: number;
 }
 interface TessPage {
-  blocks: { paragraphs: { lines: { words: { text: string; bbox: TessBox }[] }[] }[] }[] | null;
+  blocks: { paragraphs: { lines: { words: { text: string; confidence: number; bbox: TessBox }[] }[] }[] }[] | null;
 }
 
 /** Tesseract words → `Word[]` with boxes as fractions of the image width and lines numbered top-down. */
@@ -17,9 +17,10 @@ export function toWords(page: TessPage, width: number): Word[] {
   return lines.flatMap((line, n) =>
     line.words
       .filter((w) => w.text.trim())
-      .map(({ text, bbox }) => ({
+      .map(({ text, confidence, bbox }) => ({
         text: text.trim(),
         line: n,
+        conf: confidence,
         box: { x0: bbox.x0 / width, y0: bbox.y0 / width, x1: bbox.x1 / width, y1: bbox.y1 / width },
       })),
   );

@@ -56,7 +56,7 @@ label was found and nothing was re-read.
   white strokes with button colour on both sides, which are letters on a button rather
   than the white card.
 - **Merge the two word lists** (`src/core/screen/passes.ts`). Where both passes read
-  the same spot, the ink word wins. Lines are renumbered top to bottom so readers see
+  the same spot, the ink word wins (superseded below: the more confident word wins). Lines are renumbered top to bottom so readers see
   one page. The location filter runs after the merge.
 - The cost crops accept red as well as teal (`cost` ink).
 - Totals labels match loosely (`src/core/screen/fuzzy.ts`): one wrong letter in four,
@@ -100,3 +100,30 @@ about 10–12 s in the app instead of about 6 s.
 
 - Supersedes: N/A
 - Related: 0008, docs/design/screenshot-first.md, docs/screens.md
+
+### Amendment (2026-11-04): the more confident word wins the merge
+
+An appraisal upload was named "Palessand" for a Palossand, and lost its HP. The text on
+screen was clear; the ink copy was not. On dark teal letters the soft edge of each stroke
+counts as colour, so `textInk` takes the white holes inside letters for button text and
+fills them: "o" becomes "e", "153/153 HP" becomes "A5ITASIAP". Because the ink word always
+won, these misreads replaced the plain pass's correct words. Neither pass is always right:
+the plain pass misreads some button text and totals that the ink pass gets.
+
+- **Each word carries tesseract's confidence** (`conf`, 0–100), which tells the two
+  apart well where the passes disagree: Snorlax 92 against "Srerax" 21, 153/153 76
+  against "A5ITASIAP" 28, a cost of 3,600 86 against "f3600" 0.
+- **Where the passes read the same spot, the more confident side wins**, the ink pass on
+  a tie. A spot is every word of either pass joined to the others by overlapping boxes,
+  so a word one pass split ("A5 ITAS") is weighed against the whole word from the other
+  ("153/153"), and words that run into the next one ("LUCKY" touching "POKEMON") are
+  settled together. The words each pass read there are averaged and the spot goes to one
+  pass whole, so text is neither kept twice nor lost.
+- **A word keeps the line its own pass put it on.** A row's height comes from all the
+  words its pass read on that line, so a short mark left behind (an HP-bar dash) stays
+  with its line instead of starting one of its own.
+
+On the 39 local screenshots nothing read before was lost: 30 read the same, five
+appraisals gained their HP, two the right name ("Palossand", "Snorlax") and three a
+partial Candy family; one Pokémon screen gained its name and one a locked second move. Confidence is not used for the digits-only re-reads, where it stays near 0 even
+when right.

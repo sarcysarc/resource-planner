@@ -39,14 +39,42 @@ function joinRows(all: Row[]): Row[] {
   return joined;
 }
 
+const conf = (w: Word) => w.conf ?? 0;
+const mean = (ws: Word[]) => ws.reduce((sum, w) => sum + conf(w), 0) / ws.length;
+
+// The spot a word sits in: the words of both passes over it, the words over those, and so on.
+function spot(word: Word, all: Word[]): Set<Word> {
+  let found = [word];
+  for (let size = 0; size !== found.length; ) {
+    size = found.length;
+    found = all.filter((w) => w === word || found.some((f) => overlaps(f.box, w.box)));
+  }
+  return new Set(found);
+}
+
+// A word stays unless the other pass read its spot with more confidence. The spot is weighed
+// whole, the same for every word in it, so a word split in one pass ("A5 ITAS") is weighed
+// against the whole word from the other ("153/153") and each spot goes to one pass only.
+function keeps(word: Word, [own, other]: Word[][], wins: boolean): boolean {
+  const here = spot(word, [...own, ...other]);
+  const rival = other.filter((w) => here.has(w));
+  if (!rival.length) return true;
+  const side = mean(own.filter((w) => here.has(w)));
+  return wins ? side >= mean(rival) : side > mean(rival);
+}
+
+// Each pass's rows keep their own height, so a word keeps the line its pass gave it.
+const kept = (own: Word[], other: Word[], wins: boolean): Row[] =>
+  rows(own)
+    .map((row) => ({ ...row, words: row.words.filter((w) => keeps(w, [own, other], wins)) }))
+    .filter((row) => row.words.length);
+
 /**
- * Words from two OCR passes over one screenshot: the dark-ink copy, which reads small
- * grey labels, and the plain image, which reads white text on coloured buttons. Where
- * both read the same spot, the dark-ink word wins. Lines are numbered top to bottom and
- * words run left to right, as one pass would give them.
+ * Words from two OCR passes over one screenshot: the dark-ink copy and the plain image.
+ * Where both read the same spot, the more confident word wins, the first pass on a tie.
+ * Lines are numbered top to bottom and words run left to right, as one pass would give them.
  */
 export function combinePasses(dark: Word[], plain: Word[]): Word[] {
-  const extra = plain.filter((w) => !dark.some((d) => overlaps(d.box, w.box)));
-  return joinRows([...rows(dark), ...rows(extra)])
+  return joinRows([...kept(dark, plain, true), ...kept(plain, dark, false)])
     .flatMap((row, line) => [...row.words].sort((a, b) => a.box.x0 - b.box.x0).map((w) => ({ ...w, line })));
 }

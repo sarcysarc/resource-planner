@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { toWords } from '../../src/ocr/words';
 
-const w = (text: string, x0: number, y0: number) => ({ text, bbox: { x0, y0, x1: x0 + 100, y1: y0 + 20 } });
+const w = (text: string, x0: number, y0: number) => ({ text, confidence: 87, bbox: { x0, y0, x1: x0 + 100, y1: y0 + 20 } });
 const page = {
   blocks: [
     { paragraphs: [{ lines: [{ words: [w('POWER', 100, 400), w('UP', 220, 400)] }] }] },
@@ -11,7 +11,7 @@ const page = {
 
 describe('toWords', () => {
   it('turns tesseract blocks into words with boxes as fractions of the width', () => {
-    expect(toWords(page, 1000)[0]).toEqual({ text: 'POWER', line: 0, box: { x0: 0.1, y0: 0.4, x1: 0.2, y1: 0.42 } });
+    expect(toWords(page, 1000)[0]).toEqual({ text: 'POWER', line: 0, conf: 87, box: { x0: 0.1, y0: 0.4, x1: 0.2, y1: 0.42 } });
   });
 
   it('numbers lines across blocks and paragraphs, trims text and skips empty words', () => {

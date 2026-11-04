@@ -13,6 +13,8 @@ export interface Word {
   text: string;
   box: Box;
   line: number;
+  // Tesseract's confidence in the word, 0-100.
+  conf?: number;
 }
 
 export type ScreenKind = 'pokemon' | 'appraisal' | 'bag' | 'profile';
