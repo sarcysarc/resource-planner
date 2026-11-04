@@ -7,9 +7,6 @@ const BAR_OPTIONS = options(['0', '1', '2', '3 (full)']);
 // Static markup only: no user data goes into this string. The legend is set as text.
 const FIELDS = `
   <legend></legend>
-  <label class="file">Fill from screenshots of this Pokémon (its Pokémon or appraisal screen)
-    <input name="screenshot" type="file" accept="image/*" multiple />
-  </label>
   <p class="muted" data-scan-status aria-live="polite"></p>
   <label>Current form <select name="form"></select></label>
   <div class="row">
@@ -74,3 +71,6 @@ export function buildCandidateFields(fieldset: HTMLElement): void {
   fieldset.innerHTML = FIELDS;
   fieldset.querySelector('legend')!.textContent = fieldset.dataset.legend ?? '';
 }
+
+/** Every candidate fieldset in this part of the page, as it is now. */
+export const candidateRoots = (area: ParentNode) => [...area.querySelectorAll<HTMLElement>('[data-candidate]')];

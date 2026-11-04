@@ -35,6 +35,14 @@ describe('renderComparisons', () => {
     expect(raidCard.className).toContain('verdict-switch');
   });
 
+  it('ranks every Pokémon under the answer, and orders the numbers the same way', () => {
+    const raidCard = cards(render())[1];
+    const ranked = [...raidCard.querySelectorAll('.ranked li > strong')].map((n) => n.textContent);
+    expect(ranked).toEqual(['Alternative', 'Current']);
+    const numbers = [...raidCard.querySelectorAll('details.why h4')].map((n) => n.textContent);
+    expect(numbers).toEqual(['Alternative', 'Current']);
+  });
+
   it('keeps the numbers behind a closed toggle', () => {
     const container = render();
     const why = container.querySelector<HTMLDetailsElement>('details.why')!;
@@ -52,15 +60,16 @@ describe('renderComparisons', () => {
     const view = document.createElement('details');
     view.textContent = 'With Splash against the 30 most-used opponents';
     const blocks = render({ extras: { great: [null, view] } }).querySelectorAll('section.goal:first-of-type .option');
-    expect(blocks[1].querySelector('details')).toBe(view);
-    expect(blocks[0].querySelector('details')).toBeNull();
+    // In rank order: the alternative (the pick) first.
+    expect(blocks[0].querySelector('details')).toBe(view);
+    expect(blocks[1].querySelector('details')).toBeNull();
   });
 
-  it('has a block for each option', () => {
+  it('has a block for each option, best first', () => {
     const three = [...options, { heading: 'Purified', name: 'the purified one' }];
     const wide: Comparison[] = [{ ...rows[1], results: [...rows[1].results, ok], verdict: { kind: 'save', option: 2 }, changes: [0, 0.0667, -0.02] }];
     const container = render({ options: three, rows: wide });
-    expect([...container.querySelectorAll('.option h4')].map((h) => h.textContent)).toEqual(['Current', 'Alternative', 'Purified']);
+    expect([...container.querySelectorAll('.option h4')].map((h) => h.textContent)).toEqual(['Purified', 'Alternative', 'Current']);
     expect(container.textContent).toContain('Save up for the purified one');
     expect(container.textContent).toContain('2.0% weaker than the current one');
   });

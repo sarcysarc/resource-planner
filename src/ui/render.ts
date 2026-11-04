@@ -1,7 +1,9 @@
 import type { Comparison } from '../core/compare';
 import type { GoalId, GoalResult } from '../core/goals';
+import { rankedList } from './ranked';
+import { rankOptions } from './ranking';
 import { type Budget, explainVerdict } from './explain';
-import { formatChange, formatCost, formatParts, formatShortfall, formatSummary, formatVerdict, GOAL_LABELS, type OptionLabel } from './format';
+import { costLine, formatChange, formatCost, formatParts, formatShortfall, formatSummary, formatVerdict, GOAL_LABELS, type OptionLabel } from './format';
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, text = '', className = ''): HTMLElementTagNameMap[K] {
   const node = document.createElement(tag);
@@ -18,8 +20,6 @@ interface OptionResult {
   /** Shown last, e.g. its matchups (ADR 0012). */
   extra?: HTMLElement | null;
 }
-
-const costLine = (cost: string) => (/^\d/.test(cost) ? `Costs ${cost}` : cost);
 
 function lines(result: GoalResult, change: string, budget: Budget): HTMLElement[] {
   if (!result.eligible) return [el('p', 'Already over the CP limit', 'muted')];
@@ -52,10 +52,10 @@ interface CardInput {
 function numbers({ row, options, budget, extras }: CardInput): HTMLDetailsElement {
   const why = el('details', '', 'why');
   why.append(el('summary', 'See the numbers'));
-  row.results.forEach((result, i) => {
+  for (const i of rankOptions(row)) {
     const change = i === 0 ? '' : formatChange(row.changes[i]);
-    why.append(optionBlock({ label: options[i], result, change, extra: extras[row.goal]?.[i] }, budget));
-  });
+    why.append(optionBlock({ label: options[i], result: row.results[i], change, extra: extras[row.goal]?.[i] }, budget));
+  }
   return why;
 }
 
@@ -68,6 +68,7 @@ function goalCard(input: CardInput): HTMLElement {
     el('p', about, 'muted about'),
     el('p', formatVerdict(row.verdict, options), 'answer'),
     el('p', explainVerdict(input), 'reason'),
+    rankedList(row, options),
     numbers(input),
   );
   return card;

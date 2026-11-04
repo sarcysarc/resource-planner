@@ -15,29 +15,23 @@
     <main>
       <header>
         <h1>Candy Planner</h1>
-        <p>Compare two Pokémon from the same evolution line and see which one deserves your Stardust and Candy, for each kind of battle.</p>
+        <p>Compare Pokémon from the same evolution line and see which one deserves your Stardust and Candy, for each kind of battle.</p>
       </header>
       <form id="planner" novalidate>
         <section class="step" data-step="shots">
           <h2><span class="num">1</span> Add screenshots</h2>
           <div class="card" data-shots>
-            <p>In the game, take these for each of the two Pokémon you are choosing between:</p>
+            <p>In the game, take one screenshot of each Pokémon you are choosing between:</p>
             <ul class="todo">
-              <li>Its screen, the one with the Power Up button. Scroll down and take another to show its moves and Candy.</li>
-              <li>Its appraisal: tap the menu button on that screen, then Appraise.</li>
+              <li>Its appraisal: open the Pokémon, tap the menu button, then Appraise.</li>
               <li>If you like, your item bag (for Rare Candy) and your profile (for your trainer level).</li>
             </ul>
+            <p class="muted">The planner says if another screenshot of a Pokémon would help. Add more at any time.</p>
             <label class="file pick">Choose screenshots
               <input name="screenshots" type="file" accept="image/*" multiple />
             </label>
             <p class="muted" data-shots-status aria-live="polite"></p>
-            <div data-shots-choice hidden>
-              <div class="row">
-                <label>Current <select name="pickCurrent"></select></label>
-                <label>Alternative <select name="pickAlternative"></select></label>
-              </div>
-              <button type="button" class="secondary" data-shots-use>Compare these two</button>
-            </div>
+            <div class="questions" data-questions hidden></div>
             <button type="button" class="link" data-step-skip>No screenshots? Type the details in instead</button>
           </div>
         </section>
@@ -56,10 +50,19 @@
               <ul data-searches-list></ul>
             </details>
           </section>
-          <div class="pair">
-            <fieldset class="card" data-candidate="current" data-legend="Current Pokémon"></fieldset>
-            <fieldset class="card" data-candidate="alternative" data-legend="Alternative"></fieldset>
-          </div>
+          <section class="card" data-grid-card>
+            <h3>Your Pokémon</h3>
+            <p class="hint">Mark the one you are using now as Current. Tap a Pokémon to check or fix its details.
+              Tick Transfer to leave one out of the comparison.</p>
+            <div class="grid" data-grid></div>
+            <button type="button" class="secondary" data-add-tile>Add a Pokémon by hand</button>
+          </section>
+          <div data-details></div>
+          <section class="card" data-transfers hidden>
+            <h3>Marked for transfer</h3>
+            <p class="hint">Left out of the comparison. Transfer them in the game if you agree.</p>
+            <ul></ul>
+          </section>
           <fieldset class="card" data-resources>
             <legend>Your resources <span class="muted">(leave blank for unlimited)</span></legend>
             <div class="row">
@@ -75,6 +78,7 @@
               <label>Trainer level <input name="trainerLevel" type="number" min="1" max="50" inputmode="numeric" /></label>
             </div>
           </fieldset>
+          <button type="button" class="link" data-clear-grid>Clear all and start again</button>
         </section>
         <section class="step" data-step="answer" hidden>
           <h2><span class="num">3</span> See the answer</h2>
@@ -84,8 +88,8 @@
       </form>
       <section id="results" aria-live="polite"></section>
       <footer>
-        <p class="muted">How it decides: for each kind of battle, both Pokémon are powered up as far as that battle allows,
-          and the one that ends up stronger wins. If they end up within 1% of each other, the cheaper one wins.
+        <p class="muted">How it decides: for each kind of battle, each Pokémon is powered up as far as that battle allows,
+          and the one that ends up strongest wins. If they end up within 1% of each other, the cheaper one wins.
           Costs count only what is still to spend.</p>
         <p id="data-info" class="muted"></p>
       </footer>

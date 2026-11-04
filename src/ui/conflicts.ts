@@ -1,7 +1,7 @@
 import type { Conflict } from '../core/screen/merge';
 import type { IVs } from '../core/types';
 
-const NAMES: Record<Conflict['field'], string> = {
+export const CONFLICT_NAMES: Record<Conflict['field'], string> = {
   cp: 'CP',
   hp: 'HP',
   dust: 'the power-up Stardust',
@@ -14,7 +14,7 @@ const NAMES: Record<Conflict['field'], string> = {
   evolveCandy: 'the evolve Candy',
 };
 
-function format(field: Conflict['field'], value: unknown): string {
+export function formatValue(field: Conflict['field'], value: unknown): string {
   if (field === 'ivs') return Object.values(value as IVs).join('/');
   if (field === 'secondMove') return value ? 'unlocked' : 'locked';
   return String(value);
@@ -23,6 +23,6 @@ function format(field: Conflict['field'], value: unknown): string {
 /** A sentence for the status line about values the screenshots disagree on, or ''. */
 export function conflictNote(conflicts: Conflict[]): string {
   if (!conflicts.length) return '';
-  const parts = conflicts.map(({ field, values }) => `${NAMES[field]}: ${values.map((v) => format(field, v)).join(' or ')}`);
+  const parts = conflicts.map(({ field, values }) => `${CONFLICT_NAMES[field]}: ${values.map((v) => formatValue(field, v)).join(' or ')}`);
   return ` The screenshots disagree on ${parts.join('; ')}. Type the right one${parts.length > 1 ? 's' : ''}.`;
 }

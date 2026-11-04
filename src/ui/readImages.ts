@@ -5,6 +5,8 @@ import type { Modifiers } from '../core/types';
 /** What a batch of images gave, oldest first, and how many could not be read at all. */
 export interface Images {
   readings: Reading[];
+  /** The screenshot each reading came from, at the same index. */
+  files: File[];
   failed: number;
 }
 
@@ -28,14 +30,16 @@ export async function readImages(files: File[], mods: Modifiers, progress: (n: n
   const { readScreenshot } = await import('../ocr/recognize');
   const sorted = [...files].sort((a, b) => a.lastModified - b.lastModified);
   const readings: Reading[] = [];
+  const read: File[] = [];
   let failed = 0;
   for (const [i, file] of sorted.entries()) {
     progress(i + 1);
     try {
       readings.push(readScan(await readScreenshot(file), mods));
+      read.push(file);
     } catch {
       failed += 1;
     }
   }
-  return { readings, failed };
+  return { readings, files: read, failed };
 }

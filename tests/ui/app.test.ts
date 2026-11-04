@@ -14,19 +14,47 @@ vi.mock('../../src/ocr/recognize', () => ({
 
 const { mountApp } = await import('../../src/ui/app');
 
-function setField(selector: string, value: string): void {
-  const el = document.querySelector<HTMLInputElement | HTMLSelectElement>(selector)!;
+const q = <T extends HTMLElement>(selector: string) => document.querySelector<T>(selector)!;
+const tiles = () => [...document.querySelectorAll<HTMLElement>('[data-details] > [data-tile]')];
+const tileOf = (root: HTMLElement) => q(`.tile[data-tile="${root.dataset.tile}"]`);
+const field = (root: ParentNode, name: string) => root.querySelector<HTMLInputElement>(`[name="${name}"]`)!;
+
+function setField(el: HTMLInputElement | HTMLSelectElement, value: string): void {
   el.value = value;
   el.dispatchEvent(new Event('change', { bubbles: true }));
 }
 
-function submit(): void {
-  document.querySelector('form')!.dispatchEvent(new Event('submit', { cancelable: true }));
+function fillTile(root: HTMLElement, ivs: string[]): void {
+  ['atk', 'def', 'hp'].forEach((n, i) => setField(field(root, n), ivs[i]));
+  setField(field(root, 'level'), '20');
 }
 
-function fillSide(side: string, ivs: string[]): void {
-  ['atk', 'def', 'hp'].forEach((n, i) => setField(`[data-candidate="${side}"] [name="${n}"]`, ivs[i]));
-  setField(`[data-candidate="${side}"] [name="level"]`, '20');
+function twoByHand(): HTMLElement[] {
+  q('[data-step-skip]').click();
+  return tiles();
+}
+
+function submit(): void {
+  q('form').dispatchEvent(new Event('submit', { cancelable: true }));
+}
+
+function choose(count: number): void {
+  const input = q<HTMLInputElement>('[data-shots] [name="screenshots"]');
+  Object.defineProperty(input, 'files', { value: Array.from({ length: count }, (_, i) => new File(['x'], `${i}.png`)) });
+  input.dispatchEvent(new Event('change'));
+}
+
+function load(): void {
+  const html = readFileSync('index.html', 'utf8');
+  document.body.innerHTML = html.slice(html.indexOf('<body>') + 6, html.indexOf('</body>'));
+  mountApp(document);
+}
+
+function compareTwo(ivs: string[][]): HTMLElement[] {
+  setField(q('#target'), 'Azumarill');
+  const roots = twoByHand();
+  roots.forEach((root, i) => fillTile(root, ivs[i]));
+  return roots;
 }
 
 // jsdom has no scrolling; the results are scrolled into view after a comparison.
@@ -34,29 +62,26 @@ const scrolled = vi.fn();
 Element.prototype.scrollIntoView = scrolled;
 
 describe('mountApp', () => {
-  beforeEach(() => {
-    const html = readFileSync('index.html', 'utf8');
-    document.body.innerHTML = html.slice(html.indexOf('<body>') + 6, html.indexOf('</body>'));
-    mountApp(document);
-  });
+  beforeEach(load);
 
-  it('builds the same fields for both candidates', () => {
-    const fieldNames = (side: string) =>
-      [...document.querySelectorAll<HTMLInputElement>(`[data-candidate="${side}"] [name]`)].map((el) => el.name);
-    expect(fieldNames('current').length).toBeGreaterThan(0);
-    expect(fieldNames('alternative')).toEqual(fieldNames('current'));
-  });
-
-  it('takes the target and form from a screenshot', async () => {
-    const input = document.querySelector<HTMLInputElement>('[data-candidate="current"] [name="screenshot"]')!;
-    Object.defineProperty(input, 'files', { value: [new File(['x'], 'screen.png')] });
-    input.dispatchEvent(new Event('change'));
-    const form = document.querySelector<HTMLSelectElement>('[data-candidate="current"] select[name="form"]')!;
-    await vi.waitFor(() => expect(form.value).toBe('lairon'));
-    expect(document.querySelector<HTMLInputElement>('#target')!.value).toBe('Lairon');
-    const resource = (name: string) => document.querySelector<HTMLInputElement>(`[data-resources] [name="${name}"]`)!.value;
+  it('puts each Pokémon from the screenshots into the grid, with the target and form', async () => {
+    choose(2);
+    await vi.waitFor(() => expect(q('[data-shots-status]').textContent).toBe('Read 2 screenshots: 1 Pokémon.'));
+    expect(tiles()).toHaveLength(1);
+    const [root] = tiles();
+    expect([field(root, 'form').value, field(root, 'cp').value, q<HTMLInputElement>('#target').value]).toEqual(['lairon', '600', 'Lairon']);
+    expect(tileOf(root).querySelector('[data-title]')!.textContent).toBe('Lairon, CP 600, IVs not known');
+    const resource = (name: string) => field(q('[data-resources]'), name).value;
     expect([resource('stardust'), resource('candy')]).toEqual(['123456', '9']);
-    expect(document.querySelector('[data-searches] code')!.textContent).toBe('+lairon');
+    expect(q('[data-searches] code').textContent).toBe('+lairon');
+    expect(q('[data-step="check"]').hidden).toBe(false);
+  });
+
+  it('keeps the form a screenshot read when the target moves up its line', async () => {
+    choose(1);
+    await vi.waitFor(() => expect(tiles()).toHaveLength(1));
+    setField(q('#target'), 'Aggron');
+    expect(field(tiles()[0], 'form').value).toBe('lairon');
   });
 
   it('reads screenshots shared to the installed app', async () => {
@@ -64,105 +89,103 @@ describe('mountApp', () => {
     const cache = { keys: async () => [new Request('https://example.test/shared/0')], match: async () => shared, delete: async () => true };
     vi.stubGlobal('caches', { open: async () => cache });
     window.history.replaceState(null, '', '/?shared=1');
-    const html = readFileSync('index.html', 'utf8');
-    document.body.innerHTML = html.slice(html.indexOf('<body>') + 6, html.indexOf('</body>'));
-    mountApp(document);
-    await vi.waitFor(() => expect(document.querySelector('[data-shots-status]')!.textContent).toBe('Read 1 screenshot: 1 Pokémon.'));
+    load();
+    await vi.waitFor(() => expect(q('[data-shots-status]').textContent).toBe('Read 1 screenshot: 1 Pokémon.'));
     vi.unstubAllGlobals();
+    window.history.replaceState(null, '', '/');
   });
 
   it('suggests searches for a typed target', () => {
-    setField('#target', 'Azumarill');
-    expect(document.querySelector<HTMLElement>('[data-searches]')!.hidden).toBe(false);
+    setField(q('#target'), 'Azumarill');
+    expect(q('[data-searches]').hidden).toBe(false);
   });
 
-  it('fills Current from the shared screenshot picker', async () => {
-    const input = document.querySelector<HTMLInputElement>('[data-shots] [name="screenshots"]')!;
-    Object.defineProperty(input, 'files', { value: [new File(['x'], 'a.png'), new File(['x'], 'b.png')] });
-    input.dispatchEvent(new Event('change'));
-    const form = document.querySelector<HTMLSelectElement>('[data-candidate="current"] select[name="form"]')!;
-    await vi.waitFor(() => expect(form.value).toBe('lairon'));
-    expect(document.querySelector('[data-shots-status]')!.textContent).toBe('Read 2 screenshots: 1 Pokémon.');
-    expect(document.querySelector('[data-candidate="current"] [name="cp"]')).toHaveProperty('value', '600');
-    expect(document.querySelector<HTMLElement>('[data-step="check"]')!.hidden).toBe(false);
+  it('starts with two Pokémon to type in, and adds more by hand', () => {
+    expect(twoByHand()).toHaveLength(2);
+    expect(q('[data-step="check"]').hidden).toBe(false);
+    q('[data-add-tile]').click();
+    expect(tiles()).toHaveLength(3);
+    expect(tiles().map((r) => r.hidden)).toEqual([true, true, false]);
   });
 
-  it('fills the form choices from the target species', () => {
-    setField('#target', 'Azumarill');
-    const options = [...document.querySelectorAll('[data-candidate="current"] select[name="form"] option')];
-    expect(options.map((o) => o.textContent)).toEqual(['Azurill', 'Marill', 'Azumarill']);
+  it('fills every form list from the target and keeps a chosen form in the line', () => {
+    const [a, b] = twoByHand();
+    setField(q('#target'), 'Marill');
+    expect([...field(a, 'form').querySelectorAll('option')].map((o) => o.textContent)).toEqual(['Azurill', 'Marill']);
+    setField(field(a, 'form'), 'azurill');
+    setField(q('#target'), 'Azumarill');
+    expect([field(a, 'form').value, field(b, 'form').value]).toEqual(['azurill', 'azumarill']);
   });
 
-  it('keeps a chosen form that is still in the line when the target evolves further', () => {
-    setField('#target', 'Marill');
-    setField('[data-candidate="current"] select[name="form"]', 'azurill');
-    setField('#target', 'Azumarill');
-    const form = (side: string) => document.querySelector<HTMLSelectElement>(`[data-candidate="${side}"] select[name="form"]`)!.value;
-    expect([form('current'), form('alternative')]).toEqual(['azurill', 'azumarill']);
-  });
-
-  it('keeps the form a screenshot read when the target moves up its line', async () => {
-    const input = document.querySelector<HTMLInputElement>('[data-candidate="current"] [name="screenshot"]')!;
-    Object.defineProperty(input, 'files', { value: [new File(['x'], 'screen.png')] });
-    input.dispatchEvent(new Event('change'));
-    const form = document.querySelector<HTMLSelectElement>('[data-candidate="current"] select[name="form"]')!;
-    await vi.waitFor(() => expect(form.value).toBe('lairon'));
-    setField('#target', 'Aggron');
-    expect(form.value).toBe('lairon');
-  });
-
-  it('shows a comparison after submitting', () => {
-    setField('#target', 'Azumarill');
-    fillSide('current', ['15', '15', '15']);
-    fillSide('alternative', ['4', '15', '13']);
+  it('ranks the Pokémon and suggests transferring one that is never the best', () => {
+    const [a, b] = compareTwo([['15', '15', '15'], ['0', '0', '0']]);
     submit();
-    expect(document.querySelector('#results')!.textContent).toContain('Great League');
-    expect(document.querySelector('#error')!.textContent).toBe('');
+    expect(q('#results').textContent).toContain('Great League');
+    expect(q('#error').textContent).toBe('');
     expect(scrolled).toHaveBeenCalled();
+    expect(q('.ranked')).not.toBeNull();
+    expect(tileOf(b).querySelector<HTMLElement>('[data-could]')!.hidden).toBe(false);
+    expect(tileOf(a).querySelector<HTMLElement>('[data-could]')!.hidden).toBe(true);
   });
 
-  it('adds a purified column for a Shadow candidate', () => {
-    setField('#target', 'Azumarill');
-    fillSide('current', ['4', '15', '13']);
-    setField('[data-candidate="current"] [name="variant"]', 'shadow');
-    fillSide('alternative', ['15', '15', '15']);
+  it('leaves out a Pokémon marked for transfer and lists it', () => {
+    const [, b] = compareTwo([['15', '13', '15'], ['15', '14', '15']]);
+    q('[data-add-tile]').click();
+    fillTile(tiles()[2], ['15', '15', '15']);
+    const mark = tileOf(b).querySelector<HTMLInputElement>('[data-transfer]')!;
+    mark.checked = true;
+    mark.dispatchEvent(new Event('change', { bubbles: true }));
     submit();
-    const headings = [...document.querySelectorAll('#results section.goal:first-of-type .option h4')].map((th) => th.textContent);
-    expect(headings).toEqual(['Current', 'Current, purified', 'Alternative']);
-    expect(document.querySelector('#results')!.textContent).toContain('Purify 3,000 Stardust · 3 Candy');
+    expect(q('#error').textContent).toBe('');
+    expect(q('[data-transfers]').hidden).toBe(false);
+    expect(q('[data-transfers] li').textContent).toBe('Azumarill, level 20, IVs 15/14/15');
+    expect(q('#results').textContent).not.toContain('IVs 15/14/15');
+  });
+
+  it('adds a purified option for a Shadow Pokémon', () => {
+    const [a] = compareTwo([['4', '15', '13'], ['15', '15', '15']]);
+    setField(field(a, 'variant'), 'shadow');
+    submit();
+    expect(q('#results').textContent).toContain('Current, purified');
+    expect(q('#results').textContent).toContain('Purify 3,000 Stardust · 3 Candy');
   });
 
   it('powers up no further than ten levels above the trainer', () => {
-    setField('#target', 'Azumarill');
-    fillSide('current', ['15', '15', '15']);
-    fillSide('alternative', ['4', '15', '13']);
-    setField('[name="trainerLevel"]', '25');
+    compareTwo([['15', '15', '15'], ['4', '15', '13']]);
+    setField(field(q('[data-resources]'), 'trainerLevel'), '25');
     submit();
-    const results = document.querySelector('#results')!.textContent!;
-    expect(results).toContain('Power up to level 35');
-    expect(results).not.toContain('level 50');
+    expect(q('#results').textContent).toContain('Power up to level 35');
+    expect(q('#results').textContent).not.toContain('level 50');
   });
 
   it('shows an error for a trainer level out of range', () => {
-    setField('#target', 'Azumarill');
-    fillSide('current', ['15', '15', '15']);
-    fillSide('alternative', ['4', '15', '13']);
-    setField('[name="trainerLevel"]', '60');
+    compareTwo([['15', '15', '15'], ['4', '15', '13']]);
+    setField(field(q('[data-resources]'), 'trainerLevel'), '60');
     submit();
-    expect(document.querySelector('#error')!.textContent).toContain('Trainer level');
+    expect(q('#error').textContent).toContain('Trainer level');
   });
 
   it('shows an error for an unknown target', () => {
-    setField('#target', 'Missingno');
+    setField(q('#target'), 'Missingno');
     submit();
-    expect(document.querySelector('#error')!.textContent).toContain('Pick');
-    expect(document.querySelector('[data-target-card] .field-error')!.textContent).toContain('Pick');
+    expect(q('#error').textContent).toContain('Pick');
+    expect(q('[data-target-card] .field-error').textContent).toContain('Pick');
   });
 
-  it('shows an error when a candidate is incomplete', () => {
-    setField('#target', 'Azumarill');
+  it('asks for another Pokémon when there is only one', () => {
+    setField(q('#target'), 'Azumarill');
+    q('[data-add-tile]').click();
     submit();
-    expect(document.querySelector('#error')!.textContent).toContain('Current');
-    expect(document.querySelector('[data-candidate="current"] .field-error')).not.toBeNull();
+    expect(q('[data-grid-card] .field-error').textContent).toContain('Add another Pokémon');
+  });
+
+  it('shows an incomplete Pokémon’s error on it and opens it', () => {
+    setField(q('#target'), 'Azumarill');
+    const [a, b] = twoByHand();
+    fillTile(a, ['15', '15', '15']);
+    submit();
+    expect(q('#error').textContent).toMatch(/^Azumarill, IVs not known: /);
+    expect(b.querySelector('.field-error')).not.toBeNull();
+    expect([a.hidden, b.hidden]).toEqual([true, false]);
   });
 });

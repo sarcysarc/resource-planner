@@ -4,6 +4,7 @@ import type { Comparison } from '../core/compare';
 import type { Candidate } from '../core/goals';
 import type { PvpMoves } from '../core/matchups';
 import type { PvpFile } from '../data/pvp';
+import { candidateRoots } from './candidateFields';
 import { matchupDetails, type Opponents, opponentsFrom } from './matchupView';
 import { loadMoves, type MovesIndex } from './moves';
 import { fillPvpPicker, loadPvp, pvpMovesFor } from './pvpMoves';
@@ -12,7 +13,8 @@ import { findSpecies, type Species, type SpeciesIndex } from './species';
 
 export interface PvpWiring {
   target: HTMLInputElement;
-  roots: readonly HTMLElement[];
+  /** Where the candidates are; they can be added at any time. */
+  area: ParentNode;
   index: SpeciesIndex;
 }
 
@@ -29,11 +31,11 @@ interface Loaded {
   opponents: Opponents;
 }
 
-export function wirePvp({ target, roots, index }: PvpWiring): Pvp {
+export function wirePvp({ target, area, index }: PvpWiring): Pvp {
   let loaded: Loaded | null = null;
   const refill = () => {
     const species = findSpecies(index, target.value);
-    if (loaded && species) for (const root of roots) fillPvpPicker({ root, target: species, moves: loaded.moves });
+    if (loaded && species) for (const root of candidateRoots(area)) fillPvpPicker({ root, target: species, moves: loaded.moves });
   };
   target.addEventListener('change', refill);
   const ready = Promise.all([loadPvp(), loadMoves()]).then(([data, moves]) => {

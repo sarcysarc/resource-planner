@@ -1,0 +1,49 @@
+// What a tile in the grid says about its Pokémon (ADR 0015): a name the player can match
+// to the game, and which screenshot would fill each gap.
+import { listNames } from './ranking';
+
+export interface TileFacts {
+  /** The form's name, '' when not known yet. */
+  name: string;
+  cp: string;
+  level: string;
+  ivs: readonly [string, string, string];
+}
+
+/** E.g. "Ivysaur, CP 900, IVs 15/14/13". */
+export function tileTitle({ name, cp, level, ivs }: TileFacts): string {
+  const parts = [name || 'New Pokémon'];
+  if (cp) parts.push(`CP ${cp}`);
+  else if (level) parts.push(`level ${level}`);
+  parts.push(ivs.every((v) => v !== '') ? `IVs ${ivs.join('/')}` : 'IVs not known');
+  return parts.join(', ');
+}
+
+export interface TileGaps {
+  /** Whether all three IVs are filled in. */
+  ivs: boolean;
+  /** Whether it still has to evolve and its Candy to evolve is blank. */
+  needsEvolve: boolean;
+  /** The fields read from a screenshot or set by the player, not left at their defaults. */
+  known: ReadonlySet<string>;
+  /** The next form, when its own step's Candy was read, so a later step's is missing. */
+  later?: string;
+}
+
+function scrolledDown({ needsEvolve, known, later }: TileGaps): string | undefined {
+  const parts = [];
+  if (needsEvolve && !later) parts.push('the Candy to evolve');
+  if (!known.has('secondMove')) parts.push('the second move (taken as locked)');
+  return parts.length ? `Add its screen scrolled down, together with its top screen, for ${listNames(parts)}.` : undefined;
+}
+
+/** One sentence per gap, each naming the screenshot that would fill it. */
+export function tileNotes(gaps: TileGaps): string[] {
+  const notes = [];
+  if (!gaps.ivs) notes.push('Add its appraisal for the IVs.');
+  if (!gaps.known.has('variant') || !gaps.known.has('lucky')) notes.push('Normal and not Lucky are guesses. Add its Pokémon screen to check.');
+  if (gaps.needsEvolve && gaps.later) notes.push(`Add a ${gaps.later}’s screen scrolled down for the Candy to evolve it, or type the total.`);
+  const scrolled = scrolledDown(gaps);
+  if (scrolled) notes.push(scrolled);
+  return notes;
+}

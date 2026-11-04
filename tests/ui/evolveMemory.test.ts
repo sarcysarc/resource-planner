@@ -75,12 +75,16 @@ describe('wireEvolve', () => {
   };
 
   beforeEach(() => {
-    document.body.innerHTML = '<input id="t"><fieldset><p data-scan-status></p></fieldset><fieldset><p data-scan-status></p></fieldset>';
+    document.body.innerHTML = '<input id="t"><div id="area"><fieldset data-candidate><p data-scan-status></p></fieldset></div>';
     targetInput = document.querySelector('#t')!;
-    roots.splice(0, 2, ...document.querySelectorAll('fieldset'));
+    const area = document.querySelector<HTMLElement>('#area')!;
+    onRead = wireEvolve({ index, target: targetInput, area });
+    // The second is added after wiring, as a tile added to the grid is.
+    area.append(Object.assign(document.createElement('fieldset'), { innerHTML: '<p data-scan-status></p>' }));
+    area.lastElementChild!.setAttribute('data-candidate', '');
+    roots.splice(0, 2, ...area.querySelectorAll<HTMLElement>('fieldset'));
     roots.forEach((r) => buildCandidateFields(r));
     setLine('Dragonite');
-    onRead = wireEvolve({ index, target: targetInput, roots });
     at(0, 'form').value = 'dratini';
     at(1, 'form').value = 'dragonair';
   });

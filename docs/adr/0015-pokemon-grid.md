@@ -56,7 +56,9 @@ What limits the app to two is the page.
   fields, shown for one tile at a time.
 - A tile that is missing something says what, and **names the screenshot that would
   fill it**. For example: "Add its Pokémon screen for Lucky and the Candy totals" or
-  "Add the screen scrolled down for its moves and evolve Candy".
+  "Add the screen scrolled down for its moves and evolve Candy". A scrolled-down screen
+  has no CP, so it is asked for together with the top screen: the pair finds its tile
+  by CP, and same-family Pokémon with the same power-up cost are not mixed up.
 - Values an appraisal can't give use the existing defaults (Normal, not Lucky, second
   move locked, best attacks) until a screenshot or the player sets them. The tile
   shows that they are defaults.
@@ -81,11 +83,13 @@ What limits the app to two is the page.
 
 - The grid is **saved on this device**: each tile's values, the player's edits, the
   current and Transfer marks, and the cropped thumbnail. It is still there on the
-  next visit.
+  next visit. Each tile also keeps the CP, HP and Candy family it was first read with,
+  so a screenshot added on a later visit still finds its tile.
 - It is stored only in this browser (IndexedDB) and never sent anywhere. Only the
   cropped thumbnail is kept, never the full screenshot, so the appraisal footer is
   never stored.
-- A **"Clear all"** button empties the grid and deletes everything saved.
+- A **"Clear all"** button empties the grid, clears the target and deletes everything
+  saved, so the next screenshots start a new evolution line.
 
 ### Results: a ranked list
 

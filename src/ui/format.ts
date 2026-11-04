@@ -53,6 +53,9 @@ export function formatCost(cost: Cost): string {
   return parts.length ? parts.join(' · ') : 'Nothing more to spend';
 }
 
+/** "Costs …" for a cost, or the cost line as it is when there is nothing to spend. */
+export const costLine = (cost: string) => (/^\d/.test(cost) ? `Costs ${cost}` : cost);
+
 /** Where a cost comes from, when it has more than one part. */
 export function formatParts(parts: readonly CostPart[]): string {
   if (parts.length < 2) return '';

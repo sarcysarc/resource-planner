@@ -3,6 +3,7 @@ import { VARIANT_MOVES } from '../core/moveset';
 import type { PveMove, RaidMoves } from '../core/raid';
 import type { Variant } from '../core/types';
 import { type Move, MovesFileSchema } from '../data/moves';
+import { candidateRoots } from './candidateFields';
 import { findSpecies, type Species, type SpeciesIndex } from './species';
 
 export type MovesIndex = Map<string, Move>;
@@ -70,7 +71,8 @@ export function raidMovesFor({ root, target, moves }: MovesSource): RaidMoves {
 
 export interface MovesWiring {
   target: HTMLInputElement;
-  roots: readonly HTMLElement[];
+  /** Where the candidates are; they can be added at any time. */
+  area: ParentNode;
   index: SpeciesIndex;
 }
 
@@ -78,11 +80,11 @@ export interface MovesWiring {
 export type RaidMovesOf = (root: ParentNode, target: Species) => RaidMoves | undefined;
 
 /** Loads the moves, then keeps every side's pickers on the target's moves. */
-export function wireMoves({ target, roots, index }: MovesWiring): RaidMovesOf {
+export function wireMoves({ target, area, index }: MovesWiring): RaidMovesOf {
   let moves: MovesIndex | null = null;
   const refill = () => {
     const species = findSpecies(index, target.value);
-    if (moves && species) for (const root of roots) fillMovePickers({ root, target: species, moves });
+    if (moves && species) for (const root of candidateRoots(area)) fillMovePickers({ root, target: species, moves });
   };
   target.addEventListener('change', refill);
   void loadMoves().then((loaded) => {

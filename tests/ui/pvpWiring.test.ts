@@ -9,9 +9,13 @@ const index = loadBundledIndex();
 
 function setup() {
   const target = document.createElement('input');
+  const area = document.createElement('div');
+  const pvp = wirePvp({ target, area, index });
+  // Added after wiring, as a tile added to the grid is.
   const root = document.createElement('fieldset');
+  root.dataset.candidate = '';
   root.innerHTML = '<select name="variant"><option value="normal"></option></select><select name="pvpFastMove"></select>';
-  const pvp = wirePvp({ target, roots: [root], index });
+  area.append(root);
   return { target, root, pvp };
 }
 

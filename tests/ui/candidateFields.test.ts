@@ -2,7 +2,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { buildCandidateFields } from '../../src/ui/candidateFields';
 
-const FIELD_NAMES = ['screenshot', 'form', 'atk', 'def', 'hp', 'level', 'cp', 'variant', 'lucky', 'bestBuddy', 'secondMove', 'evolveCandy',
+const FIELD_NAMES = ['form', 'atk', 'def', 'hp', 'level', 'cp', 'variant', 'lucky', 'bestBuddy', 'secondMove', 'evolveCandy',
   'fastMove', 'chargedMove', 'pvpFastMove', 'seenHp', 'dust', 'stars', 'atkBar', 'defBar', 'hpBar'];
 
 function names(root: ParentNode): string[] {

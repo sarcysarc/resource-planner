@@ -4,6 +4,7 @@
 import { baseCost, evolveTotal } from '../core/evolveCandy';
 import type { Reading } from '../core/screen/types';
 import type { Variant } from '../core/types';
+import { candidateRoots } from './candidateFields';
 import { resolveSpecies } from './scanSpecies';
 import { addStatus } from './scanTarget';
 import { evolutionLine, findSpecies, type Species, type SpeciesIndex } from './species';
@@ -56,9 +57,10 @@ export function fillEvolve(root: ParentNode, plan: EvolvePlan): string | undefin
 
 export interface EvolveWiring {
   index: SpeciesIndex;
-  /** The battle target, shared by both candidates. */
+  /** The battle target, shared by every candidate. */
   target: HTMLInputElement;
-  roots: HTMLElement[];
+  /** Where the candidates are; they can be added at any time. */
+  area: HTMLElement;
 }
 
 // Only a reading of one known species with a cost on screen teaches a step.
@@ -69,7 +71,7 @@ function rememberReading(plan: Omit<EvolvePlan, 'target'>, root: ParentNode, rea
 }
 
 /**
- * Keeps both candidates' totals current as the target, form or variant changes. Wire it
+ * Keeps every candidate's totals current as the target, form or variant changes. Wire it
  * after the form choices follow the target. Returns what to call with each reading.
  */
 export function wireEvolve(w: EvolveWiring): (root: HTMLElement, reading: Reading) => void {
@@ -78,12 +80,15 @@ export function wireEvolve(w: EvolveWiring): (root: HTMLElement, reading: Readin
     const target = findSpecies(w.index, w.target.value);
     return target && fillEvolve(root, { index: w.index, target, memory });
   };
-  w.target.addEventListener('change', () => w.roots.forEach(fill));
+  w.target.addEventListener('change', () => candidateRoots(w.area).forEach(fill));
   // Only the choices the total depends on, so a typed total is not overwritten.
-  const affects = (event: Event) => ['form', 'variant'].includes((event.target as HTMLSelectElement).name);
-  for (const root of w.roots) root.addEventListener('change', (event) => affects(event) && fill(root));
+  w.area.addEventListener('change', (event) => {
+    const field = event.target as HTMLSelectElement;
+    const root = field.closest<HTMLElement>('[data-candidate]');
+    if (root && ['form', 'variant'].includes(field.name)) fill(root);
+  });
   return (root, reading) => {
     rememberReading({ index: w.index, memory }, root, reading);
-    for (const r of w.roots) addStatus(r, fill(r) ?? '');
+    for (const r of candidateRoots(w.area)) addStatus(r, fill(r) ?? '');
   };
 }

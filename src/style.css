@@ -55,7 +55,7 @@ legend { font-weight: 600; padding: 0 4px; }
 label { display: block; margin-top: 10px; font-size: 0.9rem; color: var(--muted); }
 label.check { display: flex; align-items: center; gap: 8px; color: var(--text); }
 
-input:not([type='checkbox']), select {
+input:not([type='checkbox']):not([type='radio']), select {
   display: block;
   width: 100%;
   margin-top: 4px;
@@ -67,9 +67,8 @@ input:not([type='checkbox']), select {
   border-radius: 8px;
 }
 
-input[type='checkbox'] { width: 18px; height: 18px; accent-color: var(--accent); }
+input[type='checkbox'], input[type='radio'] { width: 18px; height: 18px; accent-color: var(--accent); }
 .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 0 12px; }
-.pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0 16px; }
 
 button {
   width: 100%;
@@ -152,3 +151,22 @@ button.link {
 .moves { margin-top: 10px; }
 .invalid { border-color: var(--error); }
 .field-error { color: var(--error); font-weight: 600; margin: 0 0 10px; }
+
+/* The grid of Pokémon (ADR 0015): one tile each, its details opened below. */
+.card h3 { margin: 0 0 4px; font-size: 1.05rem; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin: 10px 0 0; }
+.tile { display: flex; flex-direction: column; gap: 4px; padding: 8px; background: var(--bg); border: 2px solid var(--border); border-radius: 10px; min-width: 0; }
+.tile.open { border-color: var(--accent); }
+.tile:has([name='currentTile']:checked) { box-shadow: inset 0 0 0 1px var(--keep); }
+.thumb { width: 100%; border-radius: 6px; }
+button.tile-open { padding: 6px; font-size: 0.85rem; text-align: left; color: var(--text); background: transparent; border: 1px solid var(--border); }
+.tile-notes { margin: 0; padding-left: 16px; color: var(--muted); font-size: 0.75rem; }
+.tile .could { margin: 0; color: var(--save); font-size: 0.75rem; font-weight: 600; }
+.tile-marks { display: flex; gap: 12px; margin-top: auto; }
+.tile-marks label.check { margin-top: 4px; font-size: 0.8rem; }
+[data-transfers] ul { margin: 4px 0 0; padding-left: 20px; }
+.questions { margin: 12px 0; padding: 10px 12px; border: 1px solid var(--accent); border-radius: 10px; }
+.questions button.primary { margin-top: 12px; }
+.ranked ol { margin: 8px 0 0; padding-left: 20px; }
+.ranked li { margin: 4px 0; }
+.ranked details { margin-top: 4px; font-size: 0.875rem; }
