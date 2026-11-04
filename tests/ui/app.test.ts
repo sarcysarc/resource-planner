@@ -55,6 +55,18 @@ describe('mountApp', () => {
     expect(document.querySelector('[data-searches] code')!.textContent).toBe('+lairon');
   });
 
+  it('reads screenshots shared to the installed app', async () => {
+    const shared = new Response(new File(['x'], 'a.png'), { headers: { 'content-type': 'image/png' } });
+    const cache = { keys: async () => [new Request('https://example.test/shared/0')], match: async () => shared, delete: async () => true };
+    vi.stubGlobal('caches', { open: async () => cache });
+    window.history.replaceState(null, '', '/?shared=1');
+    const html = readFileSync('index.html', 'utf8');
+    document.body.innerHTML = html.slice(html.indexOf('<body>') + 6, html.indexOf('</body>'));
+    mountApp(document);
+    await vi.waitFor(() => expect(document.querySelector('[data-shots-status]')!.textContent).toBe('Read 1 screenshot: 1 Pokémon.'));
+    vi.unstubAllGlobals();
+  });
+
   it('suggests searches for a typed target', () => {
     setField('#target', 'Azumarill');
     expect(document.querySelector<HTMLElement>('[data-searches]')!.hidden).toBe(false);

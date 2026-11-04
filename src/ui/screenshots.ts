@@ -71,13 +71,15 @@ async function readAll(w: ShotsWiring, files: File[]): Promise<Group[]> {
 /**
  * Hooks up the shared picker: screenshots of several Pokémon, sorted into Pokémon.
  * Two go straight into Current and Alternative; with more, the player picks two.
+ * Returns a function that reads files from elsewhere, such as a share.
  */
-export function wireScreenshots(w: ShotsWiring): void {
+export function wireScreenshots(w: ShotsWiring): (files: File[]) => void {
   let groups: Group[] = [];
+  const read = (files: File[]) => {
+    if (files.length) void readAll(w, files).then((found) => (groups = found), () => setStatus(w, 'Could not read those images. Try again.'));
+  };
   const input = q<HTMLInputElement>(w.root, '[name="screenshots"]');
-  input.addEventListener('change', () => {
-    const files = [...(input.files ?? [])];
-    if (files.length) void readAll(w, files).then((read) => (groups = read), () => setStatus(w, 'Could not read those images. Try again.'));
-  });
+  input.addEventListener('change', () => read([...(input.files ?? [])]));
   q(w.root, '[data-shots-use]').addEventListener('click', () => pickTwo(w, groups));
+  return read;
 }

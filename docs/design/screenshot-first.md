@@ -168,6 +168,8 @@ Sizes follow the project quality gates (files ≤ 200 lines, ≤ 10 functions).
 | `src/core/screen/account.ts` | bag and profile readers; keeps their values out of Pokémon grouping |
 | `src/ui/account.ts` | Rare Candy and trainer level fields |
 | `src/ui/searches.ts`, `src/ui/searchHelp.ts` | search strings for the target's family, and their list |
+| `src/share/stash.ts`, `src/share/receive.ts` | shared screenshots: kept in Cache Storage by the worker, taken out by the page |
+| `src/sw.ts`, `public/manifest.webmanifest` | the service worker and the install manifest with its share target |
 | `src/core/screen/identity.ts` | printed name and Candy family |
 | `src/core/screen/traits.ts` | Shadow/Purified, Lucky, evolve cost |
 | `src/core/screen/moves.ts` | second charged move locked or unlocked |
@@ -209,7 +211,7 @@ against the new readers.
 | S4 | Several screenshots at once, grouping and conflict questions (done) | Scrolled-down screenshots of the same species; solved by power-up cost, then time order. Source badges per field are not shown yet |
 | S5 | Bag (Rare Candy) and profile (trainer level) (done) | Rare Candy shown as a separate "could cover" note; trainer level caps the power-up target. Typed fields too |
 | S6 | Suggested search strings, e.g. `!@3move`, `4*`, `shadow` (done) | None; shown under the target with copy buttons |
-| S7 | Share screenshots straight from the gallery (PWA share target) | Manifest and service worker; iOS support |
+| S7 | Share screenshots straight from the gallery (PWA share target) (done) | Manifest and service worker (ADR 0010). iOS Safari has no share target, so iPhones keep the picker |
 
 Each phase ships on its own and keeps the manual form working.
 
@@ -221,7 +223,7 @@ Each phase ships on its own and keeps the manual form working.
    Rare Candy is shared across every Pokémon, so it must not quietly decide the
    verdict.
 2. **Sharing from the gallery comes after S4.** Until then, use the file picker
-   (with several files allowed). A PWA share target is a later phase, S7.
+   (with several files allowed). A PWA share target came later, in S7.
 3. **When Candy is hidden**, for example by the team leader on an iPhone appraisal
    screen, the screenshot status line says "Candy not visible. Add a screenshot of
    the Pokémon screen, or type it." The field stays empty, so a typed value is kept.

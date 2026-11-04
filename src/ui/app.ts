@@ -1,6 +1,7 @@
 import { compare, type CompareInput } from '../core/compare';
 import { powerUpLimit } from '../core/levels';
 import type { Reading, Totals } from '../core/screen/types';
+import { receiveShared } from '../share/receive';
 import { type Rare, readAccount } from './account';
 import { buildCandidateFields } from './candidateFields';
 import { wireFinder } from './finder';
@@ -107,7 +108,9 @@ function wireShared(els: Elements, index: SpeciesIndex): void {
     useReading(els, index, root)(group.reading);
   };
   const useAccount = (totals: Totals) => fillResources(els.resources, totals, false);
-  wireScreenshots({ root: els.shots, familyOf: (reading) => readingFamily(index, reading), use, useAccount });
+  const read = wireScreenshots({ root: els.shots, familyOf: (reading) => readingFamily(index, reading), use, useAccount });
+  // Screenshots shared from the gallery to the installed app (ADR 0010).
+  void receiveShared(window).then(read);
 }
 
 export function mountApp(doc: Document): void {

@@ -86,6 +86,20 @@ describe('wireScreenshots', () => {
     expect(status()).toBe('Read 1 screenshot. Your totals: {"trainerLevel":30}.');
   });
 
+  it('reads files handed over by the page, like shared screenshots', async () => {
+    const read = wireScreenshots({ root: document.querySelector('[data-shots]')!, familyOf: picks, use, useAccount });
+    readScreenshot.mockResolvedValueOnce(screen('Lairon', 80));
+    read([new File(['x'], 'shared.png')]);
+    await vi.waitFor(() => expect(status()).toBe('Read 1 screenshot: 1 Pokémon.'));
+    expect(use.mock.calls.map(([side]) => side)).toEqual(['current']);
+  });
+
+  it('ignores an empty hand-over', () => {
+    const read = wireScreenshots({ root: document.querySelector('[data-shots]')!, familyOf: picks, use, useAccount });
+    read([]);
+    expect(status()).toBe('');
+  });
+
   it('says when no Pokémon was found', async () => {
     await choose([{ words: wordsOf('Settings'), cpText: '', digits: {} }]);
     expect(use).not.toHaveBeenCalled();
