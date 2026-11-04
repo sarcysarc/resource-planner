@@ -9,6 +9,11 @@ describe('species index', () => {
     expect(findSpecies(index, 'azumarill')?.base).toEqual({ atk: 112, def: 152, hp: 225 });
   });
 
+  it('carries each species types', () => {
+    expect(findSpecies(index, 'azumarill')?.types).toEqual(['water', 'fairy']);
+    expect(findSpecies(index, 'snorlax')?.types).toEqual(['normal']);
+  });
+
   it('finds species case-insensitively by name or id', () => {
     expect(findSpecies(index, '  Azumarill ')?.id).toBe('azumarill');
     expect(findSpecies(index, 'not a pokemon')).toBeUndefined();

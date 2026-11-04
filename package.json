@@ -10,7 +10,7 @@
     "coverage": "vitest run --coverage",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "update-data": "node scripts/build-species.mjs",
+    "update-data": "node scripts/build-species.ts",
     "predev": "node scripts/copy-ocr-assets.mjs",
     "prebuild": "node scripts/copy-ocr-assets.mjs"
   },

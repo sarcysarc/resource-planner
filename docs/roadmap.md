@@ -73,8 +73,10 @@ not the data pipeline.
 2. **Phase D — easier input.** Done. G6 + F6 (`src/core/infer.ts`, `src/ui/finder.ts`),
    then F7: CP, HP and Stardust from a Pokémon screen screenshot, and CP, HP and exact
    IVs from an appraisal screenshot (`src/core/screenText.ts`, `src/ocr/`, ADR 0008).
-3. **Phase A, second half.** G3 + F2. F2 proves the new pipeline end to end with a
-   small, visible win.
+3. **Phase A, second half.** G3 + F2. G3 is done: `src/data/pvpoke.ts` (schema and
+   transform, shared by the build and the app), types per species, and the purify table
+   in `src/data/purify.ts`. F2 is left: keep the evolve cost read from a screenshot so
+   it is not asked for twice.
 4. **Phase B — more options.** G4, then F3.
 5. **Phase C — battle math.** G5, then F4, then F5. F5 is the largest feature: move
    choice per candidate, opponent list per league and a results view per opponent.

@@ -1,22 +1,7 @@
-import { z } from 'zod';
 import bundled from '../data/species.json';
+import { type Species, SpeciesFileSchema } from '../data/pvpoke';
 
-const SpeciesSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  dex: z.number(),
-  base: z.object({ atk: z.number(), def: z.number(), hp: z.number() }),
-  family: z.string(),
-  parent: z.string().nullable(),
-  secondMoveDust: z.number().nullable(),
-});
-
-const SpeciesFileSchema = z.object({
-  timestamp: z.string(),
-  species: z.array(SpeciesSchema),
-});
-
-export type Species = z.infer<typeof SpeciesSchema>;
+export type { Species };
 
 export interface SpeciesIndex {
   all: Species[];

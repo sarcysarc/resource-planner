@@ -20,12 +20,15 @@ already reads the evolve cost from a Pokémon screen, so F2 no longer needs a da
 
 ## Decision
 
-- **One downloaded source: PvPoke.** `scripts/build-species.mjs` grows into the v2
-  build. It keeps what it has now and adds, for F4 and F5: types and fast and charged
-  move lists. Moves come from PvPoke's `moves.json` (also MIT).
-- **One schema, checked by Zod.** The built file carries a `schemaVersion` and its
-  source timestamp. The app parses it with a Zod schema at load, so a bad refresh fails
-  the build's tests instead of the page.
+- **One downloaded source: PvPoke.** The build becomes `scripts/build-species.ts`, run
+  by Node directly (type stripping). It keeps what it had and adds each species'
+  types. Move lists per species and move stats from PvPoke's `moves.json` (also MIT)
+  come with G5, the first code that uses them, as a separate file loaded only when
+  needed, so the main bundle does not carry them before then.
+- **One schema, checked by Zod.** `src/data/pvpoke.ts` holds the schema and the
+  transform from PvPoke's file, shared by the build and the app. The built file carries
+  a `schemaVersion` and its source timestamp. The build checks its output against the
+  schema before writing, and the app parses it again at load.
 - **Purify cost from the second-move tier.** A four-row table in `src/data/` maps a
   species' second-move Stardust cost (already in `species.json`) to its purify cost:
 
