@@ -87,6 +87,13 @@ describe('groupReadings', () => {
     expect(groupReadings([bottom, later], familyOf)[0].reading.totals).toEqual({ stardust: 900, candy: 9 });
   });
 
+  it('gives a misread family label its full name rather than a clash', () => {
+    const loose = (r: Reading) => (r.family === 'RLAX' ? 'SNORLAX' : familyOf(r));
+    const [group] = groupReadings([{ ...other, family: 'SNORLAX' }, { family: 'RLAX', ivs: { atk: 1, def: 2, hp: 3 } }], loose);
+    expect(group.conflicts).toEqual([]);
+    expect(group.reading.family).toBe('SNORLAX');
+  });
+
   it('skips screenshots that gave nothing', () => {
     expect(groupReadings([{}, top, {}], familyOf).map((g) => g.shots)).toEqual([1]);
   });

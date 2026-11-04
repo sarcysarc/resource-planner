@@ -24,12 +24,32 @@ describe('resolveSpecies', () => {
   });
 
   it('uses read IVs to narrow the family further', () => {
-    expect(ids({ family: 'ARON', ...seen, ivs: { atk: 0, def: 0, hp: 0 } })).toEqual(['aron', 'lairon', 'aggron']);
     expect(ids({ family: 'ARON', ...seen, ivs: aggron.ivs })).toEqual(['aggron']);
   });
 
+  it('narrows by CP and HP alone when the read IVs fit no member', () => {
+    expect(ids({ family: 'ARON', ...seen, ivs: { atk: 0, def: 1, hp: 2 } })).toEqual(['aggron']);
+  });
+
+  it('drops a Lucky flag no member fits, as from another Pokémon’s appraisal', () => {
+    expect(ids({ family: 'SNORLAX', cp: 1177, hp: 163, dust: 1920, variant: 'shadow', lucky: true })).toEqual(['snorlax']);
+  });
+
   it('finds nothing for an unknown name and family', () => {
-    expect(ids({ name: 'Rocky', family: 'RLAX' })).toEqual([]);
+    expect(ids({ name: 'Rocky', family: 'QZQX' })).toEqual([]);
+  });
+
+  it('takes a name misread by a letter', () => {
+    expect(ids({ name: 'Aggran' })).toEqual(['aggron']);
+  });
+
+  it('takes a family label misread by a letter, or cut to a part only one family has', () => {
+    expect(ids({ family: 'ARQN' })).toEqual(['aron', 'lairon', 'aggron']);
+    expect(ids({ name: 'Srerax', family: 'RLAX' })).toEqual(['snorlax', 'munchlax']);
+  });
+
+  it('does not guess between families a short scrap could belong to', () => {
+    expect(ids({ family: 'ON' })).toEqual([]);
   });
 });
 

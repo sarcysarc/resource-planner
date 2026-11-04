@@ -87,6 +87,12 @@ function owner(groups: Reading[][], reading: Reading, s: Sorting): Reading[] | u
   return groups.find((g) => !g.some(hasNumbers) && g.some((r) => s.familyOf(r) === family));
 }
 
+// A family label OCR cut or misread ("RLAX") takes the family's full name, so it can't clash.
+function fullFamily(reading: Reading, familyOf: FamilyOf): Reading {
+  const family = reading.family && familyOf(reading);
+  return family ? { ...reading, family: family.replace(/^FAMILY_/, '') } : reading;
+}
+
 /** Sorts screenshots, oldest first, into Pokémon. Screenshots that gave nothing are skipped. */
 export function groupReadings(readings: Reading[], familyOf: FamilyOf): Group[] {
   const groups: Reading[][] = [];
@@ -95,5 +101,5 @@ export function groupReadings(readings: Reading[], familyOf: FamilyOf): Group[] 
   for (const r of order.filter(hasNumbers)) join(r, groups.find((g) => g.every((s) => samePokemon(s, r, familyOf))));
   for (const r of order.filter((s) => !hasNumbers(s))) join(r, owner(groups, r, { familyOf, order }));
   const inOrder = (group: Reading[]) => [...group].sort((x, y) => order.indexOf(x) - order.indexOf(y));
-  return groups.map((group) => mergeReadings(inOrder(group)));
+  return groups.map((group) => mergeReadings(inOrder(group).map((r) => fullFamily(r, familyOf))));
 }

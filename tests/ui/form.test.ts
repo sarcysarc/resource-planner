@@ -72,6 +72,19 @@ describe('readCandidate', () => {
     expect(r.ok && r.value.evolveCandy).toBe(0);
   });
 
+  it('names a Pokémon from another line that a screenshot showed, rather than its CP', () => {
+    const root = fieldset({ ...valid, level: '', cp: '1177' });
+    const select = document.createElement('select');
+    select.name = 'form';
+    select.append(new Option('Azumarill', 'azumarill'));
+    select.dataset.chosen = 'snorlax';
+    root.querySelector('[name="form"]')!.replaceWith(select);
+    expect(readCandidate({ root, index, target })).toEqual({
+      ok: false,
+      error: 'This is Snorlax, which does not evolve into Azumarill: compare two Pokémon from one evolution line',
+    });
+  });
+
   it('rejects a form outside the evolution line', () => {
     expect(readCandidate({ root: fieldset({ ...valid, form: 'pikachu' }), index, target }).ok).toBe(false);
   });

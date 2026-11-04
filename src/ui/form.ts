@@ -3,7 +3,7 @@ import type { Candidate } from '../core/goals';
 import { levelFromCp } from '../core/levels';
 import type { Cost } from '../core/types';
 import { MAX_POWER_UP_LEVEL } from '../data/powerUpCosts';
-import { evolutionLine, type Species, type SpeciesIndex } from './species';
+import { evolutionLine, findSpecies, type Species, type SpeciesIndex } from './species';
 
 export type Result<T> = { ok: true; value: T } | { ok: false; error: string };
 
@@ -89,8 +89,18 @@ export function formOf({ root, index, target }: CandidateSource): Species | unde
   return evolutionLine(index, target).find((s) => s.id === id);
 }
 
+// A screenshot of a Pokémon outside the line leaves its numbers next to another form.
+function outsideLine({ root, index, target }: CandidateSource): string | undefined {
+  const chosen = root.querySelector<HTMLSelectElement>('[name="form"]')?.dataset.chosen;
+  const shown = chosen ? findSpecies(index, chosen) : undefined;
+  if (!shown || evolutionLine(index, target).includes(shown)) return undefined;
+  return `This is ${shown.name}, which does not evolve into ${target.name}: compare two Pokémon from one evolution line`;
+}
+
 export function readCandidate(source: CandidateSource): Result<Candidate> {
   const { root, target } = source;
+  const outside = outsideLine(source);
+  if (outside) return { ok: false, error: outside };
   const parsed = CandidateFields.safeParse(fieldValues(root));
   if (!parsed.success) return { ok: false, error: firstError(parsed.error) };
   const form = formOf(source);
