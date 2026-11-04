@@ -22,6 +22,13 @@ describe('tileNotes', () => {
     expect(tileNotes({ ivs: true, needsEvolve: false, known: all })).toEqual([]);
   });
 
+  it('names only the traits still guessed', () => {
+    const notes = (known: string[]) => tileNotes({ ivs: true, needsEvolve: false, known: new Set([...known, 'secondMove']) });
+    expect(notes(['lucky'])).toEqual(['Normal is a guess. Add its Pokémon screen to check.']);
+    expect(notes(['variant'])).toEqual(['Not Lucky is a guess. Add its Pokémon screen to check.']);
+    expect(notes(['variant', 'lucky'])).toEqual([]);
+  });
+
   it('names the screenshot that fills each gap', () => {
     expect(tileNotes({ ivs: false, needsEvolve: true, known: new Set() })).toEqual([
       'Add its appraisal for the IVs.',

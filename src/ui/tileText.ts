@@ -37,11 +37,19 @@ function scrolledDown({ needsEvolve, known, later }: TileGaps): string | undefin
   return parts.length ? `Add its screen scrolled down, together with its top screen, for ${listNames(parts)}.` : undefined;
 }
 
+// An appraisal shows the Lucky label but not Shadow or Purified, so either can still be a guess.
+function guesses(known: ReadonlySet<string>): string | undefined {
+  const parts = [known.has('variant') ? '' : 'Normal', known.has('lucky') ? '' : 'not Lucky'].filter(Boolean);
+  if (parts.length === 2) return 'Normal and not Lucky are guesses.';
+  return parts.length ? `${parts[0][0].toUpperCase()}${parts[0].slice(1)} is a guess.` : undefined;
+}
+
 /** One sentence per gap, each naming the screenshot that would fill it. */
 export function tileNotes(gaps: TileGaps): string[] {
   const notes = [];
   if (!gaps.ivs) notes.push('Add its appraisal for the IVs.');
-  if (!gaps.known.has('variant') || !gaps.known.has('lucky')) notes.push('Normal and not Lucky are guesses. Add its Pokémon screen to check.');
+  const guessed = guesses(gaps.known);
+  if (guessed) notes.push(`${guessed} Add its Pokémon screen to check.`);
   if (gaps.needsEvolve && gaps.later) notes.push(`Add a ${gaps.later}’s screen scrolled down for the Candy to evolve it, or type the total.`);
   const scrolled = scrolledDown(gaps);
   if (scrolled) notes.push(scrolled);

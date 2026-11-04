@@ -154,6 +154,8 @@ button.link {
 
 /* The grid of Pokémon (ADR 0015): one tile each, its details opened below. */
 .card h3 { margin: 0 0 4px; font-size: 1.05rem; }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0 12px; }
+.card-head button.link { margin-top: 0; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin: 10px 0 0; }
 .tile { display: flex; flex-direction: column; gap: 4px; padding: 8px; background: var(--bg); border: 2px solid var(--border); border-radius: 10px; min-width: 0; }
 .tile.open { border-color: var(--accent); }
@@ -162,7 +164,7 @@ button.link {
 button.tile-open { padding: 6px; font-size: 0.85rem; text-align: left; color: var(--text); background: transparent; border: 1px solid var(--border); }
 .tile-notes { margin: 0; padding-left: 16px; color: var(--muted); font-size: 0.75rem; }
 .tile .could { margin: 0; color: var(--save); font-size: 0.75rem; font-weight: 600; }
-.tile-marks { display: flex; gap: 12px; margin-top: auto; }
+.tile-marks { display: flex; flex-wrap: wrap; gap: 0 12px; margin-top: auto; }
 .tile-marks label.check { margin-top: 4px; font-size: 0.8rem; }
 [data-transfers] ul { margin: 4px 0 0; padding-left: 20px; }
 .questions { margin: 12px 0; padding: 10px 12px; border: 1px solid var(--accent); border-radius: 10px; }
