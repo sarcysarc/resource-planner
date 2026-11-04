@@ -37,6 +37,15 @@ describe('renderComparisons', () => {
     expect(text).toContain('Attack 150.0 with the Shadow bonus');
   });
 
+  it('adds each option’s matchups under its league result', () => {
+    const view = document.createElement('details');
+    view.textContent = 'With Splash against the top 30 opponents';
+    const container = render({ extras: { great: [null, view] } });
+    const cells = container.querySelectorAll('tbody tr:first-child td');
+    expect(cells[1].querySelector('details')).toBe(view);
+    expect(cells[0].querySelector('details')).toBeNull();
+  });
+
   it('has a column for each option', () => {
     const three = [...options, { heading: 'Purified', name: 'the purified one' }];
     const wide: Comparison[] = [{ ...rows[1], results: [...rows[1].results, ok], verdict: { kind: 'save', option: 2 }, changes: [0, 0.0667, -0.02] }];

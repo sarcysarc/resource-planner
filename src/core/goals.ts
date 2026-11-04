@@ -2,6 +2,7 @@ import { MAX_POWER_UP_LEVEL } from '../data/powerUpCosts';
 import { addCosts, powerUpCost, secondMoveCost, ZERO_COST } from './cost';
 import { SHADOW_ATTACK } from './damage';
 import { maxLevelUnderCap } from './levels';
+import type { PvpMoves } from './matchups';
 import { bestRaidPair, type RaidMoves } from './raid';
 import { rankSpread, type RankResult } from './rank';
 import { battleStats, cp, statProduct } from './stats';
@@ -29,6 +30,8 @@ export interface Candidate {
   maxLevel?: number;
   /** Its types and moves for raid damage per second (ADR 0011); Attack when unset. */
   raidMoves?: RaidMoves;
+  /** Its types and PvP fast move per league, for the matchup view only (ADR 0012). */
+  pvpMoves?: PvpMoves;
 }
 
 /** What a goal's value measures, so the UI can explain it (ADR 0006). */

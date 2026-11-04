@@ -13,6 +13,7 @@ import { formOf, readCandidate, readResources, type Result } from './form';
 import type { OptionLabel } from './format';
 import { type RaidMovesOf, wireMoves } from './moves';
 import { buildOptions, type OptionSide } from './options';
+import { type Pvp, wirePvp } from './pvpWiring';
 import { fillResources } from './scanResources';
 import { readingFamily } from './scanSpecies';
 import { addStatus, applySpecies } from './scanTarget';
@@ -79,33 +80,40 @@ interface SideSource {
   index: SpeciesIndex;
   target: Species;
   label: string;
-  raidMovesOf: RaidMovesOf;
+  moves: SideMoves;
 }
 
-function readSide({ label, raidMovesOf, ...source }: SideSource): Result<OptionSide> {
+// Each side's moves, read when the form is: raids (ADR 0011) and PvP (ADR 0012).
+interface SideMoves {
+  raidMovesOf: RaidMovesOf;
+  pvp: Pvp;
+}
+
+function readSide({ label, moves, ...source }: SideSource): Result<OptionSide> {
   const read = readCandidate(source);
   if (!read.ok) return { ok: false, error: `${label}: ${read.error}` };
   const form = formOf(source)!;
-  const candidate = { ...read.value, raidMoves: raidMovesOf(source.root, source.target) };
+  const { root, target } = source;
+  const candidate = { ...read.value, raidMoves: moves.raidMovesOf(root, target), pvpMoves: moves.pvp.movesOf(root, target) };
   return { ok: true, value: { candidate, purify: purifyCost(form.secondMoveDust), formName: form.name } };
 }
 
-// What reading the form needs: the page, the species and each side's raid moves.
+// What reading the form needs: the page, the species and each side's moves.
 interface App {
   els: Elements;
   index: SpeciesIndex;
-  raidMovesOf: RaidMovesOf;
+  moves: SideMoves;
 }
 
-function readInputs({ els, index, raidMovesOf }: App): Result<Inputs> {
+function readInputs({ els, index, moves }: App): Result<Inputs> {
   const target = findSpecies(index, els.target.value);
   if (!target) return { ok: false, error: 'Pick the Pokémon you will battle with from the list' };
   const account = readAccount(els.resources);
   if (!account.ok) return { ok: false, error: `Resources: ${account.error}` };
   const maxLevel = powerUpLimit(account.value.trainerLevel);
-  const current = readSide({ root: els.current, index, target, label: 'Current', raidMovesOf });
+  const current = readSide({ root: els.current, index, target, label: 'Current', moves });
   if (!current.ok) return current;
-  const alternative = readSide({ root: els.alternative, index, target, label: 'Alternative', raidMovesOf });
+  const alternative = readSide({ root: els.alternative, index, target, label: 'Alternative', moves });
   if (!alternative.ok) return alternative;
   const resources = readResources(els.resources);
   if (!resources.ok) return { ok: false, error: `Resources: ${resources.error}` };
@@ -120,7 +128,9 @@ function run(app: App): void {
   els.error.textContent = input.ok ? '' : input.error;
   if (!input.ok) return;
   const { compare: sides, rare, labels, notes } = input.value;
-  renderComparisons({ container: els.results, options: labels, rows: compare(sides), resources: sides.resources, rare, notes });
+  const rows = compare(sides);
+  const extras = app.moves.pvp.details(rows, sides.candidates);
+  renderComparisons({ container: els.results, options: labels, rows, resources: sides.resources, rare, notes, extras });
 }
 
 // After a candidate's fields are filled: the species, the form and the shared totals.
@@ -147,9 +157,9 @@ function wireShared(els: Elements, index: SpeciesIndex, onRead: OnRead): void {
   void receiveShared(window).then(read);
 }
 
-// Where the game data comes from, and whose it is (ADR 0011).
+// Where the game data comes from, and whose it is (ADR 0011, 0012).
 const dataCredit = (timestamp: string) =>
-  `Game data: PvPoke game master, ${timestamp}; raid move stats from PokeMiners. ` +
+  `Game data: PvPoke game master and rankings, ${timestamp}; raid move stats from PokeMiners. ` +
   'The game data belongs to Niantic and The Pokémon Company.';
 
 export function mountApp(doc: Document): void {
@@ -168,6 +178,7 @@ export function mountApp(doc: Document): void {
   fillSpeciesList(els.speciesList, index);
   els.dataInfo.textContent = dataCredit(index.timestamp);
   wireSearches({ target: els.target, root: els.searches, index });
-  const app = { els, index, raidMovesOf: wireMoves({ target: els.target, roots, index }) };
+  const wiring = { target: els.target, roots, index };
+  const app = { els, index, moves: { raidMovesOf: wireMoves(wiring), pvp: wirePvp(wiring) } };
   els.form.addEventListener('submit', (event) => (event.preventDefault(), run(app)));
 }

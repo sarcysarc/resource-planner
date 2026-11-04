@@ -42,6 +42,7 @@ with 1,154 entries, each with its recommended moveset.
   ranking, with species id and recommended moveset, in one small file per league.
   The app loads a league's file only when F5 needs it, so the main bundle stays the
   same size.
+  *Amended by ADR 0012:* all three leagues share one `pvp.json`, about 14 KB gzipped.
 - **PvE move stats (F4): PokeMiners, credited.** The build downloads PokeMiners'
   `latest/latest.json` (about 19 MB) and keeps, per move, only the PvE power,
   duration and energy (`moveSettings`: `power`, `durationMs`, `energyDelta`), in a

@@ -36,8 +36,9 @@ allows more than two candidates (G4).
   as data. PokeMiners' game master has no licence; ADR 0007 uses it, credited, for
   PvE move stats only, since no licensed source has them.
 
-Rankings of meta opponents for F5 come from PvPoke's per-league ranking files. They
-are split per league and loaded only when needed, so the main bundle stays small.
+Rankings of meta opponents for F5 come from PvPoke's per-league ranking files. The
+build keeps the top 30 per league and every species' recommended fast move in one
+`pvp.json`, loaded only when needed, so the main bundle stays small (ADR 0012).
 
 **G4. Options model.** Today `compare` takes exactly two candidates and one number
 per goal. F3 adds a third option that does not exist yet (the purified version). F4
@@ -93,11 +94,16 @@ not the data pipeline.
    (`src/data/types.ts`), species schema v3 with each species' move ids, and
    `src/data/moves.json` with PvP stats from PvPoke and PvE stats from PokeMiners
    (`src/data/moves.ts`, 24 of 355 moves without PvE stats). `chargedMoves()` adds
-   Frustration and Return. Meta opponent files wait for F5.
+   Frustration and Return.
    F4 is done (ADR 0011): raids are valued by the damage per second of the species'
    best fast and charged pair against a neutral target (`src/core/raid.ts`), with
    optional move pickers per candidate and the moves named in the result. The moves
    load as their own chunk (`src/ui/moves.ts`) and the data line credits PokeMiners.
+   F5 is done (ADR 0012): each league result lists the option's damage per fast move
+   dealt and taken against the top 30 opponents, and tallies it against the current
+   option. Verdicts stay on stat product. A "PvP fast move" picker per candidate
+   defaults to PvPoke's pick per league (`src/core/matchups.ts`,
+   `src/ui/matchupView.ts`, `src/ui/pvpWiring.ts`).
 
 ## Decisions to record
 
@@ -110,6 +116,7 @@ not the data pipeline.
 | 0008 | Screenshot reading runs on the device, nothing uploaded | Before F7 |
 | 0009 | Read screens by their labels, not by position (accepted) | Before screenshot-first S1 |
 | 0011 | Raid value from the best moveset's damage per second, with an override (accepted) | Before F4 |
+| 0012 | PvP matchups against meta opponents, shown not scored; one `pvp.json` (amends 0007, accepted) | Before F5 |
 
 ## Next: screenshot-first input
 

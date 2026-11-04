@@ -7,10 +7,15 @@ import { findSpecies, type Species, type SpeciesIndex } from './species';
 
 export type MovesIndex = Map<string, Move>;
 
-/** Loads moves.json as its own chunk, so the main bundle does not carry it. */
-export async function loadMoves(): Promise<MovesIndex> {
-  const file = MovesFileSchema.parse((await import('../data/moves.json')).default);
-  return new Map(file.moves.map((m) => [m.id, m]));
+let loading: Promise<MovesIndex> | undefined;
+
+/** Loads moves.json once, as its own chunk, so the main bundle does not carry it. */
+export function loadMoves(): Promise<MovesIndex> {
+  loading ??= import('../data/moves.json').then(({ default: data }) => {
+    const file = MovesFileSchema.parse(data);
+    return new Map(file.moves.map((m) => [m.id, m]));
+  });
+  return loading;
 }
 
 function pveOf(moves: MovesIndex, id: string): PveMove | null {
