@@ -36,7 +36,7 @@ const FIELDS = `
     <label>Raid charged move <select name="chargedMove"><option value="">Best</option></select></label>
   </div>
   <label>PvP fast move <select name="pvpFastMove"><option value="">PvPoke’s pick</option></select></label>
-  <label>Candy to evolve <input name="evolveCandy" type="number" min="0" value="0" inputmode="numeric" /></label>
+  <label>Candy to evolve <input name="evolveCandy" type="number" min="0" placeholder="Not known yet" inputmode="numeric" /></label>
   <details class="finder">
     <summary>Don't know the IVs?</summary>
     <p class="muted">Enter the CP above plus anything else the game shows, then pick the spread that matches.</p>

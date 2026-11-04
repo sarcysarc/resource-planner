@@ -94,6 +94,10 @@ export function readCandidate(source: CandidateSource): Result<Candidate> {
   if (!parsed.success) return { ok: false, error: firstError(parsed.error) };
   const form = formOf(source);
   if (!form) return { ok: false, error: `${parsed.data.form} does not evolve into ${target.name}` };
+  // Blank means not known: free only when there is nothing left to evolve.
+  if (form.id !== target.id && parsed.data.evolveCandy === undefined) {
+    return { ok: false, error: `Candy to evolve: type the total from ${form.name} to ${target.name}, or add a screenshot of each stage` };
+  }
   const level = resolveLevel(parsed.data, form);
   return level.ok ? { ok: true, value: toCandidate(parsed.data, level.value, target) } : level;
 }

@@ -52,6 +52,19 @@ describe('readCandidate', () => {
     expect(r).toMatchObject({ ok: false, error: expect.stringContaining('CP') });
   });
 
+  it('asks for the evolve Candy when the form still has to evolve and it is blank', () => {
+    const root = fieldset({ ...valid, form: 'marill', evolveCandy: '' });
+    expect(readCandidate({ root, index, target })).toEqual({
+      ok: false,
+      error: 'Candy to evolve: type the total from Marill to Azumarill, or add a screenshot of each stage',
+    });
+  });
+
+  it('takes a blank evolve Candy as none when the form is the target', () => {
+    const r = readCandidate({ root: fieldset({ ...valid, evolveCandy: '' }), index, target });
+    expect(r.ok && r.value.evolveCandy).toBe(0);
+  });
+
   it('rejects a form outside the evolution line', () => {
     expect(readCandidate({ root: fieldset({ ...valid, form: 'pikachu' }), index, target }).ok).toBe(false);
   });

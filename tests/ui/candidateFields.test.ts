@@ -37,8 +37,8 @@ describe('buildCandidateFields', () => {
     expect(names(fieldset)).toEqual(FIELD_NAMES);
   });
 
-  it('defaults evolve Candy to 0 and type to normal', () => {
-    expect(fieldset.querySelector<HTMLInputElement>('[name="evolveCandy"]')!.value).toBe('0');
+  it('leaves evolve Candy blank, as not known yet, and type normal', () => {
+    expect(fieldset.querySelector<HTMLInputElement>('[name="evolveCandy"]')!.value).toBe('');
     expect(fieldset.querySelector<HTMLSelectElement>('[name="variant"]')!.value).toBe('normal');
   });
 });

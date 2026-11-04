@@ -31,6 +31,13 @@ export function rememberStep(memory: EvolveMemory, step: Step): void {
   memory.set(step.from, baseCost(step.shown, step.variant));
 }
 
+// A total this filled is cleared once it no longer holds; a typed one is left alone.
+function showTotal(input: HTMLInputElement, total: number | undefined): void {
+  if (total === undefined && input.value === input.dataset.filled) input.value = '';
+  if (total !== undefined) input.value = String(total);
+  input.dataset.filled = total === undefined ? '' : input.value;
+}
+
 /**
  * Fills the total from the candidate's form to the target when every step is known, and
  * otherwise leaves what is typed. Returns a note for the status line, if any.
@@ -41,7 +48,7 @@ export function fillEvolve(root: ParentNode, plan: EvolvePlan): string | undefin
   if (at === -1) return undefined;
   const steps = line.slice(at, -1);
   const total = evolveTotal(steps.map((s) => plan.memory.get(s.id)), variantOf(root));
-  if (total !== undefined) field(root, 'evolveCandy').value = String(total);
+  showTotal(field(root, 'evolveCandy') as HTMLInputElement, total);
   if (total) return `${total} Candy to evolve into ${plan.target.name}.`;
   const missing = steps.find((s) => !plan.memory.has(s.id));
   return missing && `The Candy to evolve ${missing.name} is not known yet: add a screenshot of one, or type the total.`;

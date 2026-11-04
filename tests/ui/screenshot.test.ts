@@ -59,7 +59,7 @@ describe('wireScreenshot', () => {
     readScreenshot.mockResolvedValueOnce(scan(text, { cpText: '600' }));
     await choose(new File(['x'], 'screen.png'));
     // The evolve total is left to the app, which knows the target (evolveMemory).
-    expect([value('variant'), value('evolveCandy')]).toEqual(['purified', '0']);
+    expect([value('variant'), value('evolveCandy')]).toEqual(['purified', '']);
     expect([checked('lucky'), checked('secondMove')]).toEqual([true, true]);
     expect(status()).toBe('Read CP 600, HP 80, Purified, Lucky, second move unlocked, 50 Candy for the next evolution. Check them, then tap Find IVs.');
   });

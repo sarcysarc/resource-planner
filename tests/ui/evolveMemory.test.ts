@@ -35,6 +35,15 @@ describe('evolve memory', () => {
     expect(field('evolveCandy').value).toBe('7');
   });
 
+  it('clears a total it filled once a step is no longer known, as for a new target', () => {
+    rememberStep(memory, { from: 'dratini', shown: 25, variant: 'normal' });
+    field('form').value = 'dratini';
+    fillEvolve(root, { index, target: findSpecies(index, 'Dragonair')!, memory });
+    expect(field('evolveCandy').value).toBe('25');
+    fill();
+    expect(field('evolveCandy').value).toBe('');
+  });
+
   it('sets zero when the form is the target', () => {
     field('form').value = 'dragonite';
     field('evolveCandy').value = '25';
@@ -92,7 +101,7 @@ describe('wireEvolve', () => {
   it('learns nothing from a reading without a cost or a single species', () => {
     onRead(roots[0], { name: 'Dratini' });
     onRead(roots[0], { evolveCandy: 25 });
-    expect(at(0, 'evolveCandy').value).toBe('0');
+    expect(at(0, 'evolveCandy').value).toBe('');
   });
 
   it('refills when the variant or the target changes, but not when the total is typed', () => {
