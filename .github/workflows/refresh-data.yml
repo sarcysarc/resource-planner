@@ -1,0 +1,58 @@
+name: Refresh data
+
+# Rebuilds the bundled game data weekly and commits it if it changed (ADR 0013).
+
+on:
+  schedule:
+    - cron: '17 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: refresh-data
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run update-data
+      - id: diff
+        run: |
+          if git diff --quiet -- src/data; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git diff --stat -- src/data
+          fi
+      - name: Check
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          npm run lint
+          npm run typecheck
+          npm run coverage
+          npm run build
+      - name: Commit and push
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/data
+          git commit -m 'Refresh game data from PvPoke and PokeMiners'
+          git push origin HEAD:master
+      - name: Deploy
+        if: steps.diff.outputs.changed == 'true'
+        run: gh workflow run ci.yml --ref master
+        env:
+          GH_TOKEN: ${{ github.token }}

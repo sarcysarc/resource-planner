@@ -30,6 +30,7 @@ locally today, and nothing stops a push that breaks them.
 - A red check blocks the deploy, so the live site always passed the gates.
 - Anyone can read the code and the bundled game data (PvPoke data is MIT).
 - A scheduled data refresh (roadmap G3) can later run in the same workflow setup.
+  Done in ADR 0013.
 
 ## Alternatives Considered
 

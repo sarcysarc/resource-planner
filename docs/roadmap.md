@@ -19,8 +19,9 @@ first in the order below.
 ## Shared groundwork
 
 **G1. CI and hosting.** GitHub Actions runs lint, types, tests and build on every
-push and deploys `dist/` to GitHub Pages. Later, a scheduled job reruns the data
-build (G3), so the data stays current without manual work.
+push and deploys `dist/` to GitHub Pages. A weekly job (`refresh-data.yml`, ADR 0013)
+reruns the data build (G3), commits the data if it changed and the gates pass, and
+deploys it, so the data stays current without manual work.
 
 **G2. One candidate fieldset, generated in code.** `index.html` currently repeats the
 candidate fieldset twice. F3–F6 each add fields (moves, purify toggle, appraisal).
@@ -117,6 +118,7 @@ not the data pipeline.
 | 0009 | Read screens by their labels, not by position (accepted) | Before screenshot-first S1 |
 | 0011 | Raid value from the best moveset's damage per second, with an override (accepted) | Before F4 |
 | 0012 | PvP matchups against meta opponents, shown not scored; one `pvp.json` (amends 0007, accepted) | Before F5 |
+| 0013 | Weekly data refresh committed by a workflow, gated by the CI checks (accepted) | Before the G1 refresh |
 
 ## Next: screenshot-first input
 
