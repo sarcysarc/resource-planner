@@ -18,55 +18,74 @@
         <p>Compare two Pokémon from the same evolution line and see which one deserves your Stardust and Candy, for each kind of battle.</p>
       </header>
       <form id="planner" novalidate>
-        <section class="card" data-shots>
-          <label class="file">Start with screenshots: each Pokémon's screen, scrolled anywhere, and its appraisal
-            <input name="screenshots" type="file" accept="image/*" multiple />
-          </label>
-          <p class="muted" data-shots-status aria-live="polite"></p>
-          <div data-shots-choice hidden>
-            <div class="row">
-              <label>Current <select name="pickCurrent"></select></label>
-              <label>Alternative <select name="pickAlternative"></select></label>
+        <section class="step" data-step="shots">
+          <h2><span class="num">1</span> Add screenshots</h2>
+          <div class="card" data-shots>
+            <p>In the game, take these for each of the two Pokémon you are choosing between:</p>
+            <ul class="todo">
+              <li>Its screen, the one with the Power Up button. Scroll down and take another to show its moves and Candy.</li>
+              <li>Its appraisal: tap the menu button on that screen, then Appraise.</li>
+              <li>If you like, your item bag (for Rare Candy) and your profile (for your trainer level).</li>
+            </ul>
+            <label class="file pick">Choose screenshots
+              <input name="screenshots" type="file" accept="image/*" multiple />
+            </label>
+            <p class="muted" data-shots-status aria-live="polite"></p>
+            <div data-shots-choice hidden>
+              <div class="row">
+                <label>Current <select name="pickCurrent"></select></label>
+                <label>Alternative <select name="pickAlternative"></select></label>
+              </div>
+              <button type="button" class="secondary" data-shots-use>Compare these two</button>
             </div>
-            <button type="button" class="secondary" data-shots-use>Compare these two</button>
+            <button type="button" class="link" data-step-skip>No screenshots? Type the details in instead</button>
           </div>
         </section>
-        <section class="card">
-          <label>Pokémon you will battle with
-            <input id="target" name="target" list="species-list" placeholder="e.g. Azumarill" autocomplete="off" />
-          </label>
-          <datalist id="species-list"></datalist>
-          <details class="searches" data-searches open hidden>
-            <summary>Find them in the game</summary>
-            <p class="muted">Paste one into the Pokémon search, then screenshot the ones you might use.
-              Regional forms share a search; the game cannot tell them apart.</p>
-            <ul data-searches-list></ul>
-          </details>
+        <section class="step" data-step="check" hidden>
+          <h2><span class="num">2</span> Check the details</h2>
+          <p class="muted" data-check-note></p>
+          <section class="card">
+            <label>Pokémon you will battle with
+              <input id="target" name="target" list="species-list" placeholder="e.g. Azumarill" autocomplete="off" />
+            </label>
+            <datalist id="species-list"></datalist>
+            <details class="searches" data-searches open hidden>
+              <summary>Find them in the game</summary>
+              <p class="muted">Paste one into the Pokémon search, then screenshot the ones you might use.
+                Regional forms share a search; the game cannot tell them apart.</p>
+              <ul data-searches-list></ul>
+            </details>
+          </section>
+          <div class="pair">
+            <fieldset class="card" data-candidate="current" data-legend="Current Pokémon"></fieldset>
+            <fieldset class="card" data-candidate="alternative" data-legend="Alternative"></fieldset>
+          </div>
+          <fieldset class="card" data-resources>
+            <legend>Your resources <span class="muted">(leave blank for unlimited)</span></legend>
+            <div class="row">
+              <label>Stardust <input name="stardust" type="number" min="0" inputmode="numeric" /></label>
+              <label>Candy <input name="candy" type="number" min="0" inputmode="numeric" /></label>
+              <label>XL Candy <input name="xl" type="number" min="0" inputmode="numeric" /></label>
+            </div>
+            <p class="muted">From your bag and profile. Blank Rare Candy means none; a blank trainer level means no limit.</p>
+            <div class="row">
+              <label>Rare Candy <input name="rareCandy" type="number" min="0" inputmode="numeric" /></label>
+              <label>Rare Candy XL <input name="rareXl" type="number" min="0" inputmode="numeric" /></label>
+              <label>Trainer level <input name="trainerLevel" type="number" min="1" max="50" inputmode="numeric" /></label>
+            </div>
+          </fieldset>
         </section>
-        <div class="pair">
-          <fieldset class="card" data-candidate="current" data-legend="Current Pokémon"></fieldset>
-          <fieldset class="card" data-candidate="alternative" data-legend="Alternative"></fieldset>
-        </div>
-        <fieldset class="card" data-resources>
-          <legend>Your resources <span class="muted">(leave blank for unlimited)</span></legend>
-          <div class="row">
-            <label>Stardust <input name="stardust" type="number" min="0" inputmode="numeric" /></label>
-            <label>Candy <input name="candy" type="number" min="0" inputmode="numeric" /></label>
-            <label>XL Candy <input name="xl" type="number" min="0" inputmode="numeric" /></label>
-          </div>
-          <p class="muted">From your bag and profile. Blank Rare Candy means none; a blank trainer level means no limit.</p>
-          <div class="row">
-            <label>Rare Candy <input name="rareCandy" type="number" min="0" inputmode="numeric" /></label>
-            <label>Rare Candy XL <input name="rareXl" type="number" min="0" inputmode="numeric" /></label>
-            <label>Trainer level <input name="trainerLevel" type="number" min="1" max="50" inputmode="numeric" /></label>
-          </div>
-        </fieldset>
-        <button type="submit">Compare</button>
-        <p id="error" role="alert"></p>
+        <section class="step" data-step="answer" hidden>
+          <h2><span class="num">3</span> See the answer</h2>
+          <button type="submit">Show which to power up</button>
+          <p id="error" role="alert"></p>
+        </section>
       </form>
       <section id="results" aria-live="polite"></section>
       <footer>
-        <p class="muted">Costs ignore what you have already spent. League value is stat product at the highest level under the cap; raid value is Attack (Shadow ×1.2). Values within 1% count as a tie, and the cheaper one wins.</p>
+        <p class="muted">How it decides: for each kind of battle, both Pokémon are powered up as far as that battle allows,
+          and the one that ends up stronger wins. If they end up within 1% of each other, the cheaper one wins.
+          Costs count only what is still to spend.</p>
         <p id="data-info" class="muted"></p>
       </footer>
     </main>

@@ -127,3 +127,24 @@ label.file input { padding: 8px 0; border: 0; background: transparent; }
 .searches code { font-size: 0.95rem; overflow-wrap: anywhere; }
 .searches li button.secondary { margin: 0; padding: 4px 10px; }
 .searches li .muted { grid-column: 1 / -1; }
+
+.step { margin: 0 0 8px; }
+.step h2 { display: flex; align-items: center; gap: 10px; margin: 20px 0 10px; font-size: 1.25rem; }
+.step h2 .num {
+  display: inline-grid; place-items: center; flex: none;
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--accent); color: #fff; font-size: 1rem;
+}
+.step > p.muted { margin: -4px 0 10px; }
+[data-shots] > p { margin: 4px 0; }
+.todo { margin: 6px 0 12px; padding-left: 20px; }
+.todo li { margin: 4px 0; }
+label.pick {
+  margin: 0; padding: 14px; color: var(--accent); font-weight: 600; font-size: 1rem;
+  border: 2px dashed var(--accent); border-radius: 10px; text-align: center; cursor: pointer;
+}
+label.pick input { margin: 8px auto 0; width: auto; max-width: 100%; }
+button.link {
+  width: auto; margin-top: 8px; padding: 6px 0; color: var(--accent);
+  background: transparent; font-weight: 500; text-decoration: underline;
+}

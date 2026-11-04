@@ -29,6 +29,10 @@ function fillSide(side: string, ivs: string[]): void {
   setField(`[data-candidate="${side}"] [name="level"]`, '20');
 }
 
+// jsdom has no scrolling; the results are scrolled into view after a comparison.
+const scrolled = vi.fn();
+Element.prototype.scrollIntoView = scrolled;
+
 describe('mountApp', () => {
   beforeEach(() => {
     const html = readFileSync('index.html', 'utf8');
@@ -80,6 +84,7 @@ describe('mountApp', () => {
     await vi.waitFor(() => expect(form.value).toBe('lairon'));
     expect(document.querySelector('[data-shots-status]')!.textContent).toBe('Read 2 screenshots: 1 Pokémon.');
     expect(document.querySelector('[data-candidate="current"] [name="cp"]')).toHaveProperty('value', '600');
+    expect(document.querySelector<HTMLElement>('[data-step="check"]')!.hidden).toBe(false);
   });
 
   it('fills the form choices from the target species', () => {
@@ -113,6 +118,7 @@ describe('mountApp', () => {
     submit();
     expect(document.querySelector('#results')!.textContent).toContain('Great League');
     expect(document.querySelector('#error')!.textContent).toBe('');
+    expect(scrolled).toHaveBeenCalled();
   });
 
   it('adds a purified column for a Shadow candidate', () => {

@@ -12,6 +12,7 @@ vi.mock('../../src/ocr/recognize', () => ({ readScreenshot }));
 const { wireScreenshots } = await import('../../src/ui/screenshots');
 
 const use = vi.fn();
+const onDone = vi.fn();
 const useAccount = vi.fn((totals: object) => `Your totals: ${JSON.stringify(totals)}.`);
 const profile: Scan = { words: wordsOf('LEVEL\nTOTAL ACTIVITY'), cpText: '', digits: { trainerLevel: '30' } };
 const status = () => document.querySelector('[data-shots-status]')!.textContent;
@@ -32,7 +33,8 @@ describe('wireScreenshots', () => {
     document.body.innerHTML = html.slice(html.indexOf('<body>') + 6, html.indexOf('</body>'));
     use.mockClear();
     useAccount.mockClear();
-    wireScreenshots({ root: document.querySelector('[data-shots]')!, familyOf: picks, use, useAccount });
+    onDone.mockClear();
+    wireScreenshots({ root: document.querySelector('[data-shots]')!, familyOf: picks, use, useAccount, onDone });
   });
 
   it('puts the first Pokémon in Current and the second in Alternative', async () => {
@@ -43,6 +45,7 @@ describe('wireScreenshots', () => {
     ]);
     expect(status()).toBe('Read 3 screenshots: 2 Pokémon.');
     expect(choice().hidden).toBe(true);
+    expect(onDone).toHaveBeenCalledOnce();
   });
 
   it('fills only Current for one Pokémon', async () => {
@@ -53,6 +56,7 @@ describe('wireScreenshots', () => {
   it('lets the player pick two when there are more', async () => {
     await choose([screen('Aron', 50), screen('Lairon', 80), screen('Aggron', 120)]);
     expect(use).not.toHaveBeenCalled();
+    expect(onDone).not.toHaveBeenCalled();
     expect(choice().hidden).toBe(false);
     expect(status()).toContain('Pick the two to compare.');
     const alternative = document.querySelector<HTMLSelectElement>('[name="pickAlternative"]')!;
@@ -63,6 +67,7 @@ describe('wireScreenshots', () => {
       ['current', 'Aron'],
       ['alternative', 'Aggron'],
     ]);
+    expect(onDone).toHaveBeenCalledOnce();
   });
 
   it('asks for two different Pokémon', async () => {
@@ -105,5 +110,6 @@ describe('wireScreenshots', () => {
     expect(use).not.toHaveBeenCalled();
     expect(status()).toBe('No Pokémon found in these screenshots. Use the Pokémon or appraisal screen.');
     expect(useAccount).not.toHaveBeenCalled();
+    expect(onDone).toHaveBeenCalledOnce();
   });
 });

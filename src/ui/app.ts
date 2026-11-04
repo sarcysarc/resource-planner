@@ -19,6 +19,7 @@ import { readingFamily } from './scanSpecies';
 import { addStatus, applySpecies } from './scanTarget';
 import { renderComparisons } from './render';
 import { wireSearches } from './searchHelp';
+import { wireSteps } from './steps';
 import { evolutionLine, findSpecies, type Species, type SpeciesIndex, loadBundledIndex } from './species';
 
 interface Elements {
@@ -142,6 +143,8 @@ function run(app: App): void {
   const rows = compare(sides);
   const extras = app.moves.pvp.details(rows, sides.candidates);
   renderComparisons({ container: els.results, options: labels, rows, resources: sides.resources, rare, notes, extras });
+  // On a phone the results are below a long form.
+  els.results.scrollIntoView({ block: 'start' });
 }
 
 // After a candidate's fields are filled: the species, the form and the shared totals.
@@ -158,12 +161,14 @@ function useReading(els: Elements, index: SpeciesIndex, useEvolve: OnRead): OnRe
 }
 
 function wireShared(els: Elements, index: SpeciesIndex, onRead: OnRead): void {
+  const { reveal } = wireSteps(els.form.ownerDocument);
   const use = (side: Side, group: Parameters<typeof fillCandidate>[1]) => {
     fillCandidate(els[side], group);
     onRead(els[side], group.reading);
   };
   const useAccount = (totals: Totals) => fillResources(els.resources, totals, false);
-  const read = wireScreenshots({ root: els.shots, familyOf: (reading) => readingFamily(index, reading), use, useAccount });
+  const familyOf = (reading: Reading) => readingFamily(index, reading);
+  const read = wireScreenshots({ root: els.shots, familyOf, use, useAccount, onDone: reveal });
   // Screenshots shared from the gallery to the installed app (ADR 0010).
   void receiveShared(window).then(read);
 }

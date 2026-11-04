@@ -13,6 +13,8 @@ export interface ShotsWiring {
   use: (side: Side, group: Group) => void;
   /** Fills the account values a bag or profile screenshot showed; returns a status note. */
   useAccount: (totals: Totals) => string;
+  /** Called once the screenshots have been read and any Pokémon filled in. */
+  onDone?: () => void;
 }
 
 const NONE = 'No Pokémon found in these screenshots. Use the Pokémon or appraisal screen.';
@@ -44,6 +46,7 @@ function pickTwo(w: ShotsWiring, groups: Group[]): void {
   q<HTMLElement>(w.root, '[data-shots-choice]').hidden = true;
   w.use('current', groups[current]);
   w.use('alternative', groups[alternative]);
+  w.onDone?.();
 }
 
 // Bag and profile screenshots count as read even when no Pokémon is found.
@@ -63,8 +66,12 @@ async function readAll(w: ShotsWiring, files: File[]): Promise<Group[]> {
   const groups = groupReadings(pokemon, w.familyOf);
   const accountNote = Object.keys(account).length ? ` ${w.useAccount(account)}` : '';
   setStatus(w, readNote(files.length, groups, accountNote) + failedNote(failed));
-  if (groups.length > 2) offerChoice(w, groups);
-  else groups.forEach((group, i) => w.use(i ? 'alternative' : 'current', group));
+  if (groups.length > 2) {
+    offerChoice(w, groups);
+    return groups;
+  }
+  groups.forEach((group, i) => w.use(i ? 'alternative' : 'current', group));
+  w.onDone?.();
   return groups;
 }
 
