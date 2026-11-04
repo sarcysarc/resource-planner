@@ -35,10 +35,13 @@ function readDust(scan: Scan, lines: string[], mods: Modifiers): number | undefi
 
 /**
  * CP from the cropped CP band (see `cpBand`): the first number in it. The band holds
- * no slash, but OCR reads the large 7 as one, so a slash before a digit is a 7.
+ * no slash, but OCR reads the large 7 as one, so a slash before a digit is a 7. A CP
+ * label broken into another word ("Chk. 24") lost the first digits with it.
  */
 export function readCp(bandText: string): number | undefined {
-  const digits = /\d{2,5}/.exec(bandText.replace(/\/(?=\d)/g, '7'))?.[0];
+  const text = bandText.replace(/\/(?=\d)/g, '7');
+  if (!CP.test(text) && /\bC\S+\s+\d/i.test(text)) return undefined;
+  const digits = /\d{2,5}/.exec(text)?.[0];
   return digits === undefined ? undefined : Number(digits);
 }
 

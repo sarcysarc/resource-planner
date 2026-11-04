@@ -59,6 +59,11 @@ label was found and nothing was re-read.
   the same spot, the ink word wins. Lines are renumbered top to bottom so readers see
   one page. The location filter runs after the merge.
 - The cost crops accept red as well as teal (`cost` ink).
+- Totals labels match loosely (`src/core/screen/fuzzy.ts`): one wrong letter in four,
+  and STARDUST may be split into two words ("SEAR LUST", "CANLY"). The numbers read
+  above them must still be well formed.
+- A CP band whose label came out as another word ("Chk. 24") is not trusted: the
+  first digits went with it.
 
 Cost: one more full OCR pass per screenshot. On a laptop, 8 real screenshots took
 about 10–12 s in the app instead of about 6 s.

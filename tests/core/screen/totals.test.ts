@@ -66,6 +66,20 @@ describe('totalRegions', () => {
     expect(textIn(cut, 'stardust')).toEqual(['123,456']);
   });
 
+  it('accepts labels misread by a letter or two, or split in two', () => {
+    const misread = ROWS.flatMap((w) => {
+      if (w.text === 'STARDUST') return [px('SEAR', 1, [157, 114, 205, 127]), px('LUST', 1, [212, 114, 262, 127])];
+      return w.text === 'CANDY' && w.line === 1 ? [{ ...w, text: 'CANLY' }] : [w];
+    });
+    expect(textIn(misread, 'stardust')).toEqual(['123,456']);
+    expect(textIn(misread, 'candy')).toEqual(['£9']);
+  });
+
+  it('does not take a different word for a label', () => {
+    const other = ROWS.map((w) => (w.text === 'CANDY' && w.line === 1 ? { ...w, text: 'CAMERA' } : w));
+    expect(totalRegions(other).candy).toBeUndefined();
+  });
+
   it('has no regions when the labels are not on screen', () => {
     expect(totalRegions(ROWS.slice(-2))).toEqual({});
   });

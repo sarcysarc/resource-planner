@@ -8,7 +8,8 @@ import { evolutionLine, type Species, type SpeciesIndex } from './species';
 export type Result<T> = { ok: true; value: T } | { ok: false; error: string };
 
 export const blank = (v: unknown) => (v === '' ? undefined : v);
-const iv = z.preprocess(blank, z.coerce.number().int().min(0).max(15));
+const IV_HELP = 'enter 0 to 15, add an appraisal screenshot, or use Find IVs';
+const iv = z.preprocess(blank, z.coerce.number({ error: IV_HELP }).int(IV_HELP).min(0, IV_HELP).max(15, IV_HELP));
 export const optional = <T extends z.ZodType>(schema: T) => z.preprocess(blank, schema.optional());
 const count = z.preprocess(blank, z.coerce.number().int().min(0).optional());
 

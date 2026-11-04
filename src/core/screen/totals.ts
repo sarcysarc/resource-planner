@@ -1,20 +1,23 @@
-import { above, findLabel, norm, overlapsX, union } from './anchors';
+import { above, norm, overlapsX, union } from './anchors';
+import { isNear } from './fuzzy';
 import type { Box, Region, Scan, TotalName, Totals, Word } from './types';
 
-// Words that are part of a label, so never the family name in front of CANDY.
-const LABEL_WORDS = new Set(['STARDUST', 'TARDUST', 'CANDY', 'XL']);
 // Commas must group thousands properly, so "12,34" is a misread.
 const NUMBER = /^(\d{1,3}(,\d{3})+|\d+)$/;
 const BUTTONS = /^(POWER|PURIFY)$/;
 
 const height = (box: Box) => box.y1 - box.y0;
+const isCandy = (w: Word) => isNear(norm(w.text), 'CANDY');
+const isDust = (text: string) => isNear(norm(text), 'STARDUST');
+// Words that are part of a label, so never the family name in front of CANDY.
+const isLabel = (w: Word) => isCandy(w) || isDust(w.text) || norm(w.text) === 'XL';
 const isXl = (words: Word[], at: number) => norm(words[at + 1]?.text ?? '') === 'XL' && words[at + 1].line === words[at].line;
 
 // The family name before CANDY: earlier on its line, or wrapped onto the line above it.
 function family(words: Word[], at: number): Word | undefined {
   const before = words[at - 1];
-  if (before?.line === words[at].line && !LABEL_WORDS.has(norm(before.text))) return before;
-  const isName = (w: Word) => /^[A-Z]{3,}$/.test(norm(w.text)) && !LABEL_WORDS.has(norm(w.text));
+  if (before?.line === words[at].line && !isLabel(before)) return before;
+  const isName = (w: Word) => /^[A-Z]{3,}$/.test(norm(w.text)) && !isLabel(w);
   return words.find((w) => w.line === words[at].line - 1 && overlapsX(w.box, words[at].box) && isName(w));
 }
 
@@ -25,8 +28,12 @@ function regionAbove(words: Word[], at: number): Region {
   return { box: above(label, height(words[at].box)), ink: 'teal' };
 }
 
+// STARDUST as one word, or split in two by OCR on the same line.
 function stardustLabel(words: Word[]): Box | undefined {
-  return findLabel(words, 'STARDUST') ?? words.find((w) => norm(w.text) === 'TARDUST')?.box;
+  const one = words.find((w) => isDust(w.text));
+  if (one) return one.box;
+  const at = words.findIndex((w, i) => words[i + 1]?.line === w.line && isDust(w.text + words[i + 1].text));
+  return at === -1 ? undefined : union(words[at].box, words[at + 1].box);
 }
 
 /** Areas holding the Stardust, Candy and Candy XL totals, to read again as digits. */
@@ -35,7 +42,7 @@ export function totalRegions(words: Word[]): Partial<Record<TotalName, Region>> 
   const dust = stardustLabel(words);
   if (dust) regions.stardust = { box: above(dust), ink: 'teal' };
   for (const [at, w] of words.entries()) {
-    if (norm(w.text) !== 'CANDY') continue;
+    if (!isCandy(w)) continue;
     const name = isXl(words, at) ? 'xl' : 'candy';
     regions[name] ??= regionAbove(words, at);
   }
@@ -57,7 +64,7 @@ function count(text = ''): number | undefined {
 // The XL row shows only when there is some XL Candy, so its absence between the
 // Candy label and the buttons means 0. Without the buttons it may just be covered.
 function noXlRow(words: Word[]): boolean {
-  const candy = words.find((w, at) => norm(w.text) === 'CANDY' && !isXl(words, at));
+  const candy = words.find((w, at) => isCandy(w) && !isXl(words, at));
   const button = words.find((w) => BUTTONS.test(norm(w.text)));
   if (!candy || !button) return false;
   return !words.some((w) => w.line > candy.line && w.line < button.line && norm(w.text) === 'XL');

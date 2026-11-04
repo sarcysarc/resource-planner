@@ -52,6 +52,13 @@ describe('readCandidate', () => {
     expect(r).toMatchObject({ ok: false, error: expect.stringContaining('CP') });
   });
 
+  it('says how to fill a blank IV rather than reporting NaN', () => {
+    expect(readCandidate({ root: fieldset({ ...valid, atk: '' }), index, target })).toEqual({
+      ok: false,
+      error: 'Attack IV: enter 0 to 15, add an appraisal screenshot, or use Find IVs',
+    });
+  });
+
   it('asks for the evolve Candy when the form still has to evolve and it is blank', () => {
     const root = fieldset({ ...valid, form: 'marill', evolveCandy: '' });
     expect(readCandidate({ root, index, target })).toEqual({
