@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { splitAccount } from '../../../src/core/screen/account';
 import { groupReadings, mergeReadings } from '../../../src/core/screen/merge';
 import type { Reading } from '../../../src/core/screen/types';
 
@@ -88,5 +89,21 @@ describe('groupReadings', () => {
 
   it('skips screenshots that gave nothing', () => {
     expect(groupReadings([{}, top, {}], familyOf).map((g) => g.shots)).toEqual([1]);
+  });
+});
+
+describe('splitAccount', () => {
+  const bag: Reading = { totals: { rareCandy: 12, rareXl: 7 } };
+  const profile: Reading = { totals: { trainerLevel: 30 } };
+
+  it('keeps bag and profile screenshots apart from the Pokémon, newest value first', () => {
+    const later: Reading = { totals: { rareCandy: 10 } };
+    const { pokemon, account } = splitAccount([bag, top, profile, bottom, later]);
+    expect(pokemon).toEqual([top, bottom]);
+    expect(account).toEqual({ rareCandy: 10, rareXl: 7, trainerLevel: 30 });
+  });
+
+  it('takes nothing from Pokémon screens, whose totals belong to their family', () => {
+    expect(splitAccount([top, bottom]).account).toEqual({});
   });
 });

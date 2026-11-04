@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { levelFromCp, maxLevelUnderCap } from '../../src/core/levels';
+import { levelFromCp, maxLevelUnderCap, powerUpLimit } from '../../src/core/levels';
 import { cp } from '../../src/core/stats';
 
 const azumarill = { atk: 112, def: 152, hp: 225 };
@@ -30,5 +30,17 @@ describe('levelFromCp', () => {
 
   it('returns null when no level matches', () => {
     expect(levelFromCp({ base: azumarill, ivs: { atk: 0, def: 0, hp: 0 }, cp: 99999 })).toBeNull();
+  });
+});
+
+describe('powerUpLimit', () => {
+  it('is ten levels above the trainer, up to 50', () => {
+    expect(powerUpLimit(25)).toBe(35);
+    expect(powerUpLimit(40)).toBe(50);
+    expect(powerUpLimit(45)).toBe(50);
+  });
+
+  it('is 50 when the trainer level is not known', () => {
+    expect(powerUpLimit(undefined)).toBe(50);
   });
 });

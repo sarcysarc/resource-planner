@@ -33,6 +33,7 @@ const LABELS: Record<string, string> = {
   evolveCandy: 'Candy to evolve', stardust: 'Stardust', candy: 'Candy', xl: 'XL Candy',
   seenHp: 'HP shown', dust: 'Stardust to power up', stars: 'Appraisal stars',
   atkBar: 'Attack bar', defBar: 'Defense bar', hpBar: 'HP bar',
+  rareCandy: 'Rare Candy', rareXl: 'Rare Candy XL', trainerLevel: 'Trainer level',
 };
 
 export function fieldValues(root: ParentNode): Record<string, string | boolean> {

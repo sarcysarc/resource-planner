@@ -41,6 +41,16 @@ describe('inkCrop', () => {
     expect(at(inkCrop(px, { box, ink: 'teal' }), [40, 40])).toBe(255);
   });
 
+  it('reads the trainer level in its team colour, but not the pale background', () => {
+    const px = blankScreen(100, 100);
+    paint(px, [50, 40], [237, 91, 91]);
+    paint(px, [45, 35], [254, 244, 244]);
+    const out = inkCrop(px, { box, ink: 'colour' });
+    expect([at(out, [40, 40]), at(out, [30, 30])]).toEqual([0, 255]);
+    paint(px, [50, 40], [40, 120, 230]);
+    expect(at(inkCrop(px, { box, ink: 'colour' }), [40, 40])).toBe(0);
+  });
+
   it('keeps the crop inside the image', () => {
     const out = inkCrop(blankScreen(100, 100), { box: { x0: 0.9, y0: 0.9, x1: 1.5, y1: 1.5 }, ink: 'teal' });
     expect([out.width, out.height]).toEqual([2 * 10 + 40, 2 * 10 + 40]);

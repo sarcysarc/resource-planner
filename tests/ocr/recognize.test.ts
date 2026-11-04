@@ -43,6 +43,12 @@ describe('readScreenshot', () => {
     expect((await readScreenshot(new Blob())).digits).toEqual({ stardust: '7,000 8', candy: '7,000 8' });
   });
 
+  it('re-reads the trainer level above its label', async () => {
+    const labels = { text: '', blocks: [{ paragraphs: [{ lines: [line(['LEVEL', 100])] }] }] };
+    worker.recognize.mockResolvedValueOnce({ data: labels });
+    expect((await readScreenshot(new Blob())).digits).toEqual({ trainerLevel: '7,000 8' });
+  });
+
   it('skips the second pass when there is nothing to re-read', async () => {
     worker.recognize.mockResolvedValueOnce({ data: { text: '', blocks: null } });
     expect((await readScreenshot(new Blob())).digits).toEqual({});

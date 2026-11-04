@@ -36,6 +36,28 @@ describe('evaluateGoal: leagues', () => {
   });
 });
 
+describe('evaluateGoal: trainer level', () => {
+  it('powers up no further than the trainer allows', () => {
+    const r = evaluateGoal({ candidate: candidate({ maxLevel: 35 }), goal: 'master' });
+    if (!r.eligible) throw new Error('expected eligible');
+    expect(r.targetLevel).toBe(35);
+    expect(r.cost).toEqual(powerUpCost({ from: 20, to: 35, mods: normal }));
+  });
+
+  it('keeps the Best Buddy level on top of the limit', () => {
+    const r = evaluateGoal({ candidate: candidate({ maxLevel: 35, bestBuddy: true }), goal: 'master' });
+    if (!r.eligible) throw new Error('expected eligible');
+    expect([r.targetLevel, r.effectiveLevel]).toEqual([35, 36]);
+  });
+
+  it('leaves a Pokémon above the limit where it is, at no cost', () => {
+    const r = evaluateGoal({ candidate: candidate({ level: 30, maxLevel: 25 }), goal: 'master' });
+    if (!r.eligible) throw new Error('expected eligible');
+    expect(r.targetLevel).toBe(30);
+    expect(r.cost).toEqual({ stardust: 0, candy: 0, xl: 0 });
+  });
+});
+
 describe('evaluateGoal: uncapped goals', () => {
   it('powers to 50 for Master League', () => {
     const r = evaluateGoal({ candidate: candidate(), goal: 'master' });

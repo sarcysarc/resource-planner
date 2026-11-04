@@ -25,6 +25,13 @@ keep powering up the current Pokémon or switch to another of the same line.
   3. Current better by >1% → `keep`.
   4. Within 1% → the cheaper one (fewer XL Candy, then less Stardust); ties → `keep`.
 - Both candidates draw on the same Candy/XL pool because they share a family.
+- **Trainer level** (added in S5): when it is known, a Pokémon is powered up no further
+  than trainer level + 10, up to 50 (+1 for Best Buddy). The league rank is still
+  measured against every spread at the standard cap, so ranks stay comparable with
+  other tools.
+- **Rare Candy** (added in S5) never changes the verdict. It is shared by every family,
+  so spending it is the player's call; a shortfall only notes how much they hold, for
+  example "Short 20 Candy; you have 51 Rare Candy".
 
 ## Consequences
 

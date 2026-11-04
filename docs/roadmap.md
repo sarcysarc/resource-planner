@@ -94,10 +94,11 @@ not the data pipeline.
 
 Screenshots become the main way in: species, variant, Lucky, second move, costs
 and resource totals all read from screenshots, with several screenshots at once.
-Design: `docs/design/screenshot-first.md` (phases S1–S7). S1 to S4 are done:
+Design: `docs/design/screenshot-first.md` (phases S1–S7). S1 to S5 are done:
 word boxes, the screen classifier, the CP/HP/Stardust readers; species, Shadow/Purified/Lucky,
 second move and evolve cost; the Stardust, Candy and XL totals; and several screenshots at
-once, sorted into Pokémon with disagreements asked about, all in `src/core/screen/`. It needs no new
+once, sorted into Pokémon with disagreements asked about; Rare Candy from the bag and the trainer
+level from the profile, all in `src/core/screen/`. It needs no new
 groundwork beyond G6, so it can run before or alongside Phase A's second half.
 
 ## Settled (2026-11-03)

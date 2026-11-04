@@ -12,8 +12,10 @@ const SIGNS: [ScreenKind, (words: Word[]) => boolean][] = [
   // The move tabs stay when OCR misses POWER UP on its gradient and HP is scrolled away.
   ['pokemon', (w) => has(w, 'POWER UP') || anyLine(w, HP) || anyLine(w, MOVE_TABS)],
   ['appraisal', (w) => anyLine(w, /was caught on/i)],
-  ['bag', (w) => has(w, 'OTHER ITEMS')],
-  ['profile', (w) => has(w, 'LEVEL') && has(w, 'TOTAL ACTIVITY')],
+  // Rare Candy can show with its section header scrolled away.
+  ['bag', (w) => has(w, 'OTHER ITEMS') || has(w, 'RARE CANDY')],
+  // OCR can join the spaced-out header into "TOTALACTIVITY".
+  ['profile', (w) => has(w, 'LEVEL') && anyLine(w, /TOTAL\s*ACTIVITY/i)],
 ];
 
 /** Which screens a screenshot shows. An appraisal is also a Pokémon screen underneath. */

@@ -12,6 +12,8 @@ vi.mock('../../src/ocr/recognize', () => ({ readScreenshot }));
 const { wireScreenshots } = await import('../../src/ui/screenshots');
 
 const use = vi.fn();
+const useAccount = vi.fn((totals: object) => `Your totals: ${JSON.stringify(totals)}.`);
+const profile: Scan = { words: wordsOf('LEVEL\nTOTAL ACTIVITY'), cpText: '', digits: { trainerLevel: '30' } };
 const status = () => document.querySelector('[data-shots-status]')!.textContent;
 const choice = () => document.querySelector<HTMLElement>('[data-shots-choice]')!;
 const picks = (r: Reading) => r.name;
@@ -29,7 +31,8 @@ describe('wireScreenshots', () => {
     const html = readFileSync('index.html', 'utf8');
     document.body.innerHTML = html.slice(html.indexOf('<body>') + 6, html.indexOf('</body>'));
     use.mockClear();
-    wireScreenshots({ root: document.querySelector('[data-shots]')!, familyOf: picks, use });
+    useAccount.mockClear();
+    wireScreenshots({ root: document.querySelector('[data-shots]')!, familyOf: picks, use, useAccount });
   });
 
   it('puts the first Pokémon in Current and the second in Alternative', async () => {
@@ -70,9 +73,23 @@ describe('wireScreenshots', () => {
     expect(status()).toContain('Pick two different Pokémon.');
   });
 
+  it('keeps a profile screenshot out of the Pokémon and fills its trainer level', async () => {
+    await choose([profile, screen('Lairon', 80)]);
+    expect(use.mock.calls.map(([side, group]) => [side, group.shots])).toEqual([['current', 1]]);
+    expect(useAccount).toHaveBeenCalledWith({ trainerLevel: 30 });
+    expect(status()).toBe('Read 2 screenshots: 1 Pokémon. Your totals: {"trainerLevel":30}.');
+  });
+
+  it('reads a bag or profile screenshot on its own', async () => {
+    await choose([profile]);
+    expect(use).not.toHaveBeenCalled();
+    expect(status()).toBe('Read 1 screenshot. Your totals: {"trainerLevel":30}.');
+  });
+
   it('says when no Pokémon was found', async () => {
     await choose([{ words: wordsOf('Settings'), cpText: '', digits: {} }]);
     expect(use).not.toHaveBeenCalled();
     expect(status()).toBe('No Pokémon found in these screenshots. Use the Pokémon or appraisal screen.');
+    expect(useAccount).not.toHaveBeenCalled();
   });
 });

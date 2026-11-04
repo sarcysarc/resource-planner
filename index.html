@@ -44,6 +44,12 @@
             <label>Candy <input name="candy" type="number" min="0" inputmode="numeric" /></label>
             <label>XL Candy <input name="xl" type="number" min="0" inputmode="numeric" /></label>
           </div>
+          <p class="muted">From your bag and profile. Blank Rare Candy means none; a blank trainer level means no limit.</p>
+          <div class="row">
+            <label>Rare Candy <input name="rareCandy" type="number" min="0" inputmode="numeric" /></label>
+            <label>Rare Candy XL <input name="rareXl" type="number" min="0" inputmode="numeric" /></label>
+            <label>Trainer level <input name="trainerLevel" type="number" min="1" max="50" inputmode="numeric" /></label>
+          </div>
         </fieldset>
         <button type="submit">Compare</button>
         <p id="error" role="alert"></p>

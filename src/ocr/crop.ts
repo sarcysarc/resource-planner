@@ -7,6 +7,8 @@ import type { Pixels } from './pixels';
 const isInk: Record<Ink, (r: number, g: number, b: number) => boolean> = {
   white: (r, g, b) => Math.min(r, g, b) > 215,
   teal: (r, g, b) => Math.abs(r - 68) + Math.abs(g - 105) + Math.abs(b - 108) < 120 && Math.min(g, b) - r >= 16,
+  // The profile's pale background differs from white by 20 or less; team colours by 140 or more.
+  colour: (r, g, b) => Math.max(r, g, b) - Math.min(r, g, b) > 80,
 };
 const SCALE = 2;
 const PAD = 20;

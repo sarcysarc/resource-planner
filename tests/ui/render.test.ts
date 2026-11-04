@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import { renderComparisons } from '../../src/ui/render';
-import { formatCost } from '../../src/ui/format';
+import { formatCost, formatShortfall } from '../../src/ui/format';
 import type { Comparison } from '../../src/core/compare';
 
 const ok = {
@@ -30,6 +30,28 @@ describe('renderComparisons', () => {
     expect(text).toContain('+6.7%');
     expect(text).toContain('Short');
     expect(text).toContain('Attack 150.0');
+  });
+
+  it('says what Rare Candy could cover', () => {
+    const container = document.createElement('div');
+    renderComparisons({ container, rows, resources: { stardust: Infinity, candy: 100, xl: 40 }, rare: { candy: 51, xl: 0 } });
+    expect(container.textContent).toContain('Short 20 Candy; you have 51 Rare Candy');
+  });
+});
+
+describe('formatShortfall', () => {
+  const cost = { stardust: 0, candy: 120, xl: 40 };
+  const resources = { stardust: Infinity, candy: 100, xl: 10 };
+
+  it('notes the Rare Candy for each kind that is short, without changing the shortfall', () => {
+    expect(formatShortfall(cost, resources, { candy: 51, xl: 38 })).toBe('Short 20 Candy · 30 XL; you have 51 Rare Candy and 38 Rare Candy XL');
+    expect(formatShortfall(cost, { ...resources, candy: 200 }, { candy: 51, xl: 38 })).toBe('Short 30 XL; you have 38 Rare Candy XL');
+  });
+
+  it('leaves the note out when there is no Rare Candy or nothing is short', () => {
+    expect(formatShortfall(cost, resources, { candy: 0, xl: 0 })).toBe('Short 20 Candy · 30 XL');
+    expect(formatShortfall(cost, resources)).toBe('Short 20 Candy · 30 XL');
+    expect(formatShortfall(cost, { stardust: 0, candy: 500, xl: 500 }, { candy: 51, xl: 38 })).toBe('Affordable now');
   });
 });
 

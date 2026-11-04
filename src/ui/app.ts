@@ -1,5 +1,7 @@
 import { compare, type CompareInput } from '../core/compare';
-import type { Reading } from '../core/screen/types';
+import { powerUpLimit } from '../core/levels';
+import type { Reading, Totals } from '../core/screen/types';
+import { type Rare, readAccount } from './account';
 import { buildCandidateFields } from './candidateFields';
 import { wireFinder } from './finder';
 import { fillCandidate, wireScreenshot } from './screenshot';
@@ -56,23 +58,33 @@ function updateFormChoices(els: Elements, index: SpeciesIndex): void {
   }
 }
 
-function readInputs(els: Elements, index: SpeciesIndex): Result<CompareInput> {
+interface Inputs {
+  compare: CompareInput;
+  rare: Rare;
+}
+
+function readInputs(els: Elements, index: SpeciesIndex): Result<Inputs> {
   const target = findSpecies(index, els.target.value);
   if (!target) return { ok: false, error: 'Pick the Pokémon you will battle with from the list' };
+  const account = readAccount(els.resources);
+  if (!account.ok) return { ok: false, error: `Resources: ${account.error}` };
+  const maxLevel = powerUpLimit(account.value.trainerLevel);
   const current = readCandidate({ root: els.current, index, target });
   if (!current.ok) return { ok: false, error: `Current: ${current.error}` };
   const alternative = readCandidate({ root: els.alternative, index, target });
   if (!alternative.ok) return { ok: false, error: `Alternative: ${alternative.error}` };
   const resources = readResources(els.resources);
   if (!resources.ok) return { ok: false, error: `Resources: ${resources.error}` };
-  return { ok: true, value: { current: current.value, alternative: alternative.value, resources: resources.value } };
+  const compare = { current: { ...current.value, maxLevel }, alternative: { ...alternative.value, maxLevel }, resources: resources.value };
+  return { ok: true, value: { compare, rare: account.value.rare } };
 }
 
 function run(els: Elements, index: SpeciesIndex): void {
   const input = readInputs(els, index);
   els.error.textContent = input.ok ? '' : input.error;
   if (!input.ok) return;
-  renderComparisons({ container: els.results, rows: compare(input.value), resources: input.value.resources });
+  const { compare: sides, rare } = input.value;
+  renderComparisons({ container: els.results, rows: compare(sides), resources: sides.resources, rare });
 }
 
 // After a candidate's fields are filled: the species, the form and the shared totals.
@@ -90,7 +102,8 @@ function wireShared(els: Elements, index: SpeciesIndex): void {
     fillCandidate(root, group);
     useReading(els, index, root)(group.reading);
   };
-  wireScreenshots({ root: els.shots, familyOf: (reading) => readingFamily(index, reading), use });
+  const useAccount = (totals: Totals) => fillResources(els.resources, totals, false);
+  wireScreenshots({ root: els.shots, familyOf: (reading) => readingFamily(index, reading), use, useAccount });
 }
 
 export function mountApp(doc: Document): void {

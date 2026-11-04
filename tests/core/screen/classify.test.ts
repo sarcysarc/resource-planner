@@ -27,6 +27,11 @@ describe('classify', () => {
     expect(classify(wordsOf('LEVEL\nTOTAL ACTIVITY'))).toEqual(['profile']);
   });
 
+  it('knows the bag scrolled past OTHER ITEMS, and the profile when OCR joins TOTALACTIVITY', () => {
+    expect(classify(wordsOf('Lucky Egg\nRare Candy XL\nx38'))).toEqual(['bag']);
+    expect(classify(wordsOf('LEVEL\nTOTALACTIVITY'))).toEqual(['profile']);
+  });
+
   it('returns nothing for a screen it does not know', () => {
     expect(classify(wordsOf('Settings\nVersion 0.321.0'))).toEqual([]);
   });

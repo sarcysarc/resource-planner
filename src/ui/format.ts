@@ -1,6 +1,7 @@
 import type { GoalId, GoalResult } from '../core/goals';
 import type { Cost } from '../core/types';
 import type { Verdict } from '../core/verdict';
+import type { Rare } from './account';
 
 type Eligible = Extract<GoalResult, { eligible: true }>;
 
@@ -33,14 +34,22 @@ export function formatCost(cost: Cost): string {
   return parts.length ? parts.join(' · ') : 'Nothing more to spend';
 }
 
-export function formatShortfall(cost: Cost, resources: Cost): string {
+// Rare Candy is only suggested: the player decides whether to spend it on this Pokémon.
+function rareNote(short: Cost, rare: Rare | undefined): string {
+  const parts: string[] = [];
+  if (short.candy > 0 && rare?.candy) parts.push(`${n(rare.candy)} Rare Candy`);
+  if (short.xl > 0 && rare?.xl) parts.push(`${n(rare.xl)} Rare Candy XL`);
+  return parts.length ? `; you have ${parts.join(' and ')}` : '';
+}
+
+export function formatShortfall(cost: Cost, resources: Cost, rare?: Rare): string {
   const short = {
     stardust: Math.max(0, cost.stardust - resources.stardust),
     candy: Math.max(0, cost.candy - resources.candy),
     xl: Math.max(0, cost.xl - resources.xl),
   };
   const parts = costParts(short);
-  return parts.length ? `Short ${parts.join(' · ')}` : 'Affordable now';
+  return parts.length ? `Short ${parts.join(' · ')}${rareNote(short, rare)}` : 'Affordable now';
 }
 
 export function formatSummary(result: Eligible): string {

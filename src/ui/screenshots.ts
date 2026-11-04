@@ -1,4 +1,6 @@
+import { splitAccount } from '../core/screen/account';
 import { type FamilyOf, type Group, groupReadings } from '../core/screen/merge';
+import type { Totals } from '../core/screen/types';
 import { failedNote, progressNote, readImages } from './readImages';
 
 export type Side = 'current' | 'alternative';
@@ -9,6 +11,8 @@ export interface ShotsWiring {
   familyOf: FamilyOf;
   /** Fills one candidate from one Pokémon's screenshots. */
   use: (side: Side, group: Group) => void;
+  /** Fills the account values a bag or profile screenshot showed; returns a status note. */
+  useAccount: (totals: Totals) => string;
 }
 
 const NONE = 'No Pokémon found in these screenshots. Use the Pokémon or appraisal screen.';
@@ -42,15 +46,23 @@ function pickTwo(w: ShotsWiring, groups: Group[]): void {
   w.use('alternative', groups[alternative]);
 }
 
+// Bag and profile screenshots count as read even when no Pokémon is found.
+function readNote(files: number, groups: Group[], accountNote: string): string {
+  const shots = `Read ${plural(files, 'screenshot')}`;
+  if (!groups.length) return accountNote ? `${shots}.${accountNote}` : NONE;
+  const more = groups.length > 2 ? ' Pick the two to compare.' : '';
+  return `${shots}: ${groups.length} Pokémon.${more}${accountNote}`;
+}
+
 async function readAll(w: ShotsWiring, files: File[]): Promise<Group[]> {
   q<HTMLElement>(w.root, '[data-shots-choice]').hidden = true;
   setStatus(w, progressNote(1, files.length));
   const progress = (n: number) => setStatus(w, progressNote(n, files.length));
   const { readings, failed } = await readImages(files, { variant: 'normal', lucky: false }, progress);
-  const groups = groupReadings(readings, w.familyOf);
-  const more = groups.length > 2 ? ' Pick the two to compare.' : '';
-  const read = groups.length ? `Read ${plural(files.length, 'screenshot')}: ${groups.length} Pokémon.${more}` : NONE;
-  setStatus(w, read + failedNote(failed));
+  const { pokemon, account } = splitAccount(readings);
+  const groups = groupReadings(pokemon, w.familyOf);
+  const accountNote = Object.keys(account).length ? ` ${w.useAccount(account)}` : '';
+  setStatus(w, readNote(files.length, groups, accountNote) + failedNote(failed));
   if (groups.length > 2) offerChoice(w, groups);
   else groups.forEach((group, i) => w.use(i ? 'alternative' : 'current', group));
   return groups;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readScan } from '../../../src/core/screen/read';
-import { wordsOf } from './wordsOf';
+import { word, wordsOf } from './wordsOf';
 
 const normal = { variant: 'normal', lucky: false } as const;
 const scan = (text: string, cpText = '') => ({ words: wordsOf(text), cpText, digits: {} });
@@ -28,6 +28,20 @@ describe('readScan', () => {
   it('adds the Stardust and Candy totals from the second pass', () => {
     const totals = { ...scan('80 / 80 HP\n123,456 9\nSTARDUST ARON CANDY'), digits: { stardust: '123,456', candy: '9' } };
     expect(readScan(totals, normal)).toMatchObject({ totals: { stardust: 123456, candy: 9 } });
+  });
+
+  it('reads Rare Candy from the bag, and nothing else', () => {
+    const words = [...wordsOf('OTHER ITEMS\n80 / 80 HP'), word('Rare', 5, [0.3, 1, 0.4, 1.04]), word('Candy', 5, [0.42, 1, 0.55, 1.04]), word('x12', 6, [0.09, 1.15, 0.16, 1.19])];
+    expect(readScan({ words, cpText: '', digits: {} }, normal)).toEqual({ totals: { rareCandy: 12 } });
+  });
+
+  it('reads the trainer level from the profile', () => {
+    const profile = { ...scan('LEVEL 1,000/ 2,000\nTOTAL ACTIVITY'), digits: { trainerLevel: '37' } };
+    expect(readScan(profile, normal)).toEqual({ totals: { trainerLevel: 37 } });
+  });
+
+  it('gives nothing for a bag or profile it cannot read', () => {
+    expect(readScan(scan('OTHER ITEMS\nLucky Egg'), normal)).toEqual({});
   });
 
   it('ignores numbers on a screen it does not know', () => {

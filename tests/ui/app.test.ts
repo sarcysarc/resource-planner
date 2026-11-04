@@ -79,6 +79,26 @@ describe('mountApp', () => {
     expect(document.querySelector('#error')!.textContent).toBe('');
   });
 
+  it('powers up no further than ten levels above the trainer', () => {
+    setField('#target', 'Azumarill');
+    fillSide('current', ['15', '15', '15']);
+    fillSide('alternative', ['4', '15', '13']);
+    setField('[name="trainerLevel"]', '25');
+    submit();
+    const results = document.querySelector('#results')!.textContent!;
+    expect(results).toContain('Power up to Lv 35');
+    expect(results).not.toContain('Lv 50');
+  });
+
+  it('shows an error for a trainer level out of range', () => {
+    setField('#target', 'Azumarill');
+    fillSide('current', ['15', '15', '15']);
+    fillSide('alternative', ['4', '15', '13']);
+    setField('[name="trainerLevel"]', '60');
+    submit();
+    expect(document.querySelector('#error')!.textContent).toContain('Trainer level');
+  });
+
   it('shows an error for an unknown target', () => {
     setField('#target', 'Missingno');
     submit();

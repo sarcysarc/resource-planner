@@ -147,15 +147,26 @@ bubble on the buddy.
 ## Item bag
 
 Under "OTHER ITEMS", each item has a name and a count like "x51" on its icon.
-The ones that matter are **Rare Candy** (x51) and **Rare Candy XL** (x38). They
-can be turned into any family's Candy, so they add to every budget. The bag
-scrolls, so find them by name.
+The ones that matter are **Rare Candy** and **Rare Candy XL**. They can be turned
+into any family's Candy, so the app shows them beside a shortfall rather than
+adding them to the budget.
+
+- In the list view the name sits on the right and the badge below-left of it,
+  about one icon height down. Icon junk can be read on the name's own line, so
+  only badges below the name count. The grid view is not read.
+- The bag scrolls, so find the items by name. "OTHER ITEMS" may have scrolled off;
+  a "Rare Candy" name alone marks the bag. A name whose badge is cut off gives
+  nothing rather than the next item's count.
 
 ## Trainer and buddy
 
-- **Trainer level** shows on the map, bottom-left ("42"), and on the profile
-  ("42 LEVEL"). It caps how far a Pokémon can be powered up: Pokémon level is
-  at most trainer level + 10, up to 50.
+- **Trainer level** shows on the map, bottom-left, and on the profile above
+  "LEVEL". It caps how far a Pokémon can be powered up: Pokémon level is at most
+  trainer level + 10, up to 50. The profile number is large and in the team
+  colour on a pale background, so the first OCR pass misses it; a second pass
+  reads the area above "LEVEL" keeping coloured pixels. The profile is known by
+  "LEVEL" with "TOTAL ACTIVITY", which OCR sometimes joins as "TOTALACTIVITY".
+  Only the capitalised label counts; "level" in the rewards banner does not.
 - **Buddy:** tapping the buddy portrait on the map opens a screen with the
   species name and five hearts at the top. The number filled in gives the
   buddy level; Best Buddy adds one Pokémon level.

@@ -21,6 +21,8 @@ export interface Candidate {
   secondMoveUnlocked: boolean;
   secondMoveDust: number;
   evolveCandy: number;
+  /** The highest level the trainer can power up to (see powerUpLimit); 50 when unset. */
+  maxLevel?: number;
 }
 
 export type GoalResult =
@@ -45,10 +47,13 @@ function extrasCost(c: Candidate): Cost {
   return addCosts(move, { stardust: 0, candy: c.evolveCandy, xl: 0 });
 }
 
+// A Pokémon already above the trainer's limit stays where it is.
+const levelLimit = (c: Candidate) => Math.max(c.level, c.maxLevel ?? MAX_POWER_UP_LEVEL);
+
 // Effective (battle) level the candidate should reach, or null if it is already over the cap.
 function targetEffectiveLevel(c: Candidate, cap: number): number | null {
   const bonus = c.bestBuddy ? 1 : 0;
-  const level = maxLevelUnderCap({ base: c.base, ivs: c.ivs, cap, maxLevel: MAX_POWER_UP_LEVEL + bonus });
+  const level = maxLevelUnderCap({ base: c.base, ivs: c.ivs, cap, maxLevel: levelLimit(c) + bonus });
   return level === null || level < c.level + bonus ? null : level;
 }
 

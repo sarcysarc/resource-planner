@@ -59,8 +59,8 @@ The existing form stays as the fallback and as the place to correct values.
 |--------|--------|----------|
 | Pokémon | species (or nickname), CP, max HP, types, Stardust total, family Candy total, Candy XL total, power-up cost, evolve cost, second move locked/unlocked, Shadow, Purified, Lucky | labels listed in `docs/screens.md` |
 | Appraisal | the above that stays visible, plus exact IVs (pixels) and the real species from the footer | footer "This <Species> was caught", bar pixels |
-| Item bag | Rare Candy, Rare Candy XL | item name, then the "xN" count on its icon |
-| Profile / map | trainer level | "LEVEL" label; the number by the avatar on the map |
+| Item bag | Rare Candy, Rare Candy XL | item name, then the "xN" count below-left of it (list view) |
+| Profile | trainer level | the coloured number above the "LEVEL" label; the map is not read |
 | Buddy | buddy level | filled hearts (later; optional) |
 
 Values a screenshot can't give (target species, goal, league) stay as form fields,
@@ -165,7 +165,8 @@ Sizes follow the project quality gates (files ≤ 200 lines, ≤ 10 functions).
 | `src/core/screen/anchors.ts` | geometry: above, right of, same line, wrapped labels |
 | `src/core/screen/classify.ts` | `Word[]` → screen kinds |
 | `src/core/screen/pokemon.ts` | Pokémon screen reader |
-| `src/core/screen/account.ts` | bag and profile readers |
+| `src/core/screen/account.ts` | bag and profile readers; keeps their values out of Pokémon grouping |
+| `src/ui/account.ts` | Rare Candy and trainer level fields |
 | `src/core/screen/identity.ts` | printed name and Candy family |
 | `src/core/screen/traits.ts` | Shadow/Purified, Lucky, evolve cost |
 | `src/core/screen/moves.ts` | second charged move locked or unlocked |
@@ -205,7 +206,7 @@ against the new readers.
 | S2 | Species auto-select, Shadow/Purified/Lucky, second move, evolve cost (done) | Nickname + hidden CP cases; handled by Candy family plus CP/HP fit |
 | S3 | Resource totals (Stardust, Candy, XL) fill the shared fields (done) | XL label wrapping; solved by reading the family on the line above. Totals on appraisal screens are not read yet |
 | S4 | Several screenshots at once, grouping and conflict questions (done) | Scrolled-down screenshots of the same species; solved by power-up cost, then time order. Source badges per field are not shown yet |
-| S5 | Bag (Rare Candy) and profile (trainer level) | Rare Candy shown as a separate "could cover" note |
+| S5 | Bag (Rare Candy) and profile (trainer level) (done) | Rare Candy shown as a separate "could cover" note; trainer level caps the power-up target. Typed fields too |
 | S6 | Suggested search strings, e.g. `!@3move`, `4*`, `shadow` | None; static help text |
 | S7 | Share screenshots straight from the gallery (PWA share target) | Manifest and service worker; iOS support |
 

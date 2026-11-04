@@ -17,8 +17,11 @@ export interface Word {
 
 export type ScreenKind = 'pokemon' | 'appraisal' | 'bag' | 'profile';
 
-/** Text colour to keep when re-reading a region: white on buttons, dark teal for labels. */
-export type Ink = 'white' | 'teal';
+/**
+ * Text colour to keep when re-reading a region: white on buttons, dark teal for labels,
+ * and any strong colour for the trainer level, which takes the team's colour.
+ */
+export type Ink = 'white' | 'teal' | 'colour';
 
 /** An area to read again, digits only, after the first pass found its label. */
 export interface Region {
@@ -28,9 +31,11 @@ export interface Region {
 
 /** The account's resource totals, named as the form's resource fields. */
 export type TotalName = 'stardust' | 'candy' | 'xl';
-export type Totals = Partial<Record<TotalName, number>>;
+/** Account-wide values from the bag and the profile, also named as form fields. */
+export type AccountName = 'rareCandy' | 'rareXl' | 'trainerLevel';
+export type Totals = Partial<Record<TotalName | AccountName, number>>;
 
-export type RegionName = 'cost' | TotalName;
+export type RegionName = 'cost' | TotalName | 'trainerLevel';
 
 /** What OCR produced for one screenshot. Location text is already removed. */
 export interface Scan {
