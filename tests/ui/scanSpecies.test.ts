@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { battleStats, cp } from '../../src/core/stats';
-import { resolveSpecies } from '../../src/ui/scanSpecies';
+import { readingFamily, resolveSpecies } from '../../src/ui/scanSpecies';
 import { findSpecies, loadBundledIndex } from '../../src/ui/species';
 
 const index = loadBundledIndex();
@@ -30,5 +30,12 @@ describe('resolveSpecies', () => {
 
   it('finds nothing for an unknown name and family', () => {
     expect(ids({ name: 'Rocky', family: 'RLAX' })).toEqual([]);
+  });
+});
+
+describe('readingFamily', () => {
+  it('tells the Candy family from a species name or the family label', () => {
+    expect([readingFamily(index, { name: 'Lairon' }), readingFamily(index, { family: 'ARON' })]).toEqual(['FAMILY_ARON', 'FAMILY_ARON']);
+    expect(readingFamily(index, { name: 'Rocky' })).toBeUndefined();
   });
 });

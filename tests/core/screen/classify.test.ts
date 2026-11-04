@@ -11,6 +11,12 @@ describe('classify', () => {
     expect(classify(wordsOf('Snorlax\n132/132HP'))).toEqual(['pokemon']);
   });
 
+  it('knows the Pokémon screen by its move tabs when OCR misses POWER UP', () => {
+    expect(classify(wordsOf('ARON CANDY XL\nGYMS & RAIDS TRAINER BATTLES\nMetal Sound 4'))).toEqual(['pokemon']);
+    expect(classify(wordsOf('TRAINER BATTLES\nTackle'))).toEqual(['pokemon']);
+    expect(classify(wordsOf('GYMS & RAIDS\nTackle'))).toEqual(['pokemon']);
+  });
+
   it('knows the appraisal screen by its footer, together with what stays visible', () => {
     const words = wordsOf('Snorlax\n132 / 132 HP\nThis Snorlax was caught on 1/2/2026');
     expect(classify(words)).toEqual(['pokemon', 'appraisal']);

@@ -1,6 +1,8 @@
 // The moves sit under "GYMS & RAIDS": one fast move, then one or two charged moves.
 const MOVES_HEADER = /\bGYMS\b/;
-const NEW_ATTACK = /\bNEW\s+ATTACK\b/;
+// OCR can miss NEW on the button's gradient; ATTACK in capitals before a Stardust price
+// still gives it away (a move named "Attack Order" is mixed case, with its power after it).
+const NEW_ATTACK = /\bNEW\s+ATTACK\b|\bATTACK\s+\D?\d{1,3},000\b/;
 // The unlock price is the same number of thousands of Stardust as Candy: "§90,000 £90".
 const UNLOCK_COST = /(\d{2,3}),000\D{1,4}(\d{2,3})\b/;
 const BONUS = /\bBON\w{0,3}\b/i;

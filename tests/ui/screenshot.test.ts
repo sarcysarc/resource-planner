@@ -17,9 +17,10 @@ const checked = (name: string) => root.querySelector<HTMLInputElement>(`[name="$
 const value = (name: string) => root.querySelector<HTMLInputElement>(`[name="${name}"]`)!.value;
 const status = () => root.querySelector('[data-scan-status]')!.textContent;
 
-async function choose(file: File | null): Promise<void> {
+async function choose(file: File | File[] | null): Promise<void> {
   const input = root.querySelector<HTMLInputElement>('[name="screenshot"]')!;
-  Object.defineProperty(input, 'files', { value: file ? [file] : [], configurable: true });
+  const files = file === null ? [] : [file].flat();
+  Object.defineProperty(input, 'files', { value: files, configurable: true });
   input.dispatchEvent(new Event('change'));
   await vi.waitFor(() => expect(status()).not.toContain('Reading'));
 }
@@ -87,6 +88,38 @@ describe('wireScreenshot', () => {
     readScreenshot.mockRejectedValueOnce(new Error('boom'));
     await choose(new File(['x'], 'broken.png'));
     expect(status()).toContain('Could not read');
+  });
+
+  it('takes several screenshots of the same Pokémon at once', async () => {
+    expect(root.querySelector<HTMLInputElement>('[name="screenshot"]')!.multiple).toBe(true);
+    readScreenshot.mockResolvedValueOnce(POKEMON_SCREEN);
+    readScreenshot.mockResolvedValueOnce(scan('191 / 191 HP', { cpText: '1499', ivs: { atk: 1, def: 2, hp: 3 } }));
+    await choose([new File(['x'], 'top.png'), new File(['x'], 'appraisal.png')]);
+    expect(['cp', 'dust', 'atk', 'def', 'hp'].map(value)).toEqual(['1499', '9000', '1', '2', '3']);
+    expect(status()).toContain('Read 2 screenshots');
+  });
+
+  it('asks when the screenshots disagree, and leaves that field alone', async () => {
+    readScreenshot.mockResolvedValueOnce(POKEMON_SCREEN);
+    readScreenshot.mockResolvedValueOnce(scan('CP1500\n191 / 191 HP'));
+    await choose([new File(['x'], 'a.png'), new File(['x'], 'b.png')]);
+    expect(value('cp')).toBe('');
+    expect(status()).toContain('The screenshots disagree on CP: 1499 or 1500. Type the right one.');
+  });
+
+  it('reads them oldest first, so the newest total counts', async () => {
+    const totals = (dust: string) => scan('191 / 191 HP\n9 9\nSTARDUST ARON CANDY', { cpText: '1499', digits: { stardust: dust } });
+    readScreenshot.mockImplementation(async (image) => totals((image as File).name === 'new.png' ? '200' : '100'));
+    await choose([new File(['x'], 'new.png', { lastModified: 2 }), new File(['x'], 'old.png', { lastModified: 1 })]);
+    readScreenshot.mockImplementation(async () => POKEMON_SCREEN);
+    expect(onRead).toHaveBeenLastCalledWith(expect.objectContaining({ totals: { stardust: 200 } }));
+  });
+
+  it('keeps what it could read when one of several images fails', async () => {
+    readScreenshot.mockRejectedValueOnce(new Error('boom'));
+    await choose([new File(['x'], 'broken.png'), new File(['x'], 'screen.png')]);
+    expect(value('cp')).toBe('1499');
+    expect(status()).toContain('1 image could not be read.');
   });
 
   it('does nothing when the picker is cancelled', async () => {

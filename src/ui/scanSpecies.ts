@@ -25,3 +25,8 @@ export function resolveSpecies(index: SpeciesIndex, reading: Reading): Species[]
   if (named) return [named];
   return reading.family ? familyMembers(index, reading) : [];
 }
+
+/** The Candy family a reading shows, when its species can be told; used to group screenshots. */
+export function readingFamily(index: SpeciesIndex, reading: Reading): string | undefined {
+  return resolveSpecies(index, reading)[0]?.family;
+}

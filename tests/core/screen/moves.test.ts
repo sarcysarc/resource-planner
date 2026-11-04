@@ -8,6 +8,14 @@ describe('readSecondMove', () => {
     expect(readSecondMove(lines('GYMS & RAIDS\n(eo) Confusion 19\n© Return 25\nNEW ATTACK f40,000 40'))).toBe(false);
   });
 
+  it('is locked when OCR misses NEW but reads ATTACK and its Stardust price', () => {
+    expect(readSecondMove(lines('GYMS & RAIDS\n0 M S 4\n0 H S IY S 70\nATTACK 10,000 25'))).toBe(false);
+  });
+
+  it('does not take a move named Attack for the button', () => {
+    expect(readSecondMove(lines('GYMS & RAIDS\nO Bug Bite 5\nO Attack Order 90\nO Bug Buzz 100\nCAUGHT IN THE WILD'))).toBe(true);
+  });
+
   it('is locked when only the matching Stardust and Candy cost was read', () => {
     expect(readSecondMove(lines('GYMS & RAIDS\n0 Confusion 19+4\n© Psystrike 95\n1 100,000 £ 100'))).toBe(false);
     expect(readSecondMove(lines('GYMS & RAIDS\nO Lick 5+1\n§90,000 £90'))).toBe(false);

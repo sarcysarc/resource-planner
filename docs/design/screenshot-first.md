@@ -115,7 +115,8 @@ OCR with word boxes ──► classify screen ──► per-screen reader ──
    as plain text. `src/ocr/words.ts` turns its output into `Word { text, box }`
    with boxes as fractions of image width, so all later code is
    resolution-independent and has no tesseract types.
-2. **Classify the screen** from which anchor words appear: "POWER UP" → Pokémon;
+2. **Classify the screen** from which anchor words appear: "POWER UP", the HP
+   line or the move tabs ("GYMS & RAIDS", "TRAINER BATTLES") → Pokémon;
    "was caught on" → appraisal; "ITEMS" + "OTHER ITEMS" → bag; "LEVEL" + "TOTAL
    ACTIVITY" → profile. A screenshot can be Pokémon and appraisal at once. If
    nothing matches, report "not a screen I know".
@@ -132,8 +133,15 @@ OCR with word boxes ──► classify screen ──► per-screen reader ──
    read all 21 IVs right on the iPhone JPEGs without changes.
 7. **Validation** uses existing code: `powerUpCost` for costs, the species index for
    names, `infer` for CP/HP/IV consistency.
-8. **Merging** combines readings for the same Pokémon. Each field keeps its source
-   screenshot. Equal values merge; different values become a question.
+8. **Merging** (`src/core/screen/merge.ts`) works on readings sorted oldest first
+   (by file time). Screenshots showing CP or HP are the same Pokémon when the CP
+   and HP they both show agree and their Candy families don't clash. A scrolled-down
+   screenshot (no CP, no HP) joins a Pokémon of its family: the only one, else the
+   one with the same power-up cost, else the one screenshotted just before it (or
+   just after, if it came first). Within a Pokémon, equal values merge and
+   different ones become a question, and that field stays empty. The newest total
+   wins, since totals change as the player plays. A disputed name goes to the
+   appraisal's reading, else it is dropped.
 
 ### Data needed
 
@@ -168,7 +176,10 @@ Sizes follow the project quality gates (files ≤ 200 lines, ≤ 10 functions).
 | `src/ui/scanResources.ts` | fills the shared resource fields from the totals |
 | `src/core/screen/privacy.ts` | drops location lines before any reader sees them |
 | `src/core/screen/merge.ts` | group by Pokémon, merge, list conflicts |
-| `src/ui/screenshots.ts` | multi-file picker, status, fill and source badges |
+| `src/ui/readImages.ts` | reads files oldest first, counts failures, progress text |
+| `src/ui/conflicts.ts` | the sentence about values the screenshots disagree on |
+| `src/ui/screenshot.ts` | a candidate's picker: every file is that one Pokémon |
+| `src/ui/screenshots.ts` | the shared picker: sorts files into Pokémon, fills two or asks which |
 
 `src/core/screenText.ts` is replaced by `src/core/screen/` once its tests pass
 against the new readers.
@@ -193,7 +204,7 @@ against the new readers.
 | S1 | Word boxes, classifier, anchor helpers; port CP/HP/Stardust readers to anchors (done) | Tesseract word boxes on stylised fonts; solved with a digits-only second pass |
 | S2 | Species auto-select, Shadow/Purified/Lucky, second move, evolve cost (done) | Nickname + hidden CP cases; handled by Candy family plus CP/HP fit |
 | S3 | Resource totals (Stardust, Candy, XL) fill the shared fields (done) | XL label wrapping; solved by reading the family on the line above. Totals on appraisal screens are not read yet |
-| S4 | Several screenshots at once, grouping and conflict questions | UI complexity |
+| S4 | Several screenshots at once, grouping and conflict questions (done) | Scrolled-down screenshots of the same species; solved by power-up cost, then time order. Source badges per field are not shown yet |
 | S5 | Bag (Rare Candy) and profile (trainer level) | Rare Candy shown as a separate "could cover" note |
 | S6 | Suggested search strings, e.g. `!@3move`, `4*`, `shadow` | None; static help text |
 | S7 | Share screenshots straight from the gallery (PWA share target) | Manifest and service worker; iOS support |

@@ -57,6 +57,11 @@ describe('readPokemon', () => {
     expect(readPokemon(scan('cr 999\n85 / 85 HP', { cpText: '«615 ou.' }), normal).cp).toBe(615);
   });
 
+  it('ignores the CP band on a screen scrolled past CP and HP', () => {
+    const scrolled = scan('135,770 8\nSTARDUST ARON CANDY\nPOWER UP 7,000 8', { cpText: '135,770 8' });
+    expect(readPokemon(scrolled, normal)).toEqual({ dust: 7000 });
+  });
+
   it('accepts the small CP letters read as "cpr" or "cr"', () => {
     expect(['cpr545', 'cr370', 'cp546'].map((t) => read(t).cp)).toEqual([545, 370, 546]);
   });

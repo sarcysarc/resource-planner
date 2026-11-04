@@ -14,6 +14,19 @@
         <p>Compare two Pokémon from the same evolution line and see which one deserves your Stardust and Candy, for each kind of battle.</p>
       </header>
       <form id="planner" novalidate>
+        <section class="card" data-shots>
+          <label class="file">Start with screenshots: each Pokémon's screen, scrolled anywhere, and its appraisal
+            <input name="screenshots" type="file" accept="image/*" multiple />
+          </label>
+          <p class="muted" data-shots-status aria-live="polite"></p>
+          <div data-shots-choice hidden>
+            <div class="row">
+              <label>Current <select name="pickCurrent"></select></label>
+              <label>Alternative <select name="pickAlternative"></select></label>
+            </div>
+            <button type="button" class="secondary" data-shots-use>Compare these two</button>
+          </div>
+        </section>
         <section class="card">
           <label>Pokémon you will battle with
             <input id="target" name="target" list="species-list" placeholder="e.g. Azumarill" autocomplete="off" />

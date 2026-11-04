@@ -45,8 +45,11 @@ export function pokemonRegions(words: Word[]): Partial<Record<RegionName, Region
 export function readPokemon(scan: Scan, mods: Modifiers): Reading {
   const lines = textLines(scan.words);
   const text = lines.join('\n');
-  const cp = readCp(scan.cpText) ?? CP.exec(text)?.[1];
   const hp = HP.exec(text)?.[2];
+  // The band shows CP only on the top of the screen, which also shows HP; scrolled
+  // further, it holds other numbers. A number labelled CP is trusted anywhere.
+  const band = hp === undefined ? undefined : readCp(scan.cpText);
+  const cp = band ?? CP.exec(text)?.[1];
   const reading: Reading = {
     cp: cp === undefined ? undefined : Number(cp),
     hp: hp === undefined ? undefined : Number(hp),

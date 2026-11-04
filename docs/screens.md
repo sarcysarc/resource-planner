@@ -46,7 +46,15 @@ Checked against every local screenshot. The readers live in `src/core/screen/`.
 - **Lucky:** "LUCKY POKEMON", usually without the accent. Its absence proves
   nothing, so the Lucky box is only ever ticked, never unticked.
 - **Second move:** locked when "NEW ATTACK" or a matching cost ("§90,000 £90",
-  same thousands of Stardust as Candy) shows under the moves. Unlocked only when
+  same thousands of Stardust as Candy) shows under the moves. NEW can be lost on
+  the button's gradient, so "ATTACK" in capitals before a thousands price counts
+  too; the price doesn't always match the Candy ("10,000 25").
+- **POWER UP** can be lost the same way. The move tabs ("GYMS & RAIDS", "TRAINER
+  BATTLES") also mark the Pokémon screen, so a scrolled-down screenshot still counts.
+- **CP band:** on a scrolled-down screenshot the band holds other text ("135,770",
+  "2.68kg"), so its number counts only when the HP line shows too. A number after
+  "CP" in the words counts anywhere. The band can misread a digit ("CP714" as
+  "cr/14"); the CP field then needs fixing by hand. Unlocked only when
   three move lines are followed straight away by the origin label; a garbled
   line in between ("TE", "ck mon") may be an unread NEW ATTACK, so it gives no answer.
 - **Evolve:** "EVOLVE" then a number. Ignore it when "MEGA" is on that line or the
@@ -78,6 +86,15 @@ Checked against every local screenshot. The readers live in `src/core/screen/`.
   Stardust is the account's, so it always fills.
 - On appraisal screens (adb and iPhone) no totals are read yet: the labels are
   dimmed or covered by the team leader.
+
+## Several screenshots (S4)
+
+Checked on two Aggrons and an Aron from one family, each screenshotted at the top
+and scrolled down, in that order. All six sorted into three Pokémon, two
+screenshots each. A fainted Pokémon shows "0 / 140 HP"; the second number is
+the one read. Grouping leans on file times, so screenshots picked out of order
+can pair a scrolled-down screenshot with the wrong family member when the power-up
+costs match.
 
 ## Appraisal screen
 

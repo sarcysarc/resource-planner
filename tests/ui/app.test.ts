@@ -54,6 +54,16 @@ describe('mountApp', () => {
     expect([resource('stardust'), resource('candy')]).toEqual(['123456', '9']);
   });
 
+  it('fills Current from the shared screenshot picker', async () => {
+    const input = document.querySelector<HTMLInputElement>('[data-shots] [name="screenshots"]')!;
+    Object.defineProperty(input, 'files', { value: [new File(['x'], 'a.png'), new File(['x'], 'b.png')] });
+    input.dispatchEvent(new Event('change'));
+    const form = document.querySelector<HTMLSelectElement>('[data-candidate="current"] select[name="form"]')!;
+    await vi.waitFor(() => expect(form.value).toBe('lairon'));
+    expect(document.querySelector('[data-shots-status]')!.textContent).toBe('Read 2 screenshots: 1 Pokémon.');
+    expect(document.querySelector('[data-candidate="current"] [name="cp"]')).toHaveProperty('value', '600');
+  });
+
   it('fills the form choices from the target species', () => {
     setField('#target', 'Azumarill');
     const options = [...document.querySelectorAll('[data-candidate="current"] select[name="form"] option')];
