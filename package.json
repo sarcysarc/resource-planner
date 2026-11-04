@@ -10,7 +10,9 @@
     "coverage": "vitest run --coverage",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "update-data": "node scripts/build-species.mjs"
+    "update-data": "node scripts/build-species.mjs",
+    "predev": "node scripts/copy-ocr-assets.mjs",
+    "prebuild": "node scripts/copy-ocr-assets.mjs"
   },
   "license": "ISC",
   "type": "module",
@@ -28,6 +30,8 @@
   },
   "private": true,
   "dependencies": {
+    "@tesseract.js-data/eng": "^1.0.0",
+    "tesseract.js": "^7.0.0",
     "zod": "^4.6.7"
   }
 }

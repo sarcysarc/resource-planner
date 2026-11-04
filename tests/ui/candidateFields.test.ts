@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { buildCandidateFields } from '../../src/ui/candidateFields';
 
 const FIELD_NAMES = ['form', 'atk', 'def', 'hp', 'level', 'cp', 'variant', 'lucky', 'bestBuddy', 'secondMove', 'evolveCandy',
-  'seenHp', 'dust', 'stars', 'atkBar', 'defBar', 'hpBar'];
+  'screenshot', 'seenHp', 'dust', 'stars', 'atkBar', 'defBar', 'hpBar'];
 
 function names(root: ParentNode): string[] {
   return [...root.querySelectorAll<HTMLInputElement>('[name]')].map((el) => el.name);

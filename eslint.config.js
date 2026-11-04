@@ -4,7 +4,7 @@ import tseslint from 'typescript-eslint';
 
 // Quality gates: see docs/adr/0001-web-app-stack.md
 export default tseslint.config(
-  { ignores: ['dist', 'coverage', 'node_modules'] },
+  { ignores: ['dist', 'coverage', 'node_modules', 'public/ocr'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   { files: ['scripts/**/*.mjs'], languageOptions: { globals: globals.node } },

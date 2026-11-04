@@ -31,6 +31,10 @@ const FIELDS = `
   <details class="finder">
     <summary>Don't know the IVs?</summary>
     <p class="muted">Enter the CP above plus anything else the game shows, then pick the spread that matches.</p>
+    <label class="file">Read CP, HP and Stardust from a screenshot
+      <input name="screenshot" type="file" accept="image/*" />
+    </label>
+    <p class="muted" data-scan-status aria-live="polite"></p>
     <div class="row">
       <label>HP shown <input name="seenHp" type="number" min="1" inputmode="numeric" /></label>
       <label>Stardust to power up <input name="dust" type="number" min="1" inputmode="numeric" /></label>
