@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { splitAccount } from '../../../src/core/screen/account';
-import { groupReadings, mergeReadings } from '../../../src/core/screen/merge';
+import { groupReadings } from '../../../src/core/screen/group';
+import { mergeReadings } from '../../../src/core/screen/merge';
 import type { Reading } from '../../../src/core/screen/types';
 
 // Made-up readings. A family is known from the family label or a species name.
@@ -92,6 +93,28 @@ describe('groupReadings', () => {
     const [group] = groupReadings([{ ...other, family: 'SNORLAX' }, { family: 'RLAX', ivs: { atk: 1, def: 2, hp: 3 } }], loose);
     expect(group.conflicts).toEqual([]);
     expect(group.reading.family).toBe('SNORLAX');
+  });
+
+  describe('an appraisal whose CP and HP were misread', () => {
+    const ivs = { atk: 4, def: 5, hp: 6 };
+    const count = (readings: Reading[]) => groupReadings(readings, familyOf).map((g) => [g.reading.cp, g.shots, g.conflicts.length]);
+
+    it('gets its own tile when its family is not known, rather than the nearest Pokémon', () => {
+      expect(count([top, other, { ivs }])).toEqual([[600, 1, 0], [2000, 1, 0], [undefined, 1, 0]]);
+    });
+
+    it('joins the one Pokémon of its family that has no IVs yet', () => {
+      expect(count([top, other, { name: 'Lairon', ivs }])).toEqual([[600, 2, 0], [2000, 1, 0]]);
+    });
+
+    it('never joins a Pokémon that already has IVs', () => {
+      expect(count([appraisal, { name: 'Lairon', ivs }])).toEqual([[600, 1, 0], [undefined, 1, 0]]);
+    });
+
+    it('gets its own tile when two Pokémon of its family could own it', () => {
+      const twin: Reading = { name: 'Aggron', cp: 1500, hp: 120 };
+      expect(count([top, twin, { name: 'Lairon', ivs }])).toHaveLength(3);
+    });
   });
 
   it('skips screenshots that gave nothing', () => {

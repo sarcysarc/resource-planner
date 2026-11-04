@@ -36,6 +36,18 @@ What limits the app to two is the page.
 - Screenshots can be added later in step 1. New ones are grouped with the Pokémon
   already read, by species, CP and HP, as when they arrive together, and fill gaps
   without overwriting what the player has edited.
+- **The IV bars mark an appraisal** (amended 2026-11-04). OCR can garble the footer
+  and the HP line (seen on an iPhone JPEG: "caught en", no HP), but the bars are read
+  from pixels and are reliable. A screenshot with bars is read as an appraisal even
+  when its text gives no sign. Its CP band is trusted without an HP line only when
+  the band also shows the CP label, and the number after the label wins: on a Lucky's
+  gold background the band can hold junk digits too (seen: "384" above "cr2488").
+- **An appraisal never joins a Pokémon by guesswork.** An appraisal without CP or HP
+  was misread, so the time order used for scrolled-down screens doesn't apply. It
+  joins only the single Pokémon of its own known family that has no IVs yet;
+  otherwise it gets its own tile, which asks for what is missing. Before this, its
+  IVs went to the Pokémon nearest in time, giving wrong IVs or an "IVs disagree"
+  question.
 
 ### Questions before the grid
 

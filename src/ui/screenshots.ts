@@ -1,7 +1,8 @@
 // Step 1's picker (ADR 0015): screenshots of many Pokémon, sorted into Pokémon. Anything
 // the screenshots can't settle is asked first; then each Pokémon goes into the grid.
 import { splitAccount } from '../core/screen/account';
-import { type FamilyOf, type Group, groupReadings } from '../core/screen/merge';
+import { groupReadings } from '../core/screen/group';
+import type { FamilyOf, Group } from '../core/screen/merge';
 import type { Reading, Totals } from '../core/screen/types';
 import { answer, questionsFor, type StagesOf } from './questions';
 import { askQuestions } from './questionsView';

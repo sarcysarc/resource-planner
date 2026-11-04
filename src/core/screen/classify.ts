@@ -11,7 +11,8 @@ const anyLine = (words: Word[], pattern: RegExp) => textLines(words).some((line)
 const SIGNS: [ScreenKind, (words: Word[]) => boolean][] = [
   // The move tabs stay when OCR misses POWER UP on its gradient and HP is scrolled away.
   ['pokemon', (w) => has(w, 'POWER UP') || anyLine(w, HP) || anyLine(w, MOVE_TABS)],
-  ['appraisal', (w) => anyLine(w, /was caught on/i)],
+  // OCR can run the name into "was" and misread "on" ("Gengarwas caught en").
+  ['appraisal', (w) => anyLine(w, /was\s+caught\s+\S{2}\s+\d/i)],
   // Rare Candy can show with its section header scrolled away.
   ['bag', (w) => has(w, 'OTHER ITEMS') || has(w, 'RARE CANDY')],
   // OCR can join the spaced-out header into "TOTALACTIVITY".

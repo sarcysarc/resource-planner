@@ -1,7 +1,7 @@
 import { HP } from './classify';
 
-// "This Snorlax was caught on …" at the foot of the appraisal.
-const FOOTER = /\bThis\s+(.+?)\s+was\s+caught\b/;
+// "This Snorlax was caught on …" at the foot of the appraisal. OCR can run the name into "was".
+const FOOTER = /\bThis\s+(.+?)\s*was\s+caught\b/;
 // A name: capitalised words, allowing "Mr. Mime", "Farfetch'd" and "Ho-Oh".
 // At least three characters, so a scrap of junk is not taken for a name.
 const NAME = /[A-Z][\w'.\-♀♂]{2,}(?: [A-Z][\w'.\-♀♂]*)*/;

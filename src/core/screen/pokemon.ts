@@ -33,15 +33,25 @@ function readDust(scan: Scan, lines: string[], mods: Modifiers): number | undefi
   return pick(scan.digits.cost ?? '') ?? pick(firstPassCost(lines));
 }
 
+// No CP reaches five digits.
+const MAX_CP = 9999;
+
 /**
- * CP from the cropped CP band (see `cpBand`): the first number in it. The band holds
- * no slash, but OCR reads the large 7 as one, so a slash before a digit is a 7. A CP
- * label broken into another word ("Chk. 24") lost the first digits with it.
+ * CP from the cropped CP band (see `cpBand`): the number after the CP label, else the
+ * first number in it. The band holds no slash, but OCR reads the large 7 as one, so a
+ * slash before a digit is a 7, unless that gives an impossible CP: then it was glare
+ * ("cp137/8" for 1378). A CP label broken into another word ("Chk. 24") lost the
+ * first digits with it.
  */
 export function readCp(bandText: string): number | undefined {
-  const text = bandText.replace(/\/(?=\d)/g, '7');
+  const asSeven = bandCp(bandText.replace(/\/(?=\d)/g, '7'));
+  return asSeven !== undefined && asSeven > MAX_CP ? bandCp(bandText.replace(/\/(?=\d)/g, '')) : asSeven;
+}
+
+function bandCp(text: string): number | undefined {
   if (!CP.test(text) && /\bC\S+\s+\d/i.test(text)) return undefined;
-  const digits = /\d{2,5}/.exec(text)?.[0];
+  // A Lucky's gold background can add junk digits above the label.
+  const digits = CP.exec(text)?.[1] ?? /\d{2,5}/.exec(text)?.[0];
   return digits === undefined ? undefined : Number(digits);
 }
 
@@ -61,8 +71,10 @@ export function readPokemon(scan: Scan, mods: Modifiers): Reading {
   const hp = HP.exec(text)?.[2];
   // The band shows CP only on the top of the screen, which also shows HP; scrolled
   // further, it holds other numbers, or the HP line itself. A number labelled CP is
-  // trusted anywhere.
-  const band = hp === undefined || HP.test(scan.cpText) ? undefined : readCp(scan.cpText);
+  // trusted anywhere. An appraisal (IV bars) shows the top, but on a Lucky's gold
+  // background the band can be junk, so there the CP label must show too.
+  const top = hp !== undefined || (scan.ivs !== undefined && CP.test(scan.cpText));
+  const band = !top || HP.test(scan.cpText) ? undefined : readCp(scan.cpText);
   const cp = band ?? CP.exec(text)?.[1];
   const reading: Reading = {
     cp: cp === undefined ? undefined : Number(cp),

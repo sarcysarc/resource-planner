@@ -15,6 +15,24 @@ describe('readScan', () => {
     expect(readScan(appraisal, normal)).toEqual({ ivs: { atk: 1, def: 2, hp: 3 }, name: 'Snorlax' });
   });
 
+  describe('a screen with IV bars, whose text OCR garbled', () => {
+    const ivs = { atk: 14, def: 13, hp: 15 };
+
+    it('is read as an appraisal, with the CP band trusted', () => {
+      const garbled = { ...scan('Gengar\nLUCKY POKEMON\n! ATR FHP. -', 'cr2036 "'), ivs };
+      expect(readScan(garbled, normal)).toEqual({ cp: 2036, lucky: true, ivs });
+    });
+
+    it('trusts the CP band without an HP line only when it shows the CP label', () => {
+      expect(readScan({ ...scan('LUCKY POKEMON', '384'), ivs }, normal)).toEqual({ lucky: true, ivs });
+    });
+
+    it('takes the species from a footer with the words run together', () => {
+      const footer = { ...scan('This Gengarwas caught en 1/2/2026'), ivs };
+      expect(readScan(footer, normal)).toEqual({ name: 'Gengar', ivs });
+    });
+  });
+
   it('reads the family, variant, Lucky label, second move and evolve cost', () => {
     const text = 'LUCKY POKEMON\n80 / 80 HP\nSTARDUST ARON CANDY\nEVOLVE 50\nGYMS & RAIDS\nO Lick\n© Return\n© Thunder\nCAUGHT AFTER DEFEATING GRUNT';
     expect(readScan(scan(text), normal)).toMatchObject({ family: 'ARON', variant: 'purified', lucky: true, secondMove: true, evolveCandy: 50 });

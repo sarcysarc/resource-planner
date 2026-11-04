@@ -37,7 +37,8 @@ function readAccount(scan: Scan, kinds: ScreenKind[]): Reading {
 export function readScan(scan: Scan, mods: Modifiers): Reading {
   const kinds = classify(scan.words);
   if (kinds.includes('bag') || kinds.includes('profile')) return readAccount(scan, kinds);
-  if (!kinds.includes('pokemon') && !kinds.includes('appraisal')) return scan.ivs ? { ivs: scan.ivs } : {};
+  // The IV bars are read from pixels, so they mark an appraisal even when OCR garbled the text (ADR 0015).
+  if (!kinds.includes('pokemon') && !kinds.includes('appraisal') && !scan.ivs) return {};
   const details = readDetails(textLines(scan.words), scan);
   // What the screen shows beats the form when judging which Stardust costs exist.
   const seen = { variant: details.variant ?? mods.variant, lucky: details.lucky ?? mods.lucky };

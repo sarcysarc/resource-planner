@@ -22,6 +22,14 @@ describe('classify', () => {
     expect(classify(words)).toEqual(['pokemon', 'appraisal']);
   });
 
+  it('knows the footer when OCR runs the name into "was" and misreads "on"', () => {
+    expect(classify(wordsOf('This Gengarwas caught en 1/2/2026'))).toEqual(['appraisal']);
+  });
+
+  it('does not take the purified label for an appraisal footer', () => {
+    expect(classify(wordsOf('CAUGHT AFTER DEFEATING GRUNT'))).toEqual([]);
+  });
+
   it('knows the item bag and the trainer profile', () => {
     expect(classify(wordsOf('ITEMS\nOTHER ITEMS\nRare Candy x51'))).toEqual(['bag']);
     expect(classify(wordsOf('LEVEL\nTOTAL ACTIVITY'))).toEqual(['profile']);

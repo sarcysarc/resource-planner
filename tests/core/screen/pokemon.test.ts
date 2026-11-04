@@ -103,6 +103,14 @@ describe('readCp', () => {
     expect(['cr/14\nee\n', 'CP2/7/'].map(readCp)).toEqual([714, 277]);
   });
 
+  it('drops a stray slash when reading it as 7 would give an impossible CP', () => {
+    expect(readCp('044\ncp137/8 |”\n')).toBe(1378);
+  });
+
+  it('takes the number after the CP label over junk before it', () => {
+    expect(readCp('384\ncr2488\n')).toBe(2488);
+  });
+
   it('distrusts a number after a broken CP label, whose first digits were lost with it', () => {
     expect(readCp('Soa DA\nEs dks\nChk. 24\nhl\n')).toBeUndefined();
   });
