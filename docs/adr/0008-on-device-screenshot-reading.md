@@ -30,14 +30,30 @@ small.
   power-up cost for the chosen Shadow, Purified and Lucky options. Results fill the
   finder fields; the player checks them and taps Find IVs as before.
 
+### Amendment (2026-11-03): appraisal screenshots
+
+Seven real appraisal screenshots showed the appraisal screen also displays CP and HP,
+and each bar is a flat colour (orange `242,166,74`; pink-red `222,125,128` when 15) on a
+grey track (`226,226,224`) with white gaps between its three segments. So:
+
+- **Bars are read from pixels, not OCR.** `src/ocr/pixels.ts` finds the three bars
+  (the lowest three runs of bar-coloured rows, 1–4% of the image width tall) and reads
+  each IV as `round(15 × filled / (filled + track))`. On all seven screenshots the IVs
+  read this way match exactly one level for the CP and HP shown.
+- **CP is read from a crop.** The small stylised "CP" and white digits on busy
+  backgrounds defeated full-screen OCR (1 of 7 right). Cropping to the top band and
+  keeping only near-white pixels read CP right on all seven. HP comes from full-screen
+  OCR (7 of 7).
+- The screenshots stay in `screenshots/`, ignored by git, because they show where each
+  Pokémon was caught. Tests use synthetic images with the measured colours and layout.
+
 ## Consequences
 
 - No network request carries the screenshot or its text; it works offline once cached.
 - First use on a phone downloads about 7 MB. The button says it is reading while it
   works.
-- This step reads only the Pokémon screen's text. Appraisal bars are graphics, not
-  text; reading them needs pixel analysis calibrated on real screenshots and is a
-  follow-up.
+- Bar colours and layout were measured on one phone (720 px wide). Other screens should
+  scale, but a theme or UI change in the game would need new measurements.
 - OCR can misread stylised digits. Values are put in editable fields, not used
   silently, and the IV finder rejects combinations that cannot exist.
 

@@ -7,6 +7,10 @@ const BAR_OPTIONS = options(['0', '1', '2', '3 (full)']);
 // Static markup only: no user data goes into this string. The legend is set as text.
 const FIELDS = `
   <legend></legend>
+  <label class="file">Fill from a screenshot of the Pokémon or appraisal screen
+    <input name="screenshot" type="file" accept="image/*" />
+  </label>
+  <p class="muted" data-scan-status aria-live="polite"></p>
   <label>Current form <select name="form"></select></label>
   <div class="row">
     <label>Attack IV <input name="atk" type="number" min="0" max="15" inputmode="numeric" /></label>
@@ -31,10 +35,6 @@ const FIELDS = `
   <details class="finder">
     <summary>Don't know the IVs?</summary>
     <p class="muted">Enter the CP above plus anything else the game shows, then pick the spread that matches.</p>
-    <label class="file">Read CP, HP and Stardust from a screenshot
-      <input name="screenshot" type="file" accept="image/*" />
-    </label>
-    <p class="muted" data-scan-status aria-live="polite"></p>
     <div class="row">
       <label>HP shown <input name="seenHp" type="number" min="1" inputmode="numeric" /></label>
       <label>Stardust to power up <input name="dust" type="number" min="1" inputmode="numeric" /></label>

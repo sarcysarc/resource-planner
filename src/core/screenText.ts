@@ -1,16 +1,18 @@
 import { MAX_POWER_UP_LEVEL } from '../data/powerUpCosts';
 import { powerUpCost } from './cost';
 import { halfLevels } from './levels';
-import type { Modifiers } from './types';
+import type { IVs, Modifiers } from './types';
 
 /** Values read off the Pokémon screen; each is missing when it could not be found. */
 export interface ScreenReading {
   cp?: number;
   hp?: number;
   dust?: number;
+  ivs?: IVs;
 }
 
-const CP = /CP\s*(\d{2,5})/i;
+// OCR often reads the small CP letters as "cpr" or "cr".
+const CP = /C[PR]{1,2}\s*(\d{2,5})/i;
 const HP = /(\d{1,4})\s*\/\s*(\d{1,4})\s*HP/i;
 
 const numbers = (line: string) => [...line.matchAll(/\d{1,3}(?:,\d{3})+|\d+/g)].map((m) => Number(m[0].replaceAll(',', '')));
@@ -38,4 +40,10 @@ export function readScreen(text: string, mods: Modifiers): ScreenReading {
     dust: readDust(text.split('\n'), mods),
   };
   return Object.fromEntries(Object.entries(reading).filter(([, v]) => v !== undefined));
+}
+
+/** CP from the cropped CP band (see `cpBand`): the first number in it. */
+export function readCp(bandText: string): number | undefined {
+  const digits = /\d{2,5}/.exec(bandText)?.[0];
+  return digits === undefined ? undefined : Number(digits);
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readScreen } from '../../src/core/screenText';
+import { readCp, readScreen } from '../../src/core/screenText';
 
 const normal = { variant: 'normal', lucky: false } as const;
 
@@ -44,5 +44,21 @@ describe('readScreen', () => {
 
   it('returns nothing for text that is not the Pokémon screen', () => {
     expect(readScreen('Settings\nVersion 0.321.0', normal)).toEqual({});
+  });
+});
+
+describe('readCp', () => {
+  it('takes the first number in the cropped CP band', () => {
+    expect(['«615 ou.', '+1335', '+545 ou'].map(readCp)).toEqual([615, 1335, 545]);
+  });
+
+  it('returns nothing when the band has no number', () => {
+    expect(readCp('ou .')).toBeUndefined();
+  });
+});
+
+describe('readScreen CP misreads', () => {
+  it('accepts the small CP letters read as "cpr" or "cr"', () => {
+    expect(['cpr545', 'cr370', 'cp546'].map((t) => readScreen(t, normal).cp)).toEqual([545, 370, 546]);
   });
 });
