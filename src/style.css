@@ -104,3 +104,9 @@ table.results { width: 100%; border-collapse: collapse; background: var(--surfac
 }
 
 footer { margin-top: 16px; }
+
+.finder { margin-top: 14px; }
+.finder summary { cursor: pointer; color: var(--accent); font-weight: 600; }
+button.secondary { margin-top: 10px; padding: 8px 10px; color: var(--accent); background: transparent; border: 1px solid var(--accent); }
+.matches { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0 8px; }
+.matches p { grid-column: 1 / -1; margin: 10px 0 0; }

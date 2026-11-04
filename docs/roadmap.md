@@ -70,7 +70,7 @@ Faster input is the top priority, so Phase D moves up to second. It needs only G
 not the data pipeline.
 
 1. **Phase A — foundation, small.** G1 + F1, then G2.
-2. **Phase D — easier input.** G6 + F6, then F7. F7 likely needs two screenshots:
+2. **Phase D — easier input.** G6 + F6 (done: `src/core/infer.ts`, `src/ui/finder.ts`), then F7. F7 likely needs two screenshots:
    the Pokémon screen (CP, HP, level arc) and the appraisal screen (IV bars).
 3. **Phase A, second half.** G3 + F2. F2 proves the new pipeline end to end with a
    small, visible win.

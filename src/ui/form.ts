@@ -7,9 +7,9 @@ import { evolutionLine, type Species, type SpeciesIndex } from './species';
 
 export type Result<T> = { ok: true; value: T } | { ok: false; error: string };
 
-const blank = (v: unknown) => (v === '' ? undefined : v);
+export const blank = (v: unknown) => (v === '' ? undefined : v);
 const iv = z.preprocess(blank, z.coerce.number().int().min(0).max(15));
-const optional = <T extends z.ZodType>(schema: T) => z.preprocess(blank, schema.optional());
+export const optional = <T extends z.ZodType>(schema: T) => z.preprocess(blank, schema.optional());
 const count = z.preprocess(blank, z.coerce.number().int().min(0).optional());
 
 const CandidateFields = z.object({
@@ -31,6 +31,8 @@ const ResourceFields = z.object({ stardust: count, candy: count, xl: count });
 const LABELS: Record<string, string> = {
   atk: 'Attack IV', def: 'Defense IV', hp: 'HP IV', level: 'Level', cp: 'CP',
   evolveCandy: 'Candy to evolve', stardust: 'Stardust', candy: 'Candy', xl: 'XL Candy',
+  seenHp: 'HP shown', dust: 'Stardust to power up', stars: 'Appraisal stars',
+  atkBar: 'Attack bar', defBar: 'Defense bar', hpBar: 'HP bar',
 };
 
 export function fieldValues(root: ParentNode): Record<string, string | boolean> {
@@ -41,7 +43,7 @@ export function fieldValues(root: ParentNode): Record<string, string | boolean> 
   return values;
 }
 
-function firstError(error: z.ZodError): string {
+export function firstError(error: z.ZodError): string {
   const issue = error.issues[0];
   const field = String(issue.path[0] ?? '');
   return `${LABELS[field] ?? field}: ${issue.message}`;

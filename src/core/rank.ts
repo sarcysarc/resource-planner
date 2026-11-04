@@ -15,7 +15,7 @@ export function spreadProduct(input: LeagueInput): number {
   return level === null ? 0 : statProduct(battleStats({ ...input, level }));
 }
 
-function allIVs(): IVs[] {
+export function allIVs(): IVs[] {
   const spreads: IVs[] = [];
   for (let n = 0; n < 4096; n++) spreads.push({ atk: n >> 8, def: (n >> 4) & 15, hp: n & 15 });
   return spreads;
