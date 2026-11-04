@@ -88,6 +88,15 @@ not the data pipeline.
 | 0006 | Options model and per-goal explanations (amends 0003) | Before G4 |
 | 0007 | Battle math formulas and meta opponent source | Before G5 |
 | 0008 | Screenshot reading runs on the device, nothing uploaded | Before F7 |
+| 0009 | Read screens by their labels, not by position (accepted) | Before screenshot-first S1 |
+
+## Next: screenshot-first input
+
+Screenshots become the main way in: species, variant, Lucky, second move, costs
+and resource totals all read from screenshots, with several screenshots at once.
+Design: `docs/design/screenshot-first.md` (phases S1–S7). S1 is done:
+word boxes, the screen classifier and the CP/HP/Stardust readers in `src/core/screen/`. It needs no new
+groundwork beyond G6, so it can run before or alongside Phase A's second half.
 
 ## Settled (2026-11-03)
 

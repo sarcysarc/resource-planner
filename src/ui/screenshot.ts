@@ -1,6 +1,6 @@
-import { readCp, readScreen, type ScreenReading } from '../core/screenText';
+import { readScan } from '../core/screen/read';
+import type { Reading } from '../core/screen/types';
 import type { Modifiers } from '../core/types';
-import type { ScreenshotText } from '../ocr/recognize';
 
 const FIELDS = { cp: 'cp', hp: 'seenHp', dust: 'dust' } as const;
 const NAMES = { cp: 'CP', hp: 'HP', dust: 'Stardust' } as const;
@@ -15,18 +15,11 @@ function readMods(root: ParentNode): Modifiers {
   return { variant, lucky: root.querySelector<HTMLInputElement>('[name="lucky"]')!.checked };
 }
 
-// The cropped CP area reads more reliably than CP found in the full text.
-function toReading(read: ScreenshotText, mods: Modifiers): ScreenReading {
-  const reading = readScreen(read.text, mods);
-  const cp = readCp(read.cpText) ?? reading.cp;
-  return { ...reading, ...(cp && { cp }), ...(read.ivs && { ivs: read.ivs }) };
-}
-
 function setValue(root: ParentNode, name: string, value: number): void {
   root.querySelector<HTMLInputElement>(`[name="${name}"]`)!.value = String(value);
 }
 
-function summarise(reading: ScreenReading, found: Field[]): string {
+function summarise(reading: Reading, found: Field[]): string {
   const parts = found.map((key) => `${NAMES[key]} ${reading[key]}`);
   const { ivs } = reading;
   if (ivs) parts.push(`IVs ${ivs.atk}/${ivs.def}/${ivs.hp}`);
@@ -34,7 +27,7 @@ function summarise(reading: ScreenReading, found: Field[]): string {
   return `Read ${parts.join(', ')}. ${ivs ? 'Check them.' : 'Check them, then tap Find IVs.'}`;
 }
 
-function fill(root: ParentNode, reading: ScreenReading): void {
+function fill(root: ParentNode, reading: Reading): void {
   const found = (Object.keys(FIELDS) as Field[]).filter((key) => reading[key] !== undefined);
   for (const key of found) setValue(root, FIELDS[key], reading[key]!);
   const { ivs } = reading;
@@ -47,7 +40,7 @@ async function scan(root: ParentNode, image: File): Promise<void> {
   setStatus(root, 'Reading screenshot… The first time can take a few seconds.');
   try {
     const { readScreenshot } = await import('../ocr/recognize');
-    fill(root, toReading(await readScreenshot(image), readMods(root)));
+    fill(root, readScan(await readScreenshot(image), readMods(root)));
   } catch {
     setStatus(root, 'Could not read that image. Try another screenshot.');
   }

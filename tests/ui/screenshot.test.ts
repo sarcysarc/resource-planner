@@ -1,10 +1,12 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ScreenshotText } from '../../src/ocr/recognize';
+import type { Scan } from '../../src/core/screen/types';
 import { buildCandidateFields } from '../../src/ui/candidateFields';
+import { wordsOf } from '../core/screen/wordsOf';
 
-const POKEMON_SCREEN: ScreenshotText = { text: 'CP1499\n191 / 191 HP\nPOWER UP 9,000 12', cpText: '' };
-const readScreenshot = vi.fn<(image: Blob) => Promise<ScreenshotText>>(async () => POKEMON_SCREEN);
+const scan = (text: string, extra: Partial<Scan> = {}): Scan => ({ words: wordsOf(text), cpText: '', digits: {}, ...extra });
+const POKEMON_SCREEN = scan('CP1499\n191 / 191 HP\nPOWER UP 9,000 12');
+const readScreenshot = vi.fn<(image: Blob) => Promise<Scan>>(async () => POKEMON_SCREEN);
 vi.mock('../../src/ocr/recognize', () => ({ readScreenshot }));
 
 const { wireScreenshot } = await import('../../src/ui/screenshot');
@@ -36,7 +38,7 @@ describe('wireScreenshot', () => {
   });
 
   it('fills CP, HP and the IVs from an appraisal screenshot', async () => {
-    readScreenshot.mockResolvedValueOnce({ text: 'cr 999\n85 / 85 HP', cpText: '«615 ou.', ivs: { atk: 12, def: 12, hp: 15 } });
+    readScreenshot.mockResolvedValueOnce(scan('cr 999\n85 / 85 HP', { cpText: '«615 ou.', ivs: { atk: 12, def: 12, hp: 15 } }));
     await choose(new File(['x'], 'appraisal.png'));
     expect(['cp', 'seenHp', 'atk', 'def', 'hp'].map(value)).toEqual(['615', '85', '12', '12', '15']);
     expect(status()).toBe('Read CP 615, HP 85, IVs 12/12/15. Check them.');
@@ -50,7 +52,7 @@ describe('wireScreenshot', () => {
   });
 
   it('says when the screenshot has nothing it can read', async () => {
-    readScreenshot.mockResolvedValueOnce({ text: 'Settings', cpText: '' });
+    readScreenshot.mockResolvedValueOnce(scan('Settings', { cpText: '1499' }));
     await choose(new File(['x'], 'other.png'));
     expect(value('cp')).toBe('');
     expect(status()).toContain('Could not find');
