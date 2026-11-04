@@ -26,7 +26,11 @@ export interface Region {
   ink: Ink;
 }
 
-export type RegionName = 'cost';
+/** The account's resource totals, named as the form's resource fields. */
+export type TotalName = 'stardust' | 'candy' | 'xl';
+export type Totals = Partial<Record<TotalName, number>>;
+
+export type RegionName = 'cost' | TotalName;
 
 /** What OCR produced for one screenshot. Location text is already removed. */
 export interface Scan {
@@ -52,4 +56,5 @@ export interface Reading extends Details {
   hp?: number;
   dust?: number;
   ivs?: IVs;
+  totals?: Totals;
 }

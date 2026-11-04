@@ -5,7 +5,11 @@ import { wordsOf } from '../core/screen/wordsOf';
 
 // A made-up Pokémon screen, so no OCR runs.
 vi.mock('../../src/ocr/recognize', () => ({
-  readScreenshot: async () => ({ words: wordsOf('Lairon\n80 / 80 HP'), cpText: '600', digits: {} }),
+  readScreenshot: async () => ({
+    words: wordsOf('Lairon\n80 / 80 HP\n123,456 9\nSTARDUST ARON CANDY'),
+    cpText: '600',
+    digits: { stardust: '123,456', candy: '9' },
+  }),
 }));
 
 const { mountApp } = await import('../../src/ui/app');
@@ -46,6 +50,8 @@ describe('mountApp', () => {
     const form = document.querySelector<HTMLSelectElement>('[data-candidate="current"] select[name="form"]')!;
     await vi.waitFor(() => expect(form.value).toBe('lairon'));
     expect(document.querySelector<HTMLInputElement>('#target')!.value).toBe('Lairon');
+    const resource = (name: string) => document.querySelector<HTMLInputElement>(`[data-resources] [name="${name}"]`)!.value;
+    expect([resource('stardust'), resource('candy')]).toEqual(['123456', '9']);
   });
 
   it('fills the form choices from the target species', () => {

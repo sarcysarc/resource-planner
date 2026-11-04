@@ -25,6 +25,11 @@ describe('readScan', () => {
     expect(readScan(scan('LUCKY POKEMON\n80 / 80 HP\nPOWER UP 7,500 20'), normal)).toMatchObject({ lucky: true, dust: 7500 });
   });
 
+  it('adds the Stardust and Candy totals from the second pass', () => {
+    const totals = { ...scan('80 / 80 HP\n123,456 9\nSTARDUST ARON CANDY'), digits: { stardust: '123,456', candy: '9' } };
+    expect(readScan(totals, normal)).toMatchObject({ totals: { stardust: 123456, candy: 9 } });
+  });
+
   it('ignores numbers on a screen it does not know', () => {
     expect(readScan(scan('Settings\nEVOLVE 50', '1499'), normal)).toEqual({});
   });

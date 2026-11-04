@@ -37,6 +37,12 @@ describe('readScreenshot', () => {
     expect(worker.setParameters).toHaveBeenCalledWith({ tessedit_char_whitelist: '0123456789,/', tessedit_pageseg_mode: '7' });
   });
 
+  it('re-reads the resource totals above their labels', async () => {
+    const labels = { text: '', blocks: [{ paragraphs: [{ lines: [line(['STARDUST', 100], ['ARON', 300], ['CANDY', 370])] }] }] };
+    worker.recognize.mockResolvedValueOnce({ data: labels });
+    expect((await readScreenshot(new Blob())).digits).toEqual({ stardust: '7,000 8', candy: '7,000 8' });
+  });
+
   it('skips the second pass when there is nothing to re-read', async () => {
     worker.recognize.mockResolvedValueOnce({ data: { text: '', blocks: null } });
     expect((await readScreenshot(new Blob())).digits).toEqual({});

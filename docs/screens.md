@@ -57,6 +57,28 @@ Checked against every local screenshot. The readers live in `src/core/screen/`.
   Aggron) is narrowed by which members could show the CP and HP. On iPhone JPEGs
   the family is often cut short ("RLAX") and gives nothing.
 
+## How OCR reads the totals (S3)
+
+- Each total sits above its label: STARDUST, "<FAMILY> CANDY" and
+  "<FAMILY> CANDY XL". The digits pass reads a teal-only crop above the label.
+- The family name can wrap onto the line above CANDY ("GROWLITHE" / "CANDY XL"),
+  so the crop covers both lines but is one line tall. If the family is lost, the
+  word above CANDY may be the total itself, so only a word of three or more
+  letters counts as the family.
+- STARDUST can read as "TARDUST".
+- Candy XL icons have dark grey or brown stripes that passed the plain teal test
+  and turned 22 into "2". Teal text has a blue-green tint (green and blue at least
+  16 above red); the stripes have almost none.
+- The Stardust icon can read as a leading "1" ("1135,770"). Grouped digits can't
+  start with four, so the well-formed tail is kept.
+- The XL row only shows when there is some XL Candy. With the Candy label and the
+  POWER UP or PURIFY button on screen and no XL label between them, XL is 0.
+  Without the button the row may just be off screen, so it gives no answer.
+- Candy and XL fill only when the Pokémon shares the target's Candy family.
+  Stardust is the account's, so it always fills.
+- On appraisal screens (adb and iPhone) no totals are read yet: the labels are
+  dimmed or covered by the team leader.
+
 ## Appraisal screen
 
 - Overlays the top half of the Pokémon screen, so name, HP, types and the Stardust

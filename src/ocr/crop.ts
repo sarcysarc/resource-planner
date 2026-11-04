@@ -2,9 +2,11 @@ import type { Ink, Region } from '../core/screen/types';
 import type { Pixels } from './pixels';
 
 // Measured on real screenshots: white text on buttons, dark teal for labels and totals.
+// Teal needs its blue-green tint too: Candy XL icons have dark grey or brown stripes
+// (tint 0 to 7) that are otherwise close enough to pass, while the text has 24 or more.
 const isInk: Record<Ink, (r: number, g: number, b: number) => boolean> = {
   white: (r, g, b) => Math.min(r, g, b) > 215,
-  teal: (r, g, b) => Math.abs(r - 68) + Math.abs(g - 105) + Math.abs(b - 108) < 120,
+  teal: (r, g, b) => Math.abs(r - 68) + Math.abs(g - 105) + Math.abs(b - 108) < 120 && Math.min(g, b) - r >= 16,
 };
 const SCALE = 2;
 const PAD = 20;

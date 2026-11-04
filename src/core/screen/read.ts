@@ -4,6 +4,7 @@ import { classify } from './classify';
 import { readFamily, readName } from './identity';
 import { readSecondMove } from './moves';
 import { readPokemon } from './pokemon';
+import { readTotals } from './totals';
 import { readEvolveCandy, readLucky, readVariant } from './traits';
 import type { Details, Reading, Scan } from './types';
 
@@ -30,6 +31,8 @@ export function readScan(scan: Scan, mods: Modifiers): Reading {
   const details = readDetails(textLines(scan.words));
   // What the screen shows beats the form when judging which Stardust costs exist.
   const seen = { variant: details.variant ?? mods.variant, lucky: details.lucky ?? mods.lucky };
-  const reading = { ...readPokemon(scan, seen), ...details };
+  const totals = readTotals(scan);
+  const reading: Reading = { ...readPokemon(scan, seen), ...details };
+  if (Object.keys(totals).length) reading.totals = totals;
   return scan.ivs ? { ...reading, ivs: scan.ivs } : reading;
 }

@@ -1,15 +1,15 @@
 import type { Box, Word } from './types';
 
-const norm = (text: string) => text.toUpperCase().replace(/[^A-Z0-9&]/g, '');
+export const norm = (text: string) => text.toUpperCase().replace(/[^A-Z0-9&]/g, '');
 
-const union = (a: Box, b: Box): Box => ({
+export const union = (a: Box, b: Box): Box => ({
   x0: Math.min(a.x0, b.x0),
   y0: Math.min(a.y0, b.y0),
   x1: Math.max(a.x1, b.x1),
   y1: Math.max(a.y1, b.y1),
 });
 
-const overlapsX = (a: Box, b: Box) => a.x0 < b.x1 && b.x0 < a.x1;
+export const overlapsX = (a: Box, b: Box) => a.x0 < b.x1 && b.x0 < a.x1;
 
 // The word that continues a label: next on the same line, or wrapped onto the line below.
 function next(words: Word[], at: number, token: string): number {
@@ -40,9 +40,12 @@ export function findLabel(words: Word[], label: string): Box | undefined {
   return undefined;
 }
 
-/** The area just above a label, a little wider than it: where a total sits. */
-export function above(label: Box): Box {
-  const [w, h] = [label.x1 - label.x0, label.y1 - label.y0];
+/**
+ * The area just above a label, a little wider than it: where a total sits. Pass one
+ * line's height when the label wraps over two lines.
+ */
+export function above(label: Box, h = label.y1 - label.y0): Box {
+  const w = label.x1 - label.x0;
   return { x0: label.x0 - 0.4 * w, y0: label.y0 - 4.5 * h, x1: label.x1 + 0.4 * w, y1: label.y0 - 0.5 * h };
 }
 

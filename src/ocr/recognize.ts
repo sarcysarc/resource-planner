@@ -1,6 +1,7 @@
 import { createWorker, OEM, PSM, type Worker } from 'tesseract.js';
 import { pokemonRegions } from '../core/screen/pokemon';
 import { dropLocation } from '../core/screen/privacy';
+import { totalRegions } from '../core/screen/totals';
 import type { Region, RegionName, Scan, Word } from '../core/screen/types';
 import { inkCrop } from './crop';
 import { imagePixels, pixelsBlob } from './image';
@@ -22,7 +23,7 @@ async function readWords(worker: Worker, image: Blob, width: number): Promise<Wo
 // Second pass: numbers next to icons read badly in the first pass, so re-read their
 // regions as digits only, after keeping just the text colour (ADR 0009).
 async function readDigits(worker: Worker, px: Pixels, words: Word[]): Promise<Scan['digits']> {
-  const regions = Object.entries(pokemonRegions(words)) as [RegionName, Region][];
+  const regions = Object.entries({ ...pokemonRegions(words), ...totalRegions(words) }) as [RegionName, Region][];
   if (!regions.length) return {};
   await worker.setParameters({ tessedit_char_whitelist: '0123456789,/', tessedit_pageseg_mode: PSM.SINGLE_LINE });
   const digits: Scan['digits'] = {};

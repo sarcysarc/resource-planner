@@ -94,9 +94,9 @@ not the data pipeline.
 
 Screenshots become the main way in: species, variant, Lucky, second move, costs
 and resource totals all read from screenshots, with several screenshots at once.
-Design: `docs/design/screenshot-first.md` (phases S1–S7). S1 and S2 are done:
-word boxes, the screen classifier, the CP/HP/Stardust readers, and species, Shadow/Purified/Lucky,
-second move and evolve cost, all in `src/core/screen/`. It needs no new
+Design: `docs/design/screenshot-first.md` (phases S1–S7). S1, S2 and S3 are done:
+word boxes, the screen classifier, the CP/HP/Stardust readers; species, Shadow/Purified/Lucky,
+second move and evolve cost; and the Stardust, Candy and XL totals, all in `src/core/screen/`. It needs no new
 groundwork beyond G6, so it can run before or alongside Phase A's second half.
 
 ## Settled (2026-11-03)

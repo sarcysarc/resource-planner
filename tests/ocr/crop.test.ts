@@ -35,6 +35,12 @@ describe('inkCrop', () => {
     expect(at(inkCrop(px, { box, ink: 'teal' }), [40, 40])).toBe(0);
   });
 
+  it('drops dark grey icon stripes next to teal text', () => {
+    const px = blankScreen(100, 100);
+    paint(px, [50, 40], [56, 56, 56]);
+    expect(at(inkCrop(px, { box, ink: 'teal' }), [40, 40])).toBe(255);
+  });
+
   it('keeps the crop inside the image', () => {
     const out = inkCrop(blankScreen(100, 100), { box: { x0: 0.9, y0: 0.9, x1: 1.5, y1: 1.5 }, ink: 'teal' });
     expect([out.width, out.height]).toEqual([2 * 10 + 40, 2 * 10 + 40]);

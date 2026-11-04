@@ -54,7 +54,13 @@ describe('applySpecies', () => {
   });
 
   it('does nothing when no species was read', () => {
-    apply({ cp: 600 });
+    expect(apply({ cp: 600 })).toBe(false);
     expect([target.value, status()]).toEqual(['', 'Read CP 600.']);
+  });
+
+  it('says whether the Pokémon shares the target Candy family', () => {
+    expect(apply({ name: 'Lairon' })).toBe(true);
+    expect(apply({ name: 'Snorlax' })).toBe(false);
+    expect(apply({ family: 'ARON' })).toBe(true);
   });
 });

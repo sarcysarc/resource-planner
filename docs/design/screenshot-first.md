@@ -161,9 +161,11 @@ Sizes follow the project quality gates (files ≤ 200 lines, ≤ 10 functions).
 | `src/core/screen/identity.ts` | printed name and Candy family |
 | `src/core/screen/traits.ts` | Shadow/Purified, Lucky, evolve cost |
 | `src/core/screen/moves.ts` | second charged move locked or unlocked |
+| `src/core/screen/totals.ts` | Stardust, Candy and XL totals above their labels |
 | `src/ui/scanSpecies.ts` | species resolution (steps above); in `ui` because the species index is |
 | `src/ui/scanTarget.ts` | fills an empty target and picks the form |
 | `src/ui/scanDetails.ts` | fills variant, Lucky, second move and evolve Candy |
+| `src/ui/scanResources.ts` | fills the shared resource fields from the totals |
 | `src/core/screen/privacy.ts` | drops location lines before any reader sees them |
 | `src/core/screen/merge.ts` | group by Pokémon, merge, list conflicts |
 | `src/ui/screenshots.ts` | multi-file picker, status, fill and source badges |
@@ -190,7 +192,7 @@ against the new readers.
 |-------|----------|-----------|
 | S1 | Word boxes, classifier, anchor helpers; port CP/HP/Stardust readers to anchors (done) | Tesseract word boxes on stylised fonts; solved with a digits-only second pass |
 | S2 | Species auto-select, Shadow/Purified/Lucky, second move, evolve cost (done) | Nickname + hidden CP cases; handled by Candy family plus CP/HP fit |
-| S3 | Resource totals (Stardust, Candy, XL) fill the shared fields | XL label wrapping; leader covering totals on iPhone |
+| S3 | Resource totals (Stardust, Candy, XL) fill the shared fields (done) | XL label wrapping; solved by reading the family on the line above. Totals on appraisal screens are not read yet |
 | S4 | Several screenshots at once, grouping and conflict questions | UI complexity |
 | S5 | Bag (Rare Candy) and profile (trainer level) | Rare Candy shown as a separate "could cover" note |
 | S6 | Suggested search strings, e.g. `!@3move`, `4*`, `shadow` | None; static help text |
@@ -208,8 +210,8 @@ Each phase ships on its own and keeps the manual form working.
 2. **Sharing from the gallery comes after S4.** Until then, use the file picker
    (with several files allowed). A PWA share target is a later phase, S7.
 3. **When Candy is hidden**, for example by the team leader on an iPhone appraisal
-   screen, the Candy field shows "Candy not visible. Add a screenshot of the
-   Pokémon screen, or type it."
+   screen, the screenshot status line says "Candy not visible. Add a screenshot of
+   the Pokémon screen, or type it." The field stays empty, so a typed value is kept.
 4. **With more than two Pokémon, the player picks two.** The app lists every
    Pokémon it read (species, CP, IVs if known), and the player chooses Current
    and Alternative. Comparing more than two waits for G4.

@@ -58,6 +58,8 @@ different sizes and formats (720×1604 PNG, 942×2048 JPEG).
 - `readScreenshot` no longer returns the full OCR text, only words after the location
   filter, so location text can't leak into the UI.
 - `screenText.ts` is gone; its tests now run against `src/core/screen/pokemon.ts`.
+- Ink colour alone is not enough near icons: the teal test also checks the
+  blue-green tint so Candy XL icon stripes don't merge into the digits (S3).
 - A game UI change that renames a label breaks only that label's reader, and the
   local regression run shows which one.
 
