@@ -1,7 +1,10 @@
 import { defineConfig } from 'vitest/config';
+import { stressPlugin } from './stress/plugin.ts';
 
 export default defineConfig({
   base: './',
+  // Dev server only: saves OCR scans of the local screenshots (ADR 0016).
+  plugins: [stressPlugin()],
   build: {
     rollupOptions: {
       // The service worker is its own entry with a fixed name at the root, so its
