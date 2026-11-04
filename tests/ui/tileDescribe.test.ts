@@ -23,7 +23,7 @@ describe('describeTile', () => {
       title: 'New Pokémon, IVs not known',
       notes: [
         'Add its appraisal for the IVs.',
-        'Normal and not Lucky are guesses. Add its Pokémon screen to check.',
+        'Taken as not Shadow, Purified or Lucky. Add its Pokémon screen to check.',
         'Add its screen scrolled down, together with its top screen, for the second move (taken as locked).',
       ],
     });

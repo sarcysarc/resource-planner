@@ -39,10 +39,12 @@ function scrolledDown({ needsEvolve, known, later }: TileGaps): string | undefin
 
 // An appraisal shows the Lucky label but not Shadow or Purified, so either can still be a guess.
 function guesses(known: ReadonlySet<string>): string | undefined {
-  const parts = [known.has('variant') ? '' : 'Normal', known.has('lucky') ? '' : 'not Lucky'].filter(Boolean);
-  if (parts.length === 2) return 'Normal and not Lucky are guesses.';
-  return parts.length ? `${parts[0][0].toUpperCase()}${parts[0].slice(1)} is a guess.` : undefined;
+  const parts = [known.has('variant') ? '' : 'Shadow', known.has('variant') ? '' : 'Purified', known.has('lucky') ? '' : 'Lucky'];
+  const taken = parts.filter(Boolean);
+  return taken.length ? `Taken as not ${listOr(taken)}.` : undefined;
 }
+
+const listOr = (names: string[]) => (names.length > 1 ? `${names.slice(0, -1).join(', ')} or ${names.at(-1)}` : names[0]);
 
 /** One sentence per gap, each naming the screenshot that would fill it. */
 export function tileNotes(gaps: TileGaps): string[] {

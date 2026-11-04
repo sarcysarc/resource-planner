@@ -24,15 +24,15 @@ describe('tileNotes', () => {
 
   it('names only the traits still guessed', () => {
     const notes = (known: string[]) => tileNotes({ ivs: true, needsEvolve: false, known: new Set([...known, 'secondMove']) });
-    expect(notes(['lucky'])).toEqual(['Normal is a guess. Add its Pokémon screen to check.']);
-    expect(notes(['variant'])).toEqual(['Not Lucky is a guess. Add its Pokémon screen to check.']);
+    expect(notes(['lucky'])).toEqual(['Taken as not Shadow or Purified. Add its Pokémon screen to check.']);
+    expect(notes(['variant'])).toEqual(['Taken as not Lucky. Add its Pokémon screen to check.']);
     expect(notes(['variant', 'lucky'])).toEqual([]);
   });
 
   it('names the screenshot that fills each gap', () => {
     expect(tileNotes({ ivs: false, needsEvolve: true, known: new Set() })).toEqual([
       'Add its appraisal for the IVs.',
-      'Normal and not Lucky are guesses. Add its Pokémon screen to check.',
+      'Taken as not Shadow, Purified or Lucky. Add its Pokémon screen to check.',
       'Add its screen scrolled down, together with its top screen, for the Candy to evolve and the second move (taken as locked).',
     ]);
   });
