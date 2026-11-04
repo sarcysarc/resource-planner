@@ -25,6 +25,13 @@ describe('mountApp', () => {
     mountApp(document);
   });
 
+  it('builds the same fields for both candidates', () => {
+    const fieldNames = (side: string) =>
+      [...document.querySelectorAll<HTMLInputElement>(`[data-candidate="${side}"] [name]`)].map((el) => el.name);
+    expect(fieldNames('current').length).toBeGreaterThan(0);
+    expect(fieldNames('alternative')).toEqual(fieldNames('current'));
+  });
+
   it('fills the form choices from the target species', () => {
     setField('#target', 'Azumarill');
     const options = [...document.querySelectorAll('[data-candidate="current"] select[name="form"] option')];

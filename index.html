@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
     <title>Candy Planner</title>
     <script type="module" src="/src/main.ts"></script>
   </head>
@@ -20,54 +21,8 @@
           <datalist id="species-list"></datalist>
         </section>
         <div class="pair">
-          <fieldset class="card" data-candidate="current">
-            <legend>Current Pokémon</legend>
-            <label>Current form <select name="form"></select></label>
-            <div class="row">
-              <label>Attack IV <input name="atk" type="number" min="0" max="15" inputmode="numeric" /></label>
-              <label>Defense IV <input name="def" type="number" min="0" max="15" inputmode="numeric" /></label>
-              <label>HP IV <input name="hp" type="number" min="0" max="15" inputmode="numeric" /></label>
-            </div>
-            <div class="row">
-              <label>Level <input name="level" type="number" min="1" max="50" step="0.5" inputmode="decimal" /></label>
-              <label>or CP <input name="cp" type="number" min="10" inputmode="numeric" /></label>
-            </div>
-            <label>Type
-              <select name="variant">
-                <option value="normal">Normal</option>
-                <option value="shadow">Shadow</option>
-                <option value="purified">Purified</option>
-              </select>
-            </label>
-            <label class="check"><input type="checkbox" name="lucky" /> Lucky</label>
-            <label class="check"><input type="checkbox" name="bestBuddy" /> Best Buddy</label>
-            <label class="check"><input type="checkbox" name="secondMove" /> Second charged move unlocked</label>
-            <label>Candy to evolve <input name="evolveCandy" type="number" min="0" value="0" inputmode="numeric" /></label>
-          </fieldset>
-          <fieldset class="card" data-candidate="alternative">
-            <legend>Alternative</legend>
-            <label>Current form <select name="form"></select></label>
-            <div class="row">
-              <label>Attack IV <input name="atk" type="number" min="0" max="15" inputmode="numeric" /></label>
-              <label>Defense IV <input name="def" type="number" min="0" max="15" inputmode="numeric" /></label>
-              <label>HP IV <input name="hp" type="number" min="0" max="15" inputmode="numeric" /></label>
-            </div>
-            <div class="row">
-              <label>Level <input name="level" type="number" min="1" max="50" step="0.5" inputmode="decimal" /></label>
-              <label>or CP <input name="cp" type="number" min="10" inputmode="numeric" /></label>
-            </div>
-            <label>Type
-              <select name="variant">
-                <option value="normal">Normal</option>
-                <option value="shadow">Shadow</option>
-                <option value="purified">Purified</option>
-              </select>
-            </label>
-            <label class="check"><input type="checkbox" name="lucky" /> Lucky</label>
-            <label class="check"><input type="checkbox" name="bestBuddy" /> Best Buddy</label>
-            <label class="check"><input type="checkbox" name="secondMove" /> Second charged move unlocked</label>
-            <label>Candy to evolve <input name="evolveCandy" type="number" min="0" value="0" inputmode="numeric" /></label>
-          </fieldset>
+          <fieldset class="card" data-candidate="current" data-legend="Current Pokémon"></fieldset>
+          <fieldset class="card" data-candidate="alternative" data-legend="Alternative"></fieldset>
         </div>
         <fieldset class="card" data-resources>
           <legend>Your resources <span class="muted">(leave blank for unlimited)</span></legend>

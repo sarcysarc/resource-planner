@@ -1,4 +1,5 @@
 import { compare, type CompareInput } from '../core/compare';
+import { buildCandidateFields } from './candidateFields';
 import { readCandidate, readResources, type Result } from './form';
 import { renderComparisons } from './render';
 import { evolutionLine, findSpecies, type SpeciesIndex, loadBundledIndex } from './species';
@@ -68,6 +69,7 @@ function run(els: Elements, index: SpeciesIndex): void {
 export function mountApp(doc: Document): void {
   const index = loadBundledIndex();
   const els = queryElements(doc);
+  [els.current, els.alternative].forEach(buildCandidateFields);
   fillSpeciesList(els.speciesList, index);
   els.dataInfo.textContent = `Game data: PvPoke game master, ${index.timestamp}.`;
   els.target.addEventListener('change', () => updateFormChoices(els, index));

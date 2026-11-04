@@ -1,5 +1,5 @@
 {
-  "name": "pokego-invest",
+  "name": "resource-planner",
   "version": "1.0.0",
   "description": "Compare two Pokémon GO candidates and decide where to spend Stardust and Candy",
   "scripts": {
