@@ -1,0 +1,33 @@
+{
+  "name": "pokego-invest",
+  "version": "1.0.0",
+  "description": "Compare two Pokémon GO candidates and decide where to spend Stardust and Candy",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "coverage": "vitest run --coverage",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "update-data": "node scripts/build-species.mjs"
+  },
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.6",
+    "@vitest/coverage-v8": "^5.1.0",
+    "eslint": "^10.14.0",
+    "globals": "^17.14.0",
+    "jsdom": "^29.1.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.1",
+    "vite": "^8.3.5",
+    "vitest": "^5.1.0"
+  },
+  "private": true,
+  "dependencies": {
+    "zod": "^4.6.7"
+  }
+}
