@@ -22,10 +22,18 @@ export function cropBox(width: number, height: number): Crop {
   return { sw: width, sh, width: WIDTH, height: Math.round((WIDTH * sh) / width) };
 }
 
-/** The first screenshot showing this Pokémon's CP (with its HP, when both are known). */
+// Two readings agree on a value when either lacks it or both show the same.
+const agree = (a: unknown, b: unknown) => a === undefined || b === undefined || JSON.stringify(a) === JSON.stringify(b);
+
+// By CP (and HP), or by HP and IVs when the Pokémon hid its CP.
+function showsIt(r: Reading, reading: Reading): boolean {
+  if (reading.cp !== undefined) return r.cp === reading.cp && agree(r.hp, reading.hp);
+  return reading.hp !== undefined && r.hp === reading.hp && agree(r.ivs, reading.ivs);
+}
+
+/** The first screenshot showing this Pokémon: its CP, or its HP when the CP was hidden. */
 export function pickShot(readings: readonly Reading[], { reading }: Group): number | undefined {
-  if (reading.cp === undefined) return undefined;
-  const at = readings.findIndex((r) => r.cp === reading.cp && (r.hp === undefined || reading.hp === undefined || r.hp === reading.hp));
+  const at = readings.findIndex((r) => showsIt(r, reading));
   return at < 0 ? undefined : at;
 }
 

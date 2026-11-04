@@ -59,7 +59,9 @@ What limits the app to two is the page.
 
 - Step 2 shows **one tile per Pokémon** with a thumbnail of its screenshot, its name,
   CP and IVs. The thumbnail is cropped to the top of the screen, so the appraisal
-  footer (catch place and date) is never shown.
+  footer (catch place and date) is never shown. The screenshot is the first one showing
+  the Pokémon's CP; when the Pokémon hides its CP (a tall one over the number), the
+  first showing its HP and IVs.
 - The thumbnail and the screenshots stay on the device, as before (ADR 0008).
 - One tile is marked **current** with its own control. The first tile is current
   until the player picks one.

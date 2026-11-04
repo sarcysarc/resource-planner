@@ -19,6 +19,13 @@ describe('pickShot', () => {
     expect(pickShot([{ cp: 900, hp: 99 }, { dust: 2500 }], group)).toBeUndefined();
     expect(pickShot([{ dust: 2500 }], { ...group, reading: {} })).toBeUndefined();
   });
+
+  it('picks by HP, with matching IVs, when the CP was hidden', () => {
+    const ivs = { atk: 14, def: 12, hp: 15 };
+    const hidden = { ...group, reading: { hp: 115, ivs } };
+    expect(pickShot([{ hp: 115, ivs: { ...ivs, atk: 0 } }, { dust: 2500 }, { hp: 115, ivs }], hidden)).toBe(2);
+    expect(pickShot([{ hp: 99, ivs }], hidden)).toBeUndefined();
+  });
 });
 
 describe('makeThumb', () => {
