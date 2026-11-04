@@ -45,13 +45,15 @@ removes most of that.
      are the same Pokémon when species, CP and max HP match.
    - **Account screens** (bag, profile, any Pokémon screen's resource totals) fill
      the shared resources.
-3. The first two candidates go into Current and Alternative. If there are more, the
-   app lists them all and the player picks two. The target species defaults to the candidates' species
-   (or their shared evolution).
-4. The player checks the filled values, edits any that are wrong, and sees the
-   verdict.
+3. Every candidate becomes a tile in a grid, with a thumbnail, and the player marks
+   which one is current (ADR 0015). One appraisal per Pokémon is the expected input;
+   a tile names any other screenshot that would fill a gap. The target species
+   defaults to the candidates' species (or their shared evolution).
+4. The player taps a tile to check and edit its values, and sees the current one
+   ranked against all the others.
 
-The existing form stays as the fallback and as the place to correct values.
+The candidate fields stay as the place to correct values, one tile at a time, and an
+"Add a Pokémon by hand" tile is the fallback for typing.
 
 ## What each screen gives
 

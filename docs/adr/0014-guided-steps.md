@@ -1,6 +1,6 @@
 # 0014 - Guide the player through three steps, screenshots first
 
-**Status:** accepted
+**Status:** accepted; partly superseded by 0015 (one picker, step 2 is a grid of Pokémon)
 **Date:** 2026-11-04
 **Spec:** [screenshot-first design](../design/screenshot-first.md), "What the player does"
 **Deciders:** project owner, Claude
@@ -39,6 +39,7 @@ planner wants, or which fields matter.
 - A first visit shows only step 1: a short list of what to do and one button.
 - Typing in everything takes one more tap than before.
 - The per-Pokémon pickers stay inside step 2, for adding a screenshot of one Pokémon.
+  (Replaced by 0015: step 1 is the only picker.)
 - Hiding fields with `hidden` keeps them in the DOM, so tests and form code are
   unaffected. Progressive disclosure inside step 2 (advanced options, help for terms)
   is a separate change.
@@ -54,4 +55,5 @@ planner wants, or which fields matter.
 ## Links
 
 - Supersedes: N/A
+- Superseded in part by: 0015
 - Related: 0003, 0008, 0010, [screenshot-first design](../design/screenshot-first.md)
