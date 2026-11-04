@@ -2,7 +2,7 @@
 // open one in the book and shows the other's target, tiles and Candy in its place.
 import type { Grid } from './grid';
 import { restoreGrid, snapshotGrid } from './gridSave';
-import { putLine, type SavedBook, type SavedLine } from './savedBook';
+import { type LineCall, putLine, type SavedBook, type SavedLine } from './savedBook';
 
 export interface LineParts {
   grid: Grid;
@@ -17,6 +17,8 @@ export interface LineSummary {
   target: string;
   count: number;
   open: boolean;
+  /** Its call when last worked out. */
+  call?: LineCall;
 }
 
 export interface Lines {
@@ -30,14 +32,16 @@ export interface Lines {
   list(): LineSummary[];
   /** Shows a saved book's open line, or with none, forgets every line and shows an empty one. */
   use(book?: SavedBook): void;
+  /** Keeps a line's call, shown in step 2's list. */
+  setCall(family: string, call: LineCall): void;
 }
 
 const OWN = ['candy', 'xl'] as const;
 const field = (p: LineParts, name: string) => p.resources.querySelector<HTMLInputElement>(`[name="${name}"]`)!;
 
-function snapshotLine(p: LineParts, family: string): SavedLine {
+function snapshotLine(p: LineParts, { family, call }: Pick<SavedLine, 'family' | 'call'>): SavedLine {
   const own = Object.fromEntries(OWN.map((name) => [name, field(p, name).value]).filter(([, v]) => v));
-  return { family, target: p.target.value, tiles: snapshotGrid(p.grid, '').tiles, ...own };
+  return { family, target: p.target.value, tiles: snapshotGrid(p.grid, '').tiles, ...own, ...(call ? { call } : {}) };
 }
 
 // Set as if typed, so the form lists follow the target before the tiles' values go in.
@@ -48,15 +52,18 @@ function showLine(p: LineParts, line: SavedLine | undefined): void {
   for (const name of OWN) field(p, name).value = line?.[name] ?? '';
 }
 
+const lineOf = (book: SavedBook, family: string) => book.lines.find((l) => l.family === family);
+
 function withOpen(p: LineParts, book: SavedBook): SavedBook {
-  const lines = putLine(book, snapshotLine(p, book.open)).lines.filter((l) => l.tiles.length);
+  const call = lineOf(book, book.open)?.call;
+  const lines = putLine(book, snapshotLine(p, { family: book.open, call })).lines.filter((l) => l.tiles.length);
   return { ...book, lines };
 }
 
 function summaries(p: LineParts, book: SavedBook): LineSummary[] {
   const closed = book.lines.filter((l) => l.family !== book.open);
-  const others = closed.map((l) => ({ family: l.family, target: l.target, count: l.tiles.length, open: false }));
-  const open = { family: book.open, target: p.target.value, count: p.grid.roots().length, open: true };
+  const others = closed.map((l) => ({ family: l.family, target: l.target, count: l.tiles.length, open: false, call: l.call }));
+  const open = { family: book.open, target: p.target.value, count: p.grid.roots().length, open: true, call: lineOf(book, book.open)?.call };
   return [...others, open].filter((l) => l.count);
 }
 
@@ -64,12 +71,16 @@ const EMPTY: SavedBook = { version: 2, open: '', lines: [] };
 
 export function createLines(p: LineParts, saved = EMPTY): Lines {
   let book = saved;
-  const use = (next = EMPTY) => ((book = next), showLine(p, book.lines.find((l) => l.family === book.open)));
+  const use = (next = EMPTY) => ((book = next), showLine(p, lineOf(book, book.open)));
   use(saved);
   const open = (family: string) => {
     if (family === book.open) return;
     book = { ...withOpen(p, book), open: family };
-    showLine(p, book.lines.find((l) => l.family === family));
+    showLine(p, lineOf(book, family));
   };
-  return { family: () => book.open, open, book: () => withOpen(p, book), list: () => summaries(p, book), use };
+  const setCall = (family: string, call: LineCall) => {
+    const line = lineOf(book, family) ?? { family, target: '', tiles: [] };
+    book = putLine(book, { ...line, call });
+  };
+  return { family: () => book.open, open, book: () => withOpen(p, book), list: () => summaries(p, book), use, setCall };
 }

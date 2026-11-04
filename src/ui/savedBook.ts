@@ -5,6 +5,13 @@ import { z } from 'zod';
 import type { KnownTile } from './poweredUp';
 import { parseSaved, SavedTile, type SavedGrid } from './savedGrid';
 
+const LineCallSchema = z.object({
+  /** What step 2's list says of the line. */
+  text: z.string(),
+  /** How much stronger the best option is than the current one; none when it can't be compared. */
+  gain: z.number().optional(),
+});
+
 const SavedLineSchema = z.object({
   /** The Candy family the line is for; '' for Pokémon typed in by hand before lines. */
   family: z.string(),
@@ -13,6 +20,8 @@ const SavedLineSchema = z.object({
   /** The line's own Candy and XL Candy, as typed. */
   candy: z.string().optional(),
   xl: z.string().optional(),
+  /** Its call when last worked out (ADR 0017). */
+  call: LineCallSchema.optional(),
 });
 
 const SavedBookSchema = z.object({
@@ -22,6 +31,7 @@ const SavedBookSchema = z.object({
   lines: z.array(SavedLineSchema),
 });
 
+export type LineCall = z.infer<typeof LineCallSchema>;
 export type SavedLine = z.infer<typeof SavedLineSchema>;
 export type SavedBook = z.infer<typeof SavedBookSchema>;
 

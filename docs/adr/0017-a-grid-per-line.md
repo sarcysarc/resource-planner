@@ -32,7 +32,8 @@ Pokémon (10–50 at a time) and share them all; each line then gets its own adv
 - One row per line: name, number of Pokémon and the strongest call in any battle, e.g.
   "Magikarp line · 3 · Gyarados CP 2802: top for raids". Tapping a row opens its grid
   and results; one line is open at a time.
-- **Order:** rows with a switch or power-up call first, then the rest by Pokédex number.
+- **Order:** by the call's gain, biggest first, then by Pokédex number (amended in slice 3;
+  was: switch or power-up calls first).
 - Each line has its own Clear; Clear all stays.
 
 ### Step 1: reading a batch
@@ -83,6 +84,16 @@ Pokémon (10–50 at a time) and share them all; each line then gets its own adv
   it the new CP and HP; No adds a tile. A look-alike keeps the other tiles' IVs in its
   marks (`alike`) and notes "A screenshot without IVs went to this one, but could be the
   one at 4/5/6."
+- **Slice 3 (2026-11-04): row calls and order.** The call is the biggest gain: over every
+  battle, the option that beats the current one by the most, whatever the verdict there
+  (raids, then Master, Ultra and Great League on a tie). A row reads `Name line · count ·
+  call`, e.g. "Magikarp line · 3 · Gyarados, CP 2802, IVs 12/3/14: 20% stronger in Raids &
+  gyms", or "the current one is best". A line that can't be compared says why: "add another
+  to compare", "needs IVs", "needs Candy to evolve" or "needs details". Calls are worked out
+  after each batch, by opening each line in turn out of sight and comparing it, and for the
+  open line on Compare; they are kept with each line (`call`) and are not redone when a tile
+  is edited until the next batch or Compare. Rows are sorted by gain, then by Pokédex
+  number; rows without a gain come last. In jsdom, 33 lines took about 0.5 s (16 ms a line).
 
 ## Order of work
 

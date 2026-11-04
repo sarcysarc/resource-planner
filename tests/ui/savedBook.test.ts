@@ -33,6 +33,11 @@ describe('parseBook', () => {
     expect(parseBook(book)).toEqual(book);
   });
 
+  it('keeps a line’s call', () => {
+    const called = { ...book, lines: [{ ...aron, call: { text: 'needs IVs' } }] };
+    expect(parseBook(called)).toEqual(called);
+  });
+
   it('reads a grid saved before lines (version 1) as one line, open', () => {
     const old: SavedGrid = { version: 1, target: 'Aggron', tiles: [tile('t1'), tile('t2', 'FAMILY_ARON')] };
     expect(parseBook(old)).toEqual({ version: 2, open: 'FAMILY_ARON', lines: [{ family: 'FAMILY_ARON', target: 'Aggron', tiles: old.tiles }] });

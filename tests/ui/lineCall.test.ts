@@ -1,0 +1,51 @@
+// @vitest-environment jsdom
+import { describe, expect, it } from 'vitest';
+import type { GoalId } from '../../src/core/goals';
+import { callOf, MORE, reasonOf } from '../../src/ui/lineCall';
+
+const labels = [
+  { heading: 'Current: Magikarp, CP 100', name: 'the current one' },
+  { heading: 'Current, purified', name: 'the purified current one' },
+  { heading: 'Gyarados, CP 2802', name: 'Gyarados, CP 2802' },
+];
+const row = (goal: GoalId, changes: (number | null)[]) => ({ goal, changes });
+
+function tile(ivs: string[]): HTMLElement {
+  const root = document.createElement('fieldset');
+  root.innerHTML = ['atk', 'def', 'hp'].map((n, i) => `<input name="${n}" value="${ivs[i]}" />`).join('');
+  return root;
+}
+
+describe('a line’s call', () => {
+  it('names the option with the biggest gain, how much and in which battle', () => {
+    const call = callOf(labels, [row('great', [0, 0.05, 0.01]), row('raid', [0, 0, 0.2])]);
+    expect(call).toEqual({ text: 'Gyarados, CP 2802: 20% stronger in Raids & gyms', gain: 0.2 });
+  });
+
+  it('shows a gain under 1% as 1%', () => {
+    expect(callOf(labels, [row('great', [0, 0.004])]).text).toBe('Current, purified: 1% stronger in Great League');
+  });
+
+  it('says the current one is best when nothing beats it', () => {
+    expect(callOf(labels, [row('great', [0, -0.1])])).toEqual({ text: 'the current one is best', gain: 0 });
+  });
+});
+
+describe('why a line has no call', () => {
+  it('asks for another Pokémon when there is one', () => {
+    expect(reasonOf(MORE, [tile(['1', '2', '3'])])).toBe('add another to compare');
+  });
+
+  it('says IVs are needed when a Pokémon has none', () => {
+    expect(reasonOf('Lairon: Enter IVs', [tile(['1', '2', '3']), tile(['', '', ''])])).toBe('needs IVs');
+  });
+
+  it('says the Candy to evolve is needed when it is', () => {
+    const error = 'Aron: Candy to evolve: type the total from Aron to Aggron, or add a screenshot of each stage';
+    expect(reasonOf(error, [tile(['1', '2', '3']), tile(['4', '5', '6'])])).toBe('needs Candy to evolve');
+  });
+
+  it('says other details are needed otherwise', () => {
+    expect(reasonOf('Resources: Trainer level', [tile(['1', '2', '3']), tile(['4', '5', '6'])])).toBe('needs details');
+  });
+});

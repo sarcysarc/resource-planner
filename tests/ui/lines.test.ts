@@ -64,6 +64,15 @@ describe('lines', () => {
     expect(lines.book().lines.map((l) => l.family)).toEqual(['FAMILY_GASTLY', 'FAMILY_ARON']);
   });
 
+  it('keeps each line’s call through opening another, and in the book', () => {
+    lines.setCall('FAMILY_ARON', { text: 'needs IVs' });
+    lines.open('FAMILY_GASTLY');
+    lines.setCall('FAMILY_GASTLY', { text: 'the current one is best', gain: 0 });
+    const calls = () => lines.list().map((l) => [l.family, l.call?.text]);
+    expect(calls()).toEqual([['FAMILY_ARON', 'needs IVs'], ['FAMILY_GASTLY', 'the current one is best']]);
+    expect(lines.book().lines.map((l) => l.call?.gain)).toEqual([0, undefined]);
+  });
+
   it('starts again from nothing', () => {
     lines.use();
     expect([lines.family(), lines.book().lines, cps()]).toEqual(['', [], []]);

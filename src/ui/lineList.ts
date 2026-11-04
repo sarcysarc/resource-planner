@@ -1,5 +1,6 @@
-// Step 2's list of lines (ADR 0017): one button per evolution line with Pokémon in it, by
-// Pokédex number; tapping one opens its grid. Shown once there are two lines or more.
+// Step 2's list of lines (ADR 0017): one button per evolution line with Pokémon in it, with
+// its call, the biggest gain first and then by Pokédex number; tapping one opens its grid.
+// Shown once there are two lines or more.
 import type { Lines, LineSummary } from './lines';
 import type { SpeciesIndex } from './species';
 
@@ -21,19 +22,24 @@ const dexOf = (l: LineList, family: string) => firstOf(l, family)?.dex ?? Infini
 function rowOf(l: LineList, line: LineSummary): HTMLButtonElement {
   const button = Object.assign(l.nav.ownerDocument.createElement('button'), { type: 'button' });
   const name = firstOf(l, line.family)?.name;
-  button.textContent = `${name ? `${name} line` : BY_HAND} · ${line.count}`;
+  const call = line.call ? ` · ${line.call.text}` : '';
+  button.textContent = `${name ? `${name} line` : BY_HAND} · ${line.count}${call}`;
   button.dataset.family = line.family;
   if (line.open) button.setAttribute('aria-current', 'true');
   return button;
 }
 
+// Lines that can't be compared yet come after those that can.
+const gainOf = (line: LineSummary) => line.call?.gain ?? -1;
+
 export function renderLines(l: LineList): void {
-  const lines = l.lines.list().sort((a, b) => dexOf(l, a.family) - dexOf(l, b.family));
+  const lines = l.lines.list().sort((a, b) => gainOf(b) - gainOf(a) || dexOf(l, a.family) - dexOf(l, b.family));
   l.nav.replaceChildren(...lines.map((line) => rowOf(l, line)));
   l.nav.hidden = lines.length < 2;
 }
 
-export function wireLineList(l: LineList): void {
+/** Wires the list; gives a function that redraws it. */
+export function wireLineList(l: LineList): () => void {
   l.nav.addEventListener('click', (event) => {
     const family = (event.target as Element).closest<HTMLElement>('[data-family]')?.dataset.family;
     if (family === undefined) return;
@@ -43,4 +49,5 @@ export function wireLineList(l: LineList): void {
   });
   new MutationObserver(() => renderLines(l)).observe(l.grid, { childList: true });
   renderLines(l);
+  return () => renderLines(l);
 }

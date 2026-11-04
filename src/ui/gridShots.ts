@@ -29,6 +29,8 @@ export interface GridShots {
   /** Saves the grid. */
   save: () => void;
   lines: Lines;
+  /** After a batch is in, with the first line read open. */
+  afterBatch?: () => void;
 }
 
 // The line first read in a batch is the one shown once the batch is in.
@@ -65,6 +67,7 @@ function useGroup(g: GridShots, batch: Batch): (group: Group, shot?: File, print
 function done(g: GridShots, batch: Batch, reveal: () => void): () => void {
   return () => {
     if (batch.first !== undefined) g.lines.open(batch.first);
+    if (batch.first !== undefined) g.afterBatch?.();
     batch.first = undefined;
     g.save();
     reveal();

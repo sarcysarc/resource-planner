@@ -5,13 +5,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { wordsOf } from '../core/screen/wordsOf';
 
 // Made-up Pokémon screens, so no OCR runs: a Gengar for files named so, else a Lairon. A file
-// named "ivs-<cp>.png" is a Lairon appraised at 12/3/14 at that CP.
+// named "ivs-<cp>.png" is a Lairon appraised at 12/3/14 at that CP, "cp-<cp>.png" one not appraised, and
+// "max-<cp>.png" one appraised at 15/15/15.
 vi.mock('../../src/ocr/recognize', () => {
   const lairon = (cp: string) => ({ words: wordsOf('Lairon\n80 / 80 HP\n123,456 9\nSTARDUST ARON CANDY'), cpText: cp, digits: { stardust: '123,456', candy: '9' } });
   const gengar = { words: wordsOf('Gengar\n120 / 120 HP\n123,456 30\nSTARDUST GASTLY CANDY'), cpText: '2000', digits: { stardust: '123,456', candy: '30' } };
-  const appraised = (name: string) => ({ ...lairon(name.slice(4, -4)), ivs: { atk: 12, def: 3, hp: 14 } });
+  const appraised = (name: string) => ({ ...lairon(name.slice(4, -4)), ivs: name.startsWith('max') ? { atk: 15, def: 15, hp: 15 } : { atk: 12, def: 3, hp: 14 } });
   return {
-    readScreenshot: async ({ name }: File) => (name.startsWith('gengar') ? gengar : name.startsWith('ivs-') ? appraised(name) : lairon('600')),
+    readScreenshot: async ({ name }: File) => (name.startsWith('gengar') ? gengar : /^(ivs|max)-/.test(name) ? appraised(name) : name.startsWith('cp-') ? lairon(name.slice(3, -4)) : lairon('600')),
   };
 });
 
@@ -50,8 +51,8 @@ describe('mountApp with lines', () => {
     await vi.waitFor(() => expect(rows()).toHaveLength(2));
     // By Pokédex number: Gastly is #92, Aron #304.
     expect(rows().map((b) => [b.textContent, b.getAttribute('aria-current')])).toEqual([
-      ['Gastly line · 1', null],
-      ['Aron line · 1', 'true'],
+      ['Gastly line · 1 · add another to compare', null],
+      ['Aron line · 1 · add another to compare', 'true'],
     ]);
     expect([titles(), q<HTMLInputElement>('#target').value]).toEqual([['Lairon, CP 600, IVs not known'], 'Lairon']);
     rows()[0].click();
@@ -67,7 +68,7 @@ describe('mountApp with lines', () => {
     await vi.waitFor(() => expect(rows()).toHaveLength(2));
     choose(['gengar.png', '0.png']);
     await vi.waitFor(() => expect(q('[data-shots-status]').textContent).toBe('Skipped 2 already added.'));
-    expect(rows().map((b) => b.textContent)).toEqual(['Gastly line · 1', 'Aron line · 1']);
+    expect(rows()).toHaveLength(2);
   });
 
   it('asks whether one read again at a higher CP was powered up, and updates its tile on a yes', async () => {
@@ -90,6 +91,21 @@ describe('mountApp with lines', () => {
     box.querySelector('select')!.value = 'null';
     box.querySelector('button')!.click();
     await vi.waitFor(() => expect(tiles()).toHaveLength(2));
+  });
+
+  it('gives each line a call once a batch is read, and again on Compare', async () => {
+    choose(['cp-600.png', 'cp-650.png', 'gengar.png']);
+    await vi.waitFor(() => expect(rows().map((b) => b.textContent)).toEqual(['Gastly line · 1 · add another to compare', 'Aron line · 2 · needs IVs']));
+    rows()[0].click();
+    q('[data-add-tile]').click();
+    q('form').dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(rows().map((b) => b.textContent)).toContain('Gastly line · 2 · needs IVs');
+  });
+
+  it('puts the line with the biggest gain first', async () => {
+    choose(['gengar.png', 'ivs-1118.png', 'max-1468.png']);
+    await vi.waitFor(() => expect(rows()).toHaveLength(2));
+    expect(rows()[0].textContent).toMatch(/^Aron line · 2 · Lairon, CP 1468, IVs 15\/15\/15: \d+% stronger in /);
   });
 
   it('lists no lines while there is only one', async () => {

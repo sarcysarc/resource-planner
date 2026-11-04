@@ -7,11 +7,13 @@ import { type Rare, readAccount } from './account';
 import { type ErrorPlace, showError } from './fieldError';
 import { formOf, readCandidate, readResources, type Result } from './form';
 import type { Grid } from './grid';
+import { callOf, MORE, reasonOf } from './lineCall';
 import type { RaidMovesOf } from './moves';
 import { buildOptions, type Options, type OptionSide } from './options';
 import type { Pvp } from './pvpWiring';
 import { transferSuggestions } from './ranking';
 import { renderComparisons } from './render';
+import type { LineCall } from './savedBook';
 import { findSpecies, type Species, type SpeciesIndex } from './species';
 import { describeTile } from './tileDescribe';
 
@@ -39,8 +41,6 @@ interface Inputs {
   options: Options;
   roots: HTMLElement[];
 }
-
-const MORE = 'Add another Pokémon to compare with: add a screenshot of it, or add it by hand.';
 
 function readSide(p: Planner, root: HTMLElement, target: Species): Read<OptionSide> {
   const title = describeTile(root).title;
@@ -85,12 +85,21 @@ function suggest(p: Planner, { options, roots }: Inputs, rows: ReturnType<typeof
   p.grid.suggest(transferSuggestions(rows, ids, names));
 }
 
-function fail(p: Planner, error: string, at?: ErrorPlace): void {
+function fail(p: Planner, error: string, at?: ErrorPlace): LineCall {
   showError(p.form, error, at);
   if (at) p.grid.open(at.part);
+  return { text: reasonOf(error, p.grid.compared()) };
 }
 
-export function runCompare(p: Planner): void {
+/** The open line's call, worked out without showing anything (ADR 0017). */
+export function judgeLine(p: Planner): LineCall {
+  const input = readInputs(p);
+  if (!input.ok) return { text: reasonOf(input.error, p.grid.compared()) };
+  return callOf(input.value.options.labels, compare(input.value.compare));
+}
+
+/** Compares the open line and shows the results; gives the line's call. */
+export function runCompare(p: Planner): LineCall {
   const input = readInputs(p);
   if (!input.ok) return fail(p, input.error, input.at);
   showError(p.form, '');
@@ -101,4 +110,5 @@ export function runCompare(p: Planner): void {
   renderComparisons({ container: p.results, options: options.labels, rows, resources: sides.resources, rare, notes: options.notes, extras });
   // On a phone the results are below a long form.
   p.results.scrollIntoView({ block: 'start' });
+  return callOf(options.labels, rows);
 }
