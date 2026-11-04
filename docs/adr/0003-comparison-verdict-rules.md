@@ -1,6 +1,6 @@
 # 0003 - Verdict rules: compare remaining cost and value at goal
 
-**Status:** proposed
+**Status:** proposed (amended by 0006: the same rules for N options)
 **Date:** 2026-11-03
 **Spec:** N/A
 **Deciders:** project owner, Claude

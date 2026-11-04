@@ -89,7 +89,7 @@ not the data pipeline.
 |-----|----------|------|
 | 0004 | Hosting on GitHub Pages, CI on GitHub Actions | Before G1 |
 | 0005 | Data pipeline v2: PvPoke plus our own purify table (supersedes 0002) | Before G3 |
-| 0006 | Options model and per-goal explanations (amends 0003) | Before G4 |
+| 0006 | Options model and per-goal explanations (amends 0003, accepted) | Before G4 |
 | 0007 | Battle math formulas and meta opponent source | Before G5 |
 | 0008 | Screenshot reading runs on the device, nothing uploaded | Before F7 |
 | 0009 | Read screens by their labels, not by position (accepted) | Before screenshot-first S1 |
