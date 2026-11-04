@@ -2,7 +2,18 @@ import { textLines } from './anchors';
 import type { Word } from './types';
 
 // Origin labels such as "CAUGHT IN THE WILD"; the place and date follow on the next lines.
-const ORIGIN = /^(CAUGHT|HATCHED|RECEIVED|OBTAINED|TRADED)\b/;
+// OCR often puts icon junk before the label, so it may sit anywhere in the line.
+const ORIGIN = /\b(CAUGHT|HATCHED|RECEIVED|OBTAINED|TRADED)\b/;
+// "Town, Region" with no digits: a place even when its origin label was not read.
+const PLACE = /^[^\d,]*[A-Z][a-z][^\d,]*,\s*[A-Z][^\d]*$/;
+// The end of a place that wrapped, such as a country's second word.
+const PLACE_END = /^[A-Z][a-z]+( [A-Z][a-z]+)?$/;
+
+// Lines holding a place that is not under an origin label: the place and its wrapped end.
+function placeSpan(lines: string[], at: number): number {
+  if (!PLACE.test(lines[at])) return 0;
+  return PLACE_END.test(lines[at + 1] ?? '') ? 2 : 1;
+}
 const DATE = /\d{1,4}[/.-]\d{1,2}[/.-]\d{1,4}/;
 const MAX_ORIGIN_LINES = 3;
 
@@ -17,8 +28,8 @@ function hiddenLines(words: Word[]): Set<number> {
   const lines = textLines(words);
   const hidden = new Set<number>();
   lines.forEach((line, at) => {
-    if (!ORIGIN.test(line)) return;
-    order.slice(at + 1, at + 1 + originSpan(lines, at)).forEach((n) => hidden.add(n));
+    const [from, span] = ORIGIN.test(line) ? [at + 1, originSpan(lines, at)] : [at, placeSpan(lines, at)];
+    order.slice(from, from + span).forEach((n) => hidden.add(n));
   });
   return hidden;
 }

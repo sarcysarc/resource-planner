@@ -32,6 +32,31 @@ value below is found by its **label text**, never by where it sits on screen.
   background. Lucky Pokémon power up for half the Stardust, so this matters for
   costs.
 
+## How OCR reads them (S2 readers)
+
+Checked against every local screenshot. The readers live in `src/core/screen/`.
+
+- **Origin labels** come with icon junk in front ("& CAUGHT IN THE WILD 1)") or
+  garbled ("¥ CAUGHT ATTIC N"), and sometimes are not read at all. The privacy
+  filter finds the label anywhere in the line, and also drops any "Town, Region"
+  line (no digits) plus a wrapped last word, label or not.
+- **Shadow:** "PURIFY", or "SHADOW BONUS" read as "SHADOW BONLIS"/"sHapow BONUS".
+- **Purified:** "Return" plus "GRUNT", and no Shadow sign. Purified evolve costs are
+  10% lower ("EVOLVE 45" for a 50 Candy evolution).
+- **Lucky:** "LUCKY POKEMON", usually without the accent. Its absence proves
+  nothing, so the Lucky box is only ever ticked, never unticked.
+- **Second move:** locked when "NEW ATTACK" or a matching cost ("§90,000 £90",
+  same thousands of Stardust as Candy) shows under the moves. Unlocked only when
+  three move lines are followed straight away by the origin label; a garbled
+  line in between ("TE", "ck mon") may be an unread NEW ATTACK, so it gives no answer.
+- **Evolve:** "EVOLVE" then a number. Ignore it when "MEGA" is on that line or the
+  one above (Mega Evolve shares the label). A Candy icon can read as a leading
+  digit ("9100").
+- **Name** over the HP line can be junk ("LJ") or a nickname; names under three
+  letters are ignored. Then the Candy family ("STARDUST ARON CANDY" → Aron, Lairon,
+  Aggron) is narrowed by which members could show the CP and HP. On iPhone JPEGs
+  the family is often cut short ("RLAX") and gives nothing.
+
 ## Appraisal screen
 
 - Overlays the top half of the Pokémon screen, so name, HP, types and the Stardust

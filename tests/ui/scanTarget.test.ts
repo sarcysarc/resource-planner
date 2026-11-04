@@ -1,0 +1,60 @@
+// @vitest-environment jsdom
+import { beforeEach, describe, expect, it } from 'vitest';
+import { applySpecies } from '../../src/ui/scanTarget';
+import { buildCandidateFields } from '../../src/ui/candidateFields';
+import { evolutionLine, findSpecies, loadBundledIndex } from '../../src/ui/species';
+
+const index = loadBundledIndex();
+let target: HTMLInputElement;
+let root: HTMLFieldSetElement;
+const select = () => root.querySelector<HTMLSelectElement>('[name="form"]')!;
+const status = () => root.querySelector('[data-scan-status]')!.textContent;
+
+// Stands in for the app filling the form choices from the target.
+function refresh(): void {
+  const line = evolutionLine(index, findSpecies(index, target.value)!);
+  select().replaceChildren(...line.map((s) => new Option(s.name, s.id)));
+}
+
+const apply = (reading: Parameters<typeof applySpecies>[1]) => applySpecies({ index, target, root, refresh }, reading);
+
+describe('applySpecies', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '<input id="target" /><fieldset></fieldset>';
+    target = document.querySelector('input')!;
+    root = document.querySelector('fieldset')!;
+    buildCandidateFields(root);
+    root.querySelector('[data-scan-status]')!.textContent = 'Read CP 600.';
+  });
+
+  it('sets an empty target to the species read and selects it as the form', () => {
+    apply({ name: 'Lairon' });
+    expect([target.value, select().value]).toEqual(['Lairon', 'lairon']);
+  });
+
+  it('keeps the chosen target and selects the form read when it is in that line', () => {
+    target.value = 'Aggron';
+    refresh();
+    apply({ name: 'Aron' });
+    expect([target.value, select().value]).toEqual(['Aggron', 'aron']);
+  });
+
+  it('says so when the species is not in the target line', () => {
+    target.value = 'Aggron';
+    refresh();
+    apply({ name: 'Snorlax' });
+    expect(select().value).toBe('aron');
+    expect(status()).toBe('Read CP 600. This is Snorlax, which does not evolve into Aggron.');
+  });
+
+  it('asks which family member it is when the screen cannot tell', () => {
+    apply({ family: 'ARON' });
+    expect(target.value).toBe('');
+    expect(status()).toBe('Read CP 600. Which is it: Aron, Lairon or Aggron? Pick it as the target or the form.');
+  });
+
+  it('does nothing when no species was read', () => {
+    apply({ cp: 600 });
+    expect([target.value, status()]).toEqual(['', 'Read CP 600.']);
+  });
+});

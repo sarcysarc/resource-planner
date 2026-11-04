@@ -53,6 +53,8 @@ different sizes and formats (720×1604 PNG, 942×2048 JPEG).
   so it adds little time.
 - Labels on the dimmed appraisal background can come out partial ("SNORLA"); those
   readers will need fuzzy matching (S2/S3).
+- OCR puts icon junk before origin labels or misses them, so the location filter
+  finds the label anywhere in a line and also drops "Town, Region" lines on their own.
 - `readScreenshot` no longer returns the full OCR text, only words after the location
   filter, so location text can't leak into the UI.
 - `screenText.ts` is gone; its tests now run against `src/core/screen/pokemon.ts`.

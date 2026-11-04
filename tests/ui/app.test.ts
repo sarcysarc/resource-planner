@@ -1,7 +1,14 @@
 // @vitest-environment jsdom
 import { readFileSync } from 'node:fs';
-import { beforeEach, describe, expect, it } from 'vitest';
-import { mountApp } from '../../src/ui/app';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { wordsOf } from '../core/screen/wordsOf';
+
+// A made-up Pokémon screen, so no OCR runs.
+vi.mock('../../src/ocr/recognize', () => ({
+  readScreenshot: async () => ({ words: wordsOf('Lairon\n80 / 80 HP'), cpText: '600', digits: {} }),
+}));
+
+const { mountApp } = await import('../../src/ui/app');
 
 function setField(selector: string, value: string): void {
   const el = document.querySelector<HTMLInputElement | HTMLSelectElement>(selector)!;
@@ -30,6 +37,15 @@ describe('mountApp', () => {
       [...document.querySelectorAll<HTMLInputElement>(`[data-candidate="${side}"] [name]`)].map((el) => el.name);
     expect(fieldNames('current').length).toBeGreaterThan(0);
     expect(fieldNames('alternative')).toEqual(fieldNames('current'));
+  });
+
+  it('takes the target and form from a screenshot', async () => {
+    const input = document.querySelector<HTMLInputElement>('[data-candidate="current"] [name="screenshot"]')!;
+    Object.defineProperty(input, 'files', { value: [new File(['x'], 'screen.png')] });
+    input.dispatchEvent(new Event('change'));
+    const form = document.querySelector<HTMLSelectElement>('[data-candidate="current"] select[name="form"]')!;
+    await vi.waitFor(() => expect(form.value).toBe('lairon'));
+    expect(document.querySelector<HTMLInputElement>('#target')!.value).toBe('Lairon');
   });
 
   it('fills the form choices from the target species', () => {

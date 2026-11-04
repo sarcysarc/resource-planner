@@ -22,6 +22,16 @@ describe('dropLocation', () => {
     expect(kept(screen)).toEqual(['This Snorlax was caught on 1/2/2026']);
   });
 
+  it('finds origin labels that OCR prefixes with icon junk or garbles', () => {
+    const screen = '& CAUGHT IN THE WILD 1)\nSpringfield, Exampleland\nNowhere\n1/2/2026\n¥ CAUGHT ATTIC N\nOgdenville\n3/4/2025\nWEIGHT';
+    expect(kept(screen)).toEqual(['& CAUGHT IN THE WILD 1)', '¥ CAUGHT ATTIC N', 'WEIGHT']);
+  });
+
+  it('drops a place-shaped line even when no origin label was read', () => {
+    const screen = 'GYMS & RAIDS\nSpringfield, Exampleland, United\nNowhere\n1/2/2026\nWEIGHT';
+    expect(kept(screen)).toEqual(['GYMS & RAIDS', '1/2/2026', 'WEIGHT']);
+  });
+
   it('leaves a screen without location untouched', () => {
     const words = wordsOf('CP 1499\nPOWER UP 9,000 12');
     expect(dropLocation(words)).toEqual(words);

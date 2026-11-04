@@ -3,6 +3,7 @@ import { buildCandidateFields } from './candidateFields';
 import { wireFinder } from './finder';
 import { wireScreenshot } from './screenshot';
 import { readCandidate, readResources, type Result } from './form';
+import { applySpecies } from './scanTarget';
 import { renderComparisons } from './render';
 import { evolutionLine, findSpecies, type SpeciesIndex, loadBundledIndex } from './species';
 
@@ -74,7 +75,8 @@ export function mountApp(doc: Document): void {
   for (const root of [els.current, els.alternative]) {
     buildCandidateFields(root);
     wireFinder({ root, index });
-    wireScreenshot(root);
+    const refresh = () => updateFormChoices(els, index);
+    wireScreenshot(root, (reading) => applySpecies({ index, target: els.target, root, refresh }, reading));
   }
   fillSpeciesList(els.speciesList, index);
   els.dataInfo.textContent = `Game data: PvPoke game master, ${index.timestamp}.`;

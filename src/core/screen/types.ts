@@ -1,4 +1,4 @@
-import type { IVs } from '../types';
+import type { IVs, Modifiers } from '../types';
 
 /** A rectangle as fractions of the image width (so y can exceed 1 on tall screens). */
 export interface Box {
@@ -36,8 +36,18 @@ export interface Scan {
   ivs?: IVs;
 }
 
+/** What the screen says about the Pokémon besides its numbers. Names are as printed. */
+export interface Details {
+  name?: string;
+  family?: string;
+  variant?: Modifiers['variant'];
+  lucky?: true;
+  secondMove?: boolean;
+  evolveCandy?: number;
+}
+
 /** Values read off a screenshot; each is missing when it could not be found. */
-export interface Reading {
+export interface Reading extends Details {
   cp?: number;
   hp?: number;
   dust?: number;

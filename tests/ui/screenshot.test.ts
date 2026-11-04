@@ -12,6 +12,8 @@ vi.mock('../../src/ocr/recognize', () => ({ readScreenshot }));
 const { wireScreenshot } = await import('../../src/ui/screenshot');
 
 let root: HTMLFieldSetElement;
+const onRead = vi.fn();
+const checked = (name: string) => root.querySelector<HTMLInputElement>(`[name="${name}"]`)!.checked;
 const value = (name: string) => root.querySelector<HTMLInputElement>(`[name="${name}"]`)!.value;
 const status = () => root.querySelector('[data-scan-status]')!.textContent;
 
@@ -27,7 +29,7 @@ describe('wireScreenshot', () => {
     document.body.innerHTML = '<fieldset data-legend="Current"></fieldset>';
     root = document.querySelector('fieldset')!;
     buildCandidateFields(root);
-    wireScreenshot(root);
+    wireScreenshot(root, onRead);
   });
 
   it('fills CP, HP and Stardust from the screenshot', async () => {
@@ -49,6 +51,29 @@ describe('wireScreenshot', () => {
     root.querySelector<HTMLSelectElement>('[name="variant"]')!.value = 'shadow';
     await choose(new File(['x'], 'screen.png'));
     expect(value('dust')).toBe('');
+  });
+
+  it('fills Shadow or Purified, Lucky, the second move and the evolve cost when the screen shows them', async () => {
+    const text = 'LUCKY POKEMON\n80 / 80 HP\nEVOLVE 50\nGYMS & RAIDS\nO Lick\nO Return\nO Thunder\nCAUGHT AFTER DEFEATING GRUNT';
+    readScreenshot.mockResolvedValueOnce(scan(text, { cpText: '600' }));
+    await choose(new File(['x'], 'screen.png'));
+    expect([value('variant'), value('evolveCandy')]).toEqual(['purified', '50']);
+    expect([checked('lucky'), checked('secondMove')]).toEqual([true, true]);
+    expect(status()).toBe('Read CP 600, HP 80, Purified, Lucky, second move unlocked, 50 Candy to evolve. Check them, then tap Find IVs.');
+  });
+
+  it('unticks the second move when the screen shows it locked, and leaves unseen choices alone', async () => {
+    root.querySelector<HTMLInputElement>('[name="secondMove"]')!.checked = true;
+    root.querySelector<HTMLInputElement>('[name="lucky"]')!.checked = true;
+    readScreenshot.mockResolvedValueOnce(scan('80 / 80 HP\nGYMS & RAIDS\nO Lick\nNEW ATTACK 50,000 50', { cpText: '600' }));
+    await choose(new File(['x'], 'screen.png'));
+    expect([checked('secondMove'), checked('lucky'), value('variant')]).toEqual([false, true, 'normal']);
+    expect(status()).toContain('second move locked');
+  });
+
+  it('passes the reading on so the app can pick the species', async () => {
+    await choose(new File(['x'], 'screen.png'));
+    expect(onRead).toHaveBeenLastCalledWith(expect.objectContaining({ cp: 1499 }));
   });
 
   it('says when the screenshot has nothing it can read', async () => {

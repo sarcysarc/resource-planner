@@ -157,9 +157,13 @@ Sizes follow the project quality gates (files ≤ 200 lines, ≤ 10 functions).
 | `src/core/screen/anchors.ts` | geometry: above, right of, same line, wrapped labels |
 | `src/core/screen/classify.ts` | `Word[]` → screen kinds |
 | `src/core/screen/pokemon.ts` | Pokémon screen reader |
-| `src/core/screen/appraisal.ts` | footer species; uses `pokemon.ts` for the rest |
 | `src/core/screen/account.ts` | bag and profile readers |
-| `src/core/screen/species.ts` | species resolution (steps above) |
+| `src/core/screen/identity.ts` | printed name and Candy family |
+| `src/core/screen/traits.ts` | Shadow/Purified, Lucky, evolve cost |
+| `src/core/screen/moves.ts` | second charged move locked or unlocked |
+| `src/ui/scanSpecies.ts` | species resolution (steps above); in `ui` because the species index is |
+| `src/ui/scanTarget.ts` | fills an empty target and picks the form |
+| `src/ui/scanDetails.ts` | fills variant, Lucky, second move and evolve Candy |
 | `src/core/screen/privacy.ts` | drops location lines before any reader sees them |
 | `src/core/screen/merge.ts` | group by Pokémon, merge, list conflicts |
 | `src/ui/screenshots.ts` | multi-file picker, status, fill and source badges |
@@ -185,7 +189,7 @@ against the new readers.
 | Phase | Delivers | Main risk |
 |-------|----------|-----------|
 | S1 | Word boxes, classifier, anchor helpers; port CP/HP/Stardust readers to anchors (done) | Tesseract word boxes on stylised fonts; solved with a digits-only second pass |
-| S2 | Species auto-select, Shadow/Purified/Lucky, second move, evolve cost | Nickname + hidden CP cases |
+| S2 | Species auto-select, Shadow/Purified/Lucky, second move, evolve cost (done) | Nickname + hidden CP cases; handled by Candy family plus CP/HP fit |
 | S3 | Resource totals (Stardust, Candy, XL) fill the shared fields | XL label wrapping; leader covering totals on iPhone |
 | S4 | Several screenshots at once, grouping and conflict questions | UI complexity |
 | S5 | Bag (Rare Candy) and profile (trainer level) | Rare Candy shown as a separate "could cover" note |
