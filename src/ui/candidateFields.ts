@@ -17,10 +17,12 @@ const FIELDS = `
     <label>Defense IV <input name="def" type="number" min="0" max="15" inputmode="numeric" /></label>
     <label>HP IV <input name="hp" type="number" min="0" max="15" inputmode="numeric" /></label>
   </div>
+  <p class="hint" data-hint="ivs">IVs are three hidden scores from 0 to 15. The appraisal shows them as bars.</p>
   <div class="row">
     <label>Level <input name="level" type="number" min="1" max="50" step="0.5" inputmode="decimal" /></label>
     <label>or CP <input name="cp" type="number" min="10" inputmode="numeric" /></label>
   </div>
+  <p class="hint" data-hint="level">Give either one. CP is the number at the top of its screen.</p>
   <label>Type
     <select name="variant">
       <option value="normal">Normal</option>
@@ -28,15 +30,24 @@ const FIELDS = `
       <option value="purified">Purified</option>
     </select>
   </label>
+  <p class="hint" data-hint="variant">Shadow Pokémon have a purple, flame-like aura. Purified ones were Shadow before.</p>
   <label class="check"><input type="checkbox" name="lucky" /> Lucky</label>
+  <p class="hint" data-hint="lucky">Lucky Pokémon (from some trades) shine gold and cost half the Stardust to power up.</p>
   <label class="check"><input type="checkbox" name="bestBuddy" /> Best Buddy</label>
+  <p class="hint" data-hint="bestBuddy">A Best Buddy gets one level of extra strength while it is your buddy.</p>
   <label class="check"><input type="checkbox" name="secondMove" /> Second charged move unlocked</label>
-  <div class="row">
-    <label>Raid fast move <select name="fastMove"><option value="">Best</option></select></label>
-    <label>Raid charged move <select name="chargedMove"><option value="">Best</option></select></label>
-  </div>
-  <label>PvP fast move <select name="pvpFastMove"><option value="">PvPoke’s pick</option></select></label>
+  <p class="hint" data-hint="secondMove">Tick this if you have already paid for a second charged attack.</p>
   <label>Candy to evolve <input name="evolveCandy" type="number" min="0" placeholder="Not known yet" inputmode="numeric" /></label>
+  <p class="hint" data-hint="evolveCandy">The Candy shown on its Evolve button, added up for each evolution to the target. Leave blank if it is already the target.</p>
+  <details class="moves">
+    <summary>Choose its attacks (optional)</summary>
+    <p class="hint">Left alone, the planner picks the best attacks for you.</p>
+    <div class="row">
+      <label>Raid fast move <select name="fastMove"><option value="">Best</option></select></label>
+      <label>Raid charged move <select name="chargedMove"><option value="">Best</option></select></label>
+    </div>
+    <label>PvP fast move <select name="pvpFastMove"><option value="">PvPoke’s pick</option></select></label>
+  </details>
   <details class="finder">
     <summary>Don't know the IVs?</summary>
     <p class="muted">Enter the CP above plus anything else the game shows, then pick the spread that matches.</p>

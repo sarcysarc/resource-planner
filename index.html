@@ -44,12 +44,12 @@
         <section class="step" data-step="check" hidden>
           <h2><span class="num">2</span> Check the details</h2>
           <p class="muted" data-check-note></p>
-          <section class="card">
+          <section class="card" data-target-card>
             <label>Pokémon you will battle with
               <input id="target" name="target" list="species-list" placeholder="e.g. Azumarill" autocomplete="off" />
             </label>
             <datalist id="species-list"></datalist>
-            <details class="searches" data-searches open hidden>
+            <details class="searches" data-searches hidden>
               <summary>Find them in the game</summary>
               <p class="muted">Paste one into the Pokémon search, then screenshot the ones you might use.
                 Regional forms share a search; the game cannot tell them apart.</p>
@@ -67,7 +67,8 @@
               <label>Candy <input name="candy" type="number" min="0" inputmode="numeric" /></label>
               <label>XL Candy <input name="xl" type="number" min="0" inputmode="numeric" /></label>
             </div>
-            <p class="muted">From your bag and profile. Blank Rare Candy means none; a blank trainer level means no limit.</p>
+            <p class="hint">Candy and XL Candy for this Pokémon, from its screen. XL Candy is needed above level 40.</p>
+            <p class="hint">From your item bag and profile. Rare Candy turns into any Pokémon’s Candy, so it can cover a shortfall. Your trainer level caps how far a Pokémon can be powered up. Blank Rare Candy means none; a blank trainer level means no limit.</p>
             <div class="row">
               <label>Rare Candy <input name="rareCandy" type="number" min="0" inputmode="numeric" /></label>
               <label>Rare Candy XL <input name="rareXl" type="number" min="0" inputmode="numeric" /></label>

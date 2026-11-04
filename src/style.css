@@ -114,7 +114,7 @@ section.goal .answer { margin-top: 10px; font-size: 1.2rem; font-weight: 700; co
 footer { margin-top: 16px; }
 
 .finder { margin-top: 14px; }
-.finder summary { cursor: pointer; color: var(--accent); font-weight: 600; }
+.finder summary, .moves summary { cursor: pointer; color: var(--accent); font-weight: 600; }
 button.secondary { margin-top: 10px; padding: 8px 10px; color: var(--accent); background: transparent; border: 1px solid var(--accent); }
 label.file input { padding: 8px 0; border: 0; background: transparent; }
 .matches { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0 8px; }
@@ -148,3 +148,7 @@ button.link {
   width: auto; margin-top: 8px; padding: 6px 0; color: var(--accent);
   background: transparent; font-weight: 500; text-decoration: underline;
 }
+.hint { color: var(--muted); font-size: 0.8rem; margin: 2px 0 10px; }
+.moves { margin-top: 10px; }
+.invalid { border-color: var(--error); }
+.field-error { color: var(--error); font-weight: 600; margin: 0 0 10px; }

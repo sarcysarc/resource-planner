@@ -156,11 +156,13 @@ describe('mountApp', () => {
     setField('#target', 'Missingno');
     submit();
     expect(document.querySelector('#error')!.textContent).toContain('Pick');
+    expect(document.querySelector('[data-target-card] .field-error')!.textContent).toContain('Pick');
   });
 
   it('shows an error when a candidate is incomplete', () => {
     setField('#target', 'Azumarill');
     submit();
     expect(document.querySelector('#error')!.textContent).toContain('Current');
+    expect(document.querySelector('[data-candidate="current"] .field-error')).not.toBeNull();
   });
 });

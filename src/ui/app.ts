@@ -19,6 +19,7 @@ import { readingFamily } from './scanSpecies';
 import { addStatus, applySpecies } from './scanTarget';
 import { renderComparisons } from './render';
 import { wireSearches } from './searchHelp';
+import { showError } from './fieldError';
 import { wireSteps } from './steps';
 import { evolutionLine, findSpecies, type Species, type SpeciesIndex, loadBundledIndex } from './species';
 
@@ -32,7 +33,6 @@ interface Elements {
   shots: HTMLElement;
   searches: HTMLElement;
   results: HTMLElement;
-  error: HTMLElement;
   dataInfo: HTMLElement;
 }
 
@@ -48,7 +48,6 @@ function queryElements(doc: Document): Elements {
     shots: q('[data-shots]'),
     searches: q('[data-searches]'),
     results: q('#results'),
-    error: q('#error'),
     dataInfo: q('#data-info'),
   };
 }
@@ -137,7 +136,7 @@ function readInputs({ els, index, moves }: App): Result<Inputs> {
 function run(app: App): void {
   const { els } = app;
   const input = readInputs(app);
-  els.error.textContent = input.ok ? '' : input.error;
+  showError(els.form, input.ok ? '' : input.error);
   if (!input.ok) return;
   const { compare: sides, rare, labels, notes } = input.value;
   const rows = compare(sides);

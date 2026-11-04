@@ -2,8 +2,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { buildCandidateFields } from '../../src/ui/candidateFields';
 
-const FIELD_NAMES = ['screenshot', 'form', 'atk', 'def', 'hp', 'level', 'cp', 'variant', 'lucky', 'bestBuddy', 'secondMove', 'fastMove', 'chargedMove', 'pvpFastMove',
-  'evolveCandy', 'seenHp', 'dust', 'stars', 'atkBar', 'defBar', 'hpBar'];
+const FIELD_NAMES = ['screenshot', 'form', 'atk', 'def', 'hp', 'level', 'cp', 'variant', 'lucky', 'bestBuddy', 'secondMove', 'evolveCandy',
+  'fastMove', 'chargedMove', 'pvpFastMove', 'seenHp', 'dust', 'stars', 'atkBar', 'defBar', 'hpBar'];
 
 function names(root: ParentNode): string[] {
   return [...root.querySelectorAll<HTMLInputElement>('[name]')].map((el) => el.name);
@@ -40,5 +40,23 @@ describe('buildCandidateFields', () => {
   it('leaves evolve Candy blank, as not known yet, and type normal', () => {
     expect(fieldset.querySelector<HTMLInputElement>('[name="evolveCandy"]')!.value).toBe('');
     expect(fieldset.querySelector<HTMLSelectElement>('[name="variant"]')!.value).toBe('normal');
+  });
+
+  it('puts the attack choices in a closed, optional section', () => {
+    const moves = fieldset.querySelector<HTMLDetailsElement>('details.moves')!;
+    expect(moves.open).toBe(false);
+    expect(moves.querySelector('summary')!.textContent).toBe('Choose its attacks (optional)');
+    expect(names(moves)).toEqual(['fastMove', 'chargedMove', 'pvpFastMove']);
+  });
+
+  it('explains each game term in plain words', () => {
+    const hint = (name: string) => fieldset.querySelector(`[data-hint="${name}"]`)?.textContent ?? '';
+    expect(hint('ivs')).toContain('hidden scores from 0 to 15');
+    expect(hint('level')).toContain('either one');
+    expect(hint('variant')).toContain('purple');
+    expect(hint('lucky')).toContain('half the Stardust');
+    expect(hint('bestBuddy')).toContain('one level');
+    expect(hint('secondMove')).toContain('second charged attack');
+    expect(hint('evolveCandy')).toContain('Evolve button');
   });
 });
