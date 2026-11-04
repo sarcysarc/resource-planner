@@ -33,17 +33,25 @@ function readAccount(scan: Scan, kinds: ScreenKind[]): Reading {
   return Object.keys(totals).length ? { totals } : {};
 }
 
-/** Everything read from one screenshot. Unknown screens give nothing, so stray numbers never fill the form. */
-export function readScan(scan: Scan, mods: Modifiers): Reading {
-  const kinds = classify(scan.words);
-  if (kinds.includes('bag') || kinds.includes('profile')) return readAccount(scan, kinds);
-  // The IV bars are read from pixels, so they mark an appraisal even when OCR garbled the text (ADR 0015).
-  if (!kinds.includes('pokemon') && !kinds.includes('appraisal') && !scan.ivs) return {};
+function readOnScreen(scan: Scan, mods: Modifiers): Reading {
   const details = readDetails(textLines(scan.words), scan);
   // What the screen shows beats the form when judging which Stardust costs exist.
   const seen = { variant: details.variant ?? mods.variant, lucky: details.lucky ?? mods.lucky };
   const totals = readTotals(scan);
   const reading: Reading = { ...readPokemon(scan, seen), ...details };
   if (Object.keys(totals).length) reading.totals = totals;
+  return reading;
+}
+
+/** Everything read from one screenshot. Unknown screens give nothing, so stray numbers never fill the form. */
+export function readScan(scan: Scan, mods: Modifiers): Reading {
+  const kinds = classify(scan.words);
+  if (kinds.includes('bag') || kinds.includes('profile')) return readAccount(scan, kinds);
+  const known = kinds.includes('pokemon') || kinds.includes('appraisal');
+  // The IV bars are read from pixels, so they mark an appraisal even when OCR garbled the text (ADR 0015).
+  if (!known && !scan.ivs) return {};
+  const reading = readOnScreen(scan, mods);
+  // But bar-like stripes alone, on a screen that shows nothing else of a Pokémon, are not an appraisal.
+  if (!known && !Object.keys(reading).length) return {};
   return scan.ivs ? { ...reading, ivs: scan.ivs } : reading;
 }

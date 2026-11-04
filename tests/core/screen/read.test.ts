@@ -33,6 +33,20 @@ describe('readScan', () => {
     });
   });
 
+  // Seen in the stress test (ADR 0016, cause A): a list and a terms page have three long bars
+  // low on the screen, measured as empty IV bars.
+  describe('bar-like stripes on a screen that shows nothing of a Pokémon', () => {
+    const empty = { atk: 0, def: 0, hp: 0 };
+
+    it('give nothing', () => {
+      expect(readScan({ ...scan('Terms of Service\nBy continuing you agree to these terms', '384'), ivs: empty }, normal)).toEqual({});
+    });
+
+    it('give nothing even when the stripes measure as filled', () => {
+      expect(readScan({ ...scan('Sort by\nRecent'), ivs: { atk: 7, def: 15, hp: 2 } }, normal)).toEqual({});
+    });
+  });
+
   it('reads the family, variant, Lucky label, second move and evolve cost', () => {
     const text = 'LUCKY POKEMON\n80 / 80 HP\nSTARDUST ARON CANDY\nEVOLVE 50\nGYMS & RAIDS\nO Lick\n© Return\n© Thunder\nCAUGHT AFTER DEFEATING GRUNT';
     expect(readScan(scan(text), normal)).toMatchObject({ family: 'ARON', variant: 'purified', lucky: true, secondMove: true, evolveCandy: 50 });
