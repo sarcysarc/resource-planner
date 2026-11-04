@@ -24,6 +24,11 @@ need to see why one option wins. Generalising once avoids reworking `compare`,
   table) adds a purified option: variant Purified, each IV +2 up to 15, level raised
   to 25 if lower, and the purify Stardust and Candy added to its cost. When the tier
   is unknown, F3 asks for the cost (or a purify screenshot) instead of guessing.
+  As built, the only species with an unknown tier is Smeargle, which has no Shadow
+  form, so F3 leaves the option out with a note above the results instead of a field.
+  Purifying is priced at the candidate's current form, before evolving, so evolving
+  gets the Purified 10% discount; a typed evolve total is split into base steps from
+  the largest to apply it.
 - **Each goal result carries an explanation** as data, not text: what the value is
   (stat product at level L and CP, or Attack with the Shadow bonus) and the cost split
   into parts (power-ups, second move, evolve, purify). The UI turns it into words, so

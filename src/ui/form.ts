@@ -82,10 +82,17 @@ export interface CandidateSource {
   target: Species;
 }
 
-export function readCandidate({ root, index, target }: CandidateSource): Result<Candidate> {
+/** The form the candidate is in now, if it is in the target's line. */
+export function formOf({ root, index, target }: CandidateSource): Species | undefined {
+  const id = root.querySelector<HTMLInputElement | HTMLSelectElement>('[name="form"]')?.value;
+  return evolutionLine(index, target).find((s) => s.id === id);
+}
+
+export function readCandidate(source: CandidateSource): Result<Candidate> {
+  const { root, target } = source;
   const parsed = CandidateFields.safeParse(fieldValues(root));
   if (!parsed.success) return { ok: false, error: firstError(parsed.error) };
-  const form = evolutionLine(index, target).find((s) => s.id === parsed.data.form);
+  const form = formOf(source);
   if (!form) return { ok: false, error: `${parsed.data.form} does not evolve into ${target.name}` };
   const level = resolveLevel(parsed.data, form);
   return level.ok ? { ok: true, value: toCandidate(parsed.data, level.value, target) } : level;

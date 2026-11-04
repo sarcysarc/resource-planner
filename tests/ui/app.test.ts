@@ -97,6 +97,17 @@ describe('mountApp', () => {
     expect(document.querySelector('#error')!.textContent).toBe('');
   });
 
+  it('adds a purified column for a Shadow candidate', () => {
+    setField('#target', 'Azumarill');
+    fillSide('current', ['4', '15', '13']);
+    setField('[data-candidate="current"] [name="variant"]', 'shadow');
+    fillSide('alternative', ['15', '15', '15']);
+    submit();
+    const headings = [...document.querySelectorAll('#results thead th')].map((th) => th.textContent);
+    expect(headings).toEqual(['Goal', 'Current', 'Current, purified', 'Alternative', 'Recommendation']);
+    expect(document.querySelector('#results')!.textContent).toContain('Purify 3,000 Stardust · 3 Candy');
+  });
+
   it('powers up no further than ten levels above the trainer', () => {
     setField('#target', 'Azumarill');
     fillSide('current', ['15', '15', '15']);

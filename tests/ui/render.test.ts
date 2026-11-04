@@ -46,6 +46,17 @@ describe('renderComparisons', () => {
     expect(container.textContent).toContain('-2.0% vs current');
   });
 
+  it('says to purify when a purified option wins', () => {
+    const purify = [options[0], { heading: 'Current, purified', name: 'the purified current one', action: 'purify the current one' }];
+    const two = (kind: 'switch' | 'save'): Comparison[] => [{ ...rows[1], verdict: { kind, option: 1 } }];
+    expect(render({ options: purify, rows: two('switch') }).textContent).toContain('Purify the current one');
+    expect(render({ options: purify, rows: two('save') }).textContent).toContain('Save to purify the current one');
+  });
+
+  it('shows notes above the table', () => {
+    expect(render({ notes: ['A note.'] }).querySelector('p.muted')!.textContent).toBe('A note.');
+  });
+
   it('says what Rare Candy could cover', () => {
     const container = render({ resources: { stardust: Infinity, candy: 100, xl: 40 }, rare: { candy: 51, xl: 0 } });
     expect(container.textContent).toContain('Short 20 Candy; you have 51 Rare Candy');
@@ -59,6 +70,8 @@ describe('formatParts', () => {
       { kind: 'secondMove', cost: { stardust: 50000, candy: 50, xl: 0 } },
       { kind: 'evolve', cost: { stardust: 0, candy: 125, xl: 0 } },
     ] as const;
+    const purify = { kind: 'purify', cost: { stardust: 3000, candy: 3, xl: 0 } } as const;
+    expect(formatParts([purify, parts[0]])).toBe('Purify 3,000 Stardust · 3 Candy; power-ups 100,000 Stardust · 70 Candy');
     expect(formatParts([...parts])).toBe('Power-ups 100,000 Stardust · 70 Candy; second move 50,000 Stardust · 50 Candy; evolve 125 Candy');
     expect(formatParts([parts[0]])).toBe('');
   });

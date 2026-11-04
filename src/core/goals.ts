@@ -21,6 +21,8 @@ export interface Candidate {
   secondMoveUnlocked: boolean;
   secondMoveDust: number;
   evolveCandy: number;
+  /** Still to pay to purify first (ADR 0006); none when unset. */
+  purifyCost?: Cost;
   /** The highest level the trainer can power up to (see powerUpLimit); 50 when unset. */
   maxLevel?: number;
 }
@@ -57,6 +59,7 @@ const isFree = (cost: Cost) => cost.stardust === 0 && cost.candy === 0 && cost.x
 
 function costParts(c: Candidate, powerUps: Cost): CostPart[] {
   const parts: CostPart[] = [
+    { kind: 'purify', cost: c.purifyCost ?? ZERO_COST },
     { kind: 'powerUps', cost: powerUps },
     { kind: 'secondMove', cost: c.secondMoveUnlocked ? ZERO_COST : secondMoveCost({ dust: c.secondMoveDust, mods: c.mods }) },
     { kind: 'evolve', cost: { stardust: 0, candy: c.evolveCandy, xl: 0 } },

@@ -16,17 +16,22 @@ export const GOAL_LABELS: Record<GoalId, string> = {
 export interface OptionLabel {
   heading: string;
   name: string;
+  /** What choosing it means, when more than switching to it, e.g. "purify the current one". */
+  action?: string;
 }
+
+const capitalise = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
 export function formatVerdict(verdict: Verdict, options: OptionLabel[]): string {
   if (verdict.kind === 'neither') return `${options.length === 2 ? 'Neither' : 'None'} fits this goal`;
   if (verdict.kind === 'keep') return 'Keep investing';
-  const name = options[verdict.option].name;
-  return verdict.kind === 'switch' ? `Switch to ${name}` : `Save for ${name}`;
+  const { name, action } = options[verdict.option];
+  if (verdict.kind === 'switch') return action ? capitalise(action) : `Switch to ${name}`;
+  return action ? `Save to ${action}` : `Save for ${name}`;
 }
 
 const PART_NAMES: Record<CostPart['kind'], string> = {
-  powerUps: 'Power-ups',
+  powerUps: 'power-ups',
   secondMove: 'second move',
   evolve: 'evolve',
   purify: 'purify',
@@ -50,7 +55,7 @@ export function formatCost(cost: Cost): string {
 /** Where a cost comes from, when it has more than one part. */
 export function formatParts(parts: readonly CostPart[]): string {
   if (parts.length < 2) return '';
-  return parts.map((part) => `${PART_NAMES[part.kind]} ${formatCost(part.cost)}`).join('; ');
+  return capitalise(parts.map((part) => `${PART_NAMES[part.kind]} ${formatCost(part.cost)}`).join('; '));
 }
 
 // Rare Candy is only suggested: the player decides whether to spend it on this Pokémon.

@@ -26,3 +26,18 @@ export function evolveTotal(steps: readonly (number | undefined)[], variant: Var
   if (steps.some((s) => s === undefined)) return undefined;
   return steps.reduce<number>((sum, base) => sum + stepCost(base!, variant), 0);
 }
+
+/**
+ * The Purified total for a total of undiscounted steps, split into base costs from the
+ * largest. A typed total that is not made of them is discounted as a whole.
+ */
+export function purifiedTotal(total: number): number {
+  let left = total;
+  let sum = 0;
+  for (const base of [...BASE_COSTS].reverse()) {
+    const count = Math.floor(left / base);
+    sum += count * stepCost(base, 'purified');
+    left -= count * base;
+  }
+  return sum + stepCost(left, 'purified');
+}

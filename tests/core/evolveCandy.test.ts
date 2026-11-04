@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { baseCost, evolveTotal, stepCost } from '../../src/core/evolveCandy';
+import { baseCost, evolveTotal, purifiedTotal, stepCost } from '../../src/core/evolveCandy';
 
 describe('baseCost', () => {
   it('keeps the cost shown for Normal and Shadow', () => {
@@ -36,5 +36,17 @@ describe('evolveTotal', () => {
   it('is zero at the target and unknown while any step is unknown', () => {
     expect(evolveTotal([], 'normal')).toBe(0);
     expect(evolveTotal([25, undefined], 'normal')).toBeUndefined();
+  });
+});
+
+describe('purifiedTotal', () => {
+  it('discounts each step of a total of base costs', () => {
+    expect(purifiedTotal(0)).toBe(0);
+    expect(purifiedTotal(125)).toBe(113);
+    expect(purifiedTotal(37)).toBe(34);
+  });
+
+  it('rounds a total that is not made of base costs up', () => {
+    expect(purifiedTotal(7)).toBe(7);
   });
 });

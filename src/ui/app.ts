@@ -1,4 +1,5 @@
 import { compare, type CompareInput } from '../core/compare';
+import { purifyCost } from '../data/purify';
 import { powerUpLimit } from '../core/levels';
 import type { Reading, Totals } from '../core/screen/types';
 import { receiveShared } from '../share/receive';
@@ -8,13 +9,15 @@ import { wireEvolve } from './evolveMemory';
 import { wireFinder } from './finder';
 import { fillCandidate, wireScreenshot } from './screenshot';
 import { type Side, wireScreenshots } from './screenshots';
-import { readCandidate, readResources, type Result } from './form';
+import { formOf, readCandidate, readResources, type Result } from './form';
+import type { OptionLabel } from './format';
+import { buildOptions, type OptionSide } from './options';
 import { fillResources } from './scanResources';
 import { readingFamily } from './scanSpecies';
 import { addStatus, applySpecies } from './scanTarget';
 import { renderComparisons } from './render';
 import { wireSearches } from './searchHelp';
-import { evolutionLine, findSpecies, type SpeciesIndex, loadBundledIndex } from './species';
+import { evolutionLine, findSpecies, type Species, type SpeciesIndex, loadBundledIndex } from './species';
 
 interface Elements {
   form: HTMLFormElement;
@@ -66,6 +69,22 @@ function updateFormChoices(els: Elements, index: SpeciesIndex): void {
 interface Inputs {
   compare: CompareInput;
   rare: Rare;
+  labels: OptionLabel[];
+  notes: string[];
+}
+
+interface SideSource {
+  root: HTMLElement;
+  index: SpeciesIndex;
+  target: Species;
+  label: string;
+}
+
+function readSide({ label, ...source }: SideSource): Result<OptionSide> {
+  const read = readCandidate(source);
+  if (!read.ok) return { ok: false, error: `${label}: ${read.error}` };
+  const form = formOf(source)!;
+  return { ok: true, value: { candidate: read.value, purify: purifyCost(form.secondMoveDust), formName: form.name } };
 }
 
 function readInputs(els: Elements, index: SpeciesIndex): Result<Inputs> {
@@ -74,27 +93,23 @@ function readInputs(els: Elements, index: SpeciesIndex): Result<Inputs> {
   const account = readAccount(els.resources);
   if (!account.ok) return { ok: false, error: `Resources: ${account.error}` };
   const maxLevel = powerUpLimit(account.value.trainerLevel);
-  const current = readCandidate({ root: els.current, index, target });
-  if (!current.ok) return { ok: false, error: `Current: ${current.error}` };
-  const alternative = readCandidate({ root: els.alternative, index, target });
-  if (!alternative.ok) return { ok: false, error: `Alternative: ${alternative.error}` };
+  const current = readSide({ root: els.current, index, target, label: 'Current' });
+  if (!current.ok) return current;
+  const alternative = readSide({ root: els.alternative, index, target, label: 'Alternative' });
+  if (!alternative.ok) return alternative;
   const resources = readResources(els.resources);
   if (!resources.ok) return { ok: false, error: `Resources: ${resources.error}` };
-  const compare = { candidates: [current.value, alternative.value].map((c) => ({ ...c, maxLevel })), resources: resources.value };
-  return { ok: true, value: { compare, rare: account.value.rare } };
+  const { candidates, labels, notes } = buildOptions([current.value, alternative.value]);
+  const compare = { candidates: candidates.map((c) => ({ ...c, maxLevel })), resources: resources.value };
+  return { ok: true, value: { compare, rare: account.value.rare, labels, notes } };
 }
-
-const OPTIONS = [
-  { heading: 'Current', name: 'the current one' },
-  { heading: 'Alternative', name: 'the alternative' },
-];
 
 function run(els: Elements, index: SpeciesIndex): void {
   const input = readInputs(els, index);
   els.error.textContent = input.ok ? '' : input.error;
   if (!input.ok) return;
-  const { compare: sides, rare } = input.value;
-  renderComparisons({ container: els.results, options: OPTIONS, rows: compare(sides), resources: sides.resources, rare });
+  const { compare: sides, rare, labels, notes } = input.value;
+  renderComparisons({ container: els.results, options: labels, rows: compare(sides), resources: sides.resources, rare, notes });
 }
 
 // After a candidate's fields are filled: the species, the form and the shared totals.

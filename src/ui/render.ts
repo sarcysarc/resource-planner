@@ -64,14 +64,16 @@ export interface RenderInput extends Budget {
   /** One per option, in the order of each row's results. */
   options: OptionLabel[];
   rows: Comparison[];
+  /** Shown above the table, e.g. why an option is left out. */
+  notes?: string[];
 }
 
-export function renderComparisons({ container, options, rows, resources, rare }: RenderInput): void {
+export function renderComparisons({ container, options, rows, resources, rare, notes = [] }: RenderInput): void {
   const table = el('table', '', 'results');
   const head = el('tr');
   ['Goal', ...options.map((o) => o.heading), 'Recommendation'].forEach((h) => head.append(el('th', h)));
   table.createTHead().append(head);
   const body = table.createTBody();
   rows.forEach((row) => body.append(goalRow({ row, options, budget: { resources, rare } })));
-  container.replaceChildren(table);
+  container.replaceChildren(...notes.map((note) => el('p', note, 'muted')), table);
 }
