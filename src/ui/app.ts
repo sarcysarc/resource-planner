@@ -4,6 +4,7 @@ import type { Reading, Totals } from '../core/screen/types';
 import { receiveShared } from '../share/receive';
 import { type Rare, readAccount } from './account';
 import { buildCandidateFields } from './candidateFields';
+import { wireEvolve } from './evolveMemory';
 import { wireFinder } from './finder';
 import { fillCandidate, wireScreenshot } from './screenshot';
 import { type Side, wireScreenshots } from './screenshots';
@@ -92,20 +93,22 @@ function run(els: Elements, index: SpeciesIndex): void {
 }
 
 // After a candidate's fields are filled: the species, the form and the shared totals.
-function useReading(els: Elements, index: SpeciesIndex, root: HTMLElement): (reading: Reading) => void {
+type OnRead = (root: HTMLElement, reading: Reading) => void;
+
+function useReading(els: Elements, index: SpeciesIndex, useEvolve: OnRead): OnRead {
   // As if typed, so everything that follows the target updates.
   const refresh = () => els.target.dispatchEvent(new Event('change'));
-  return (reading) => {
+  return (root, reading) => {
     const sameFamily = applySpecies({ index, target: els.target, root, refresh }, reading);
+    useEvolve(root, reading);
     addStatus(root, fillResources(els.resources, reading.totals ?? {}, sameFamily));
   };
 }
 
-function wireShared(els: Elements, index: SpeciesIndex): void {
+function wireShared(els: Elements, index: SpeciesIndex, onRead: OnRead): void {
   const use = (side: Side, group: Parameters<typeof fillCandidate>[1]) => {
-    const root = els[side];
-    fillCandidate(root, group);
-    useReading(els, index, root)(group.reading);
+    fillCandidate(els[side], group);
+    onRead(els[side], group.reading);
   };
   const useAccount = (totals: Totals) => fillResources(els.resources, totals, false);
   const read = wireScreenshots({ root: els.shots, familyOf: (reading) => readingFamily(index, reading), use, useAccount });
@@ -116,15 +119,18 @@ function wireShared(els: Elements, index: SpeciesIndex): void {
 export function mountApp(doc: Document): void {
   const index = loadBundledIndex();
   const els = queryElements(doc);
-  for (const root of [els.current, els.alternative]) {
+  const roots = [els.current, els.alternative];
+  // The form choices follow the target before the evolve totals are refilled.
+  els.target.addEventListener('change', () => updateFormChoices(els, index));
+  const onRead = useReading(els, index, wireEvolve({ index, target: els.target, roots }));
+  for (const root of roots) {
     buildCandidateFields(root);
     wireFinder({ root, index });
-    wireScreenshot(root, useReading(els, index, root));
+    wireScreenshot(root, (reading) => onRead(root, reading));
   }
-  wireShared(els, index);
+  wireShared(els, index, onRead);
   fillSpeciesList(els.speciesList, index);
   els.dataInfo.textContent = `Game data: PvPoke game master, ${index.timestamp}.`;
-  els.target.addEventListener('change', () => updateFormChoices(els, index));
   wireSearches({ target: els.target, root: els.searches, index });
   els.form.addEventListener('submit', (event) => {
     event.preventDefault();

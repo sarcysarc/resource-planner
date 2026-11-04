@@ -75,8 +75,10 @@ not the data pipeline.
    IVs from an appraisal screenshot (`src/core/screenText.ts`, `src/ocr/`, ADR 0008).
 3. **Phase A, second half.** G3 + F2. G3 is done: `src/data/pvpoke.ts` (schema and
    transform, shared by the build and the app), types per species, and the purify table
-   in `src/data/purify.ts`. F2 is left: keep the evolve cost read from a screenshot so
-   it is not asked for twice.
+   in `src/data/purify.ts`. F2 is done: each step's evolve cost read from a screenshot
+   is kept while the page is open (`src/ui/evolveMemory.ts`), and "Candy to evolve" is
+   filled with the total from the candidate's form to the target once every step on the
+   way is known. Until then the status line names the step still missing.
 4. **Phase B — more options.** G4, then F3.
 5. **Phase C — battle math.** G5, then F4, then F5. F5 is the largest feature: move
    choice per candidate, opponent list per league and a results view per opponent.

@@ -1,3 +1,4 @@
+import { SHOWN_COSTS } from '../evolveCandy';
 import type { Modifiers } from '../types';
 
 const PURIFY = /\bPURIFY\b/;
@@ -9,9 +10,6 @@ const LUCKY = /\bLUCKY\s+POK[EÉ]MON\b/i;
 const EVOLVE = /\bEVOLVE\b\D*(\d{2,4})\b/;
 const MEGA = /\bMEGA\b/i;
 
-// Base evolution costs, and the same costs with the Purified 10% discount.
-const BASE_COSTS = [12, 25, 50, 100, 200, 400];
-const EVOLVE_COSTS = new Set(BASE_COSTS.flatMap((c) => [c, Math.floor(c * 0.9), Math.ceil(c * 0.9)]));
 
 const some = (lines: string[], pattern: RegExp) => lines.some((line) => pattern.test(line));
 
@@ -29,7 +27,7 @@ export function readLucky(lines: string[]): true | undefined {
 
 // A Candy icon is sometimes read as a leading digit ("9100" for 100).
 function evolveCost(digits: string): number | undefined {
-  return [digits, digits.slice(1)].map(Number).find((n) => EVOLVE_COSTS.has(n));
+  return [digits, digits.slice(1)].map(Number).find((n) => SHOWN_COSTS.has(n));
 }
 
 /** Candy for the next evolution, from the EVOLVE button. Mega Evolution is not counted. */

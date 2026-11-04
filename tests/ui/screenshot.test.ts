@@ -58,9 +58,10 @@ describe('wireScreenshot', () => {
     const text = 'LUCKY POKEMON\n80 / 80 HP\nEVOLVE 50\nGYMS & RAIDS\nO Lick\nO Return\nO Thunder\nCAUGHT AFTER DEFEATING GRUNT';
     readScreenshot.mockResolvedValueOnce(scan(text, { cpText: '600' }));
     await choose(new File(['x'], 'screen.png'));
-    expect([value('variant'), value('evolveCandy')]).toEqual(['purified', '50']);
+    // The evolve total is left to the app, which knows the target (evolveMemory).
+    expect([value('variant'), value('evolveCandy')]).toEqual(['purified', '0']);
     expect([checked('lucky'), checked('secondMove')]).toEqual([true, true]);
-    expect(status()).toBe('Read CP 600, HP 80, Purified, Lucky, second move unlocked, 50 Candy to evolve. Check them, then tap Find IVs.');
+    expect(status()).toBe('Read CP 600, HP 80, Purified, Lucky, second move unlocked, 50 Candy for the next evolution. Check them, then tap Find IVs.');
   });
 
   it('unticks the second move when the screen shows it locked, and leaves unseen choices alone', async () => {

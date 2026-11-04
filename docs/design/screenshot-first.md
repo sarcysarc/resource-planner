@@ -148,8 +148,11 @@ OCR with word boxes ──► classify screen ──► per-screen reader ──
 - **Family name → species.** The "<FAMILY> CANDY" label names the family's first
   member. PvPoke's game master has a family field (G3). Until G3 lands, build the
   map from the bundled evolution data.
-- **Evolve Candy cost** is read off the screen when shown, so F2 is less urgent for
-  players who use screenshots.
+- **Evolve Candy cost** is read off the screen when shown. A screen shows only the next
+  step, so each step is remembered per species (undiscounted) while the page is open,
+  and the total to the target is filled once every step is known (F2). A Dratini aimed
+  at Dragonite needs a Dratini and a Dragonair screenshot; either can be any Pokémon of
+  that species. Purified costs are 10% off per step, rounded up.
 
 ## Code layout
 
@@ -176,7 +179,9 @@ Sizes follow the project quality gates (files ≤ 200 lines, ≤ 10 functions).
 | `src/core/screen/totals.ts` | Stardust, Candy and XL totals above their labels |
 | `src/ui/scanSpecies.ts` | species resolution (steps above); in `ui` because the species index is |
 | `src/ui/scanTarget.ts` | fills an empty target and picks the form |
-| `src/ui/scanDetails.ts` | fills variant, Lucky, second move and evolve Candy |
+| `src/ui/scanDetails.ts` | fills variant, Lucky and second move; notes the next evolve cost |
+| `src/core/evolveCandy.ts` | evolve cost per step, the Purified discount and the total |
+| `src/ui/evolveMemory.ts` | remembers each step's cost and fills the total to the target |
 | `src/ui/scanResources.ts` | fills the shared resource fields from the totals |
 | `src/core/screen/privacy.ts` | drops location lines before any reader sees them |
 | `src/core/screen/merge.ts` | group by Pokémon, merge, list conflicts |

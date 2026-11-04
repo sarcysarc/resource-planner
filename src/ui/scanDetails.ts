@@ -26,11 +26,8 @@ const SETTERS: Setter[] = [
     tick(root, 'secondMove', secondMove);
     return `second move ${secondMove ? 'unlocked' : 'locked'}`;
   },
-  (root, { evolveCandy }) => {
-    if (evolveCandy === undefined) return undefined;
-    input(root, 'evolveCandy').value = String(evolveCandy);
-    return `${evolveCandy} Candy to evolve`;
-  },
+  // Only the next step's cost: the total to the target is filled by evolveMemory.
+  (_root, { evolveCandy }) => (evolveCandy === undefined ? undefined : `${evolveCandy} Candy for the next evolution`),
 ];
 
 /**
