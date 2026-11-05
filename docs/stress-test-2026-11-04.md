@@ -137,8 +137,11 @@ The live site (current master build) was then run in Chrome on the phone, a moto
   misses the family, totals or costs too often, so the dark pass is skipped only on
   appraisals whose name and HP were read, and on screens that are plainly not a Pokémon, bag
   or profile. On the desktop the median went from 3.0 s to 0.44 s, the 90th percentile from
-  7.3 s to 1.0 s, and the whole set from 824 s to 137 s. The phone is not measured yet: that
-  needs the live build.
+  7.3 s to 1.0 s, and the whole set from 824 s to 137 s. On the phone, the same 10
+  appraisals took 19.5 s and 19.4 s in the installed app (was 46 s in Chrome, 49–55 s in the
+  app), about 1–2 s per screenshot, and 20.9 s in Chrome. All 10 were read both times, with
+  no crash. The files were given to the app's picker from the debugger, as in the first
+  Chrome run, not through the Share sheet.
 
 ### F. Smaller misreads (no grid failure today)
 

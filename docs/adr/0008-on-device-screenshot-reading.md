@@ -67,7 +67,8 @@ against 0.29 s for the plain pass). So:
 
 Afterwards, on the same desktop: median 0.44 s (was 3.0 s), 90th percentile 1.0 s (was 7.3 s),
 appraisals 0.36 s, none over 5 s (was 57 of 229). Reading misses went from 21 fields to 20,
-and the grid failures stayed at the same three.
+and the grid failures stayed at the same three. On the phone, in the installed app, 10
+appraisals took 19.4 s (was 46–55 s), about 1–2 s each.
 
 ### Amendment (2026-11-04): a CP must fit the species and HP
 
