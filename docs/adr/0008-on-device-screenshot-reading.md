@@ -47,6 +47,28 @@ grey track (`226,226,224`) with white gaps between its three segments. So:
 - The screenshots stay in `screenshots/`, ignored by git, because they show where each
   Pokémon was caught. Tests use synthetic images with the measured colours and layout.
 
+### Amendment (2026-11-04): one worker per upload, dark pass only where needed
+
+The stress test (docs/stress-test-2026-11-04.md, cause E) took a median of 3.0 s per
+screenshot. Timing each stage on all 229 screenshots showed that starting a worker for each one
+cost most of that. Of what was left, the dark-ink page pass took about half (median 0.43 s,
+against 0.29 s for the plain pass). So:
+
+- **One worker reads a whole upload.** `openReader()` starts it, `read()` reads each
+  screenshot, `close()` shuts it down; `readImages` closes it even when one fails. The
+  digits-only parameters are given to each `recognize()` call, which restores them, so
+  the next page pass reads text. Reusing the worker read every screenshot exactly as before.
+- **The dark-ink pass runs only where it can matter** (`core/screen/darkPass.ts`). Skipping
+  it lost the family, totals or costs on 34 of 44 top screens and 16 of 37 bottom screens.
+  So it still runs on every Pokémon, bag and profile screen. It is skipped on an appraisal
+  whose name and HP the plain pass read (it lost nothing there but a junk family on one, and
+  fixed one HP). It is also skipped on a screen the plain pass shows is none of those, which
+  lost nothing on 94 menus.
+
+Afterwards, on the same desktop: median 0.44 s (was 3.0 s), 90th percentile 1.0 s (was 7.3 s),
+appraisals 0.36 s, none over 5 s (was 57 of 229). Reading misses went from 21 fields to 20,
+and the grid failures stayed at the same three.
+
 ## Consequences
 
 - No network request carries the screenshot or its text; it works offline once cached.

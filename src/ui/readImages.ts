@@ -1,6 +1,12 @@
 import { readScan } from '../core/screen/read';
 import type { Reading } from '../core/screen/types';
 import type { Modifiers } from '../core/types';
+import type { Reader } from '../ocr/recognize';
+
+interface Options {
+  mods: Modifiers;
+  progress: (n: number) => void;
+}
 
 /** What a batch of images gave, oldest first, and how many could not be read at all. */
 export interface Images {
@@ -24,22 +30,28 @@ export function failedNote(failed: number): string {
 
 /**
  * Reads images one at a time, oldest first (totals change, so order matters). The OCR
- * engine loads on first use. `progress` gets the number of the image being read.
+ * engine loads on first use and reads the whole batch. `progress` gets the number of the image being read.
  */
 export async function readImages(files: File[], mods: Modifiers, progress: (n: number) => void): Promise<Images> {
-  const { readScreenshot } = await import('../ocr/recognize');
+  const reader = await (await import('../ocr/recognize')).openReader();
+  try {
+    return await readEach(reader, files, { mods, progress });
+  } finally {
+    await reader.close();
+  }
+}
+
+async function readEach(reader: Reader, files: File[], { mods, progress }: Options): Promise<Images> {
   const sorted = [...files].sort((a, b) => a.lastModified - b.lastModified);
-  const readings: Reading[] = [];
-  const read: File[] = [];
-  let failed = 0;
+  const images: Images = { readings: [], files: [], failed: 0 };
   for (const [i, file] of sorted.entries()) {
     progress(i + 1);
     try {
-      readings.push(readScan(await readScreenshot(file), mods));
-      read.push(file);
+      images.readings.push(readScan(await reader.read(file), mods));
+      images.files.push(file);
     } catch {
-      failed += 1;
+      images.failed += 1;
     }
   }
-  return { readings, files: read, failed };
+  return images;
 }

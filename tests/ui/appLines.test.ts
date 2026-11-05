@@ -15,7 +15,7 @@ vi.mock('../../src/ocr/recognize', () => {
   const gengar = { words: wordsOf('Gengar\n120 / 120 HP\n123,456 30\nSTARDUST GASTLY CANDY'), cpText: '2000', digits: { stardust: '123,456', candy: '30' } };
   const appraised = (name: string) => ({ ...lairon(name.slice(4, -4)), ivs: name.startsWith('max') ? { atk: 15, def: 15, hp: 15 } : { atk: 12, def: 3, hp: 14 } });
   return {
-    readScreenshot: async ({ name }: File) => (name.startsWith('gloom') ? gloom : name.startsWith('gengar') ? gengar : /^(ivs|max)-/.test(name) ? appraised(name) : name.startsWith('cp-') ? lairon(name.slice(3, -4)) : lairon('600')),
+    openReader: async () => ({ close: async () => undefined, read: async ({ name }: File) => (name.startsWith('gloom') ? gloom : name.startsWith('gengar') ? gengar : /^(ivs|max)-/.test(name) ? appraised(name) : name.startsWith('cp-') ? lairon(name.slice(3, -4)) : lairon('600')) }),
   };
 });
 

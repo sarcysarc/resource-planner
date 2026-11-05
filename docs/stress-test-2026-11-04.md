@@ -127,6 +127,13 @@ The live site (current master build) was then run in Chrome on the phone, a moto
   regions.
 - **Fix:** start one worker per upload and reuse it. Run the dark-ink full pass only when
   the plain pass misses the CP, the HP or the name. Measure on the phone before and after.
+- **Done** (ADR 0008 amendment): one worker reads the whole upload, which was most of the
+  time. The rule for the dark pass was narrowed: on top and bottom screens the plain pass
+  misses the family, totals or costs too often, so the dark pass is skipped only on
+  appraisals whose name and HP were read, and on screens that are plainly not a Pokémon, bag
+  or profile. On the desktop the median went from 3.0 s to 0.44 s, the 90th percentile from
+  7.3 s to 1.0 s, and the whole set from 824 s to 137 s. The phone is not measured yet: that
+  needs the live build.
 
 ### F. Smaller misreads (no grid failure today)
 
@@ -176,3 +183,5 @@ couldn't be compared with every IV known lacked the Candy to evolve, so they say
 After the target: unchanged, grid 3 failures, all cause C. Exeggcute and Rowlet now ask for
 their final in step 1; the grid check answers with the first. Every line at once: 4 lines
 with a gain, 26 needing another to compare, 2 needing the Candy to evolve and 1 IVs, as before.
+
+After E: reading 18 shots miss (was 19), the Riolu's HP now right; grid 3 failures, all cause C.

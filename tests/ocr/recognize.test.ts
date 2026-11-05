@@ -21,7 +21,7 @@ vi.mock('tesseract.js', () => ({ createWorker, OEM: { LSTM_ONLY: 1 }, PSM: { SIN
 const imagePixels = vi.fn(async () => blankScreen());
 vi.mock('../../src/ocr/image', () => ({ imagePixels, pixelsBlob: async () => new Blob([], { type: CROP }) }));
 
-const { readScreenshot } = await import('../../src/ocr/recognize');
+const { openReader, readScreenshot } = await import('../../src/ocr/recognize');
 
 describe('readScreenshot', () => {
   it('returns the words without location, the CP area text and the re-read digits', async () => {
@@ -32,9 +32,32 @@ describe('readScreenshot', () => {
     expect(scan.ivs).toBeUndefined();
   });
 
-  it('re-reads digits only, one line at a time', async () => {
+  // Set for each call only, so a worker reused for the next screenshot reads its page as text.
+  it('re-reads digits only, one line at a time, without changing the worker for the page passes', async () => {
+    worker.recognize.mockClear();
     await readScreenshot(new Blob());
-    expect(worker.setParameters).toHaveBeenCalledWith({ tessedit_char_whitelist: '0123456789,/', tessedit_pageseg_mode: '7' });
+    const digits = { tessedit_char_whitelist: '0123456789,/', tessedit_pageseg_mode: '7' };
+    expect(worker.recognize.mock.calls.map((call) => (call as unknown[])[1])).toEqual([{}, {}, undefined, digits]);
+    expect(worker.setParameters).not.toHaveBeenCalled();
+  });
+
+  it('reads many screenshots with one worker, shut down when closed', async () => {
+    createWorker.mockClear();
+    worker.terminate.mockClear();
+    const reader = await openReader();
+    await reader.read(new Blob());
+    await reader.read(new Blob());
+    expect([createWorker.mock.calls.length, worker.terminate.mock.calls.length]).toEqual([1, 0]);
+    await reader.close();
+    expect(worker.terminate).toHaveBeenCalledOnce();
+  });
+
+  it('skips the dark-ink pass on an appraisal whose name and HP the plain pass read', async () => {
+    const top = { text: '', blocks: [{ paragraphs: [{ lines: [line(100, ['Riolu', 100]), line(140, ['79', 100], ['/', 170], ['79', 240], ['HP', 310])] }] }] };
+    imagePixels.mockResolvedValueOnce(appraisalScreen([12, 13, 15]));
+    worker.recognize.mockClear().mockResolvedValueOnce({ data: top });
+    const scan = await readScreenshot(new Blob());
+    expect([scan.words.map((w) => w.text), worker.recognize.mock.calls.length]).toEqual([['Riolu', '79', '/', '79', 'HP'], 2]);
   });
 
   it('re-reads the resource totals above their labels', async () => {
@@ -45,10 +68,11 @@ describe('readScreenshot', () => {
 
   it('adds the labels only a dark-ink copy of the screen shows, and re-reads their totals', async () => {
     const labels = { text: '', blocks: [{ paragraphs: [{ lines: [line(700, ['STARDUST', 100], ['ARON', 300], ['CANDY', 370])] }] }] };
-    worker.recognize.mockResolvedValueOnce({ data: { text: '', blocks: null } }).mockResolvedValueOnce({ data: labels });
+    const button = { text: '', blocks: [{ paragraphs: [{ lines: [line(600, ['POWER', 100], ['UP', 170])] }] }] };
+    worker.recognize.mockResolvedValueOnce({ data: button }).mockResolvedValueOnce({ data: labels });
     const scan = await readScreenshot(new Blob());
-    expect(scan.words.map((w) => w.text)).toEqual(['STARDUST', 'ARON', 'CANDY']);
-    expect(scan.digits).toEqual({ stardust: '7,000 8', candy: '7,000 8' });
+    expect(scan.words.map((w) => w.text)).toEqual(['POWER', 'UP', 'STARDUST', 'ARON', 'CANDY']);
+    expect(scan.digits).toEqual({ cost: '7,000 8', stardust: '7,000 8', candy: '7,000 8' });
   });
 
   it('re-reads the trainer level above its label', async () => {

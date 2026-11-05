@@ -8,7 +8,7 @@ import { wordsOf } from '../core/screen/wordsOf';
 // Made-up screens: the HP tells them apart, the text gives the name.
 const screen = (name: string, hp: number): Scan => ({ words: wordsOf(`${name}\n${hp} / ${hp} HP`), cpText: '600', digits: {} });
 const readScreenshot = vi.fn<(image: Blob) => Promise<Scan>>();
-vi.mock('../../src/ocr/recognize', () => ({ readScreenshot }));
+vi.mock('../../src/ocr/recognize', () => ({ openReader: async () => ({ read: readScreenshot, close: async () => undefined }) }));
 
 const { wireScreenshots } = await import('../../src/ui/screenshots');
 

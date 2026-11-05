@@ -8,7 +8,8 @@ import { loadTruth } from './truth';
 
 vi.mock('../src/ocr/recognize', async () => {
   const { loadScan } = await import('./truth');
-  return { readScreenshot: async (file: File) => loadScan(file.name)!.scan! };
+  const read = async (file: File) => loadScan(file.name)!.scan!;
+  return { openReader: async () => ({ read, close: async () => undefined }) };
 });
 vi.mock('../src/ui/thumb', async (real) => ({ ...(await real<object>()), makeThumb: async (f: File) => `thumb:${f.name}` }));
 
