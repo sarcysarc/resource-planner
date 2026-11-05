@@ -94,6 +94,14 @@ Pokémon (10–50 at a time) and share them all; each line then gets its own adv
   open line on Compare; they are kept with each line (`call`) and are not redone when a tile
   is edited until the next batch or Compare. Rows are sorted by gain, then by Pokédex
   number; rows without a gain come last. In jsdom, 33 lines took about 0.5 s (16 ms a line).
+- **Slice 4 (2026-11-04): the target.** A Pokémon read sets an empty target, or one earlier
+  in its line, to the final evolution it reaches (Lairon sets Aggron). A target already set
+  that it can become is kept, so the player's choice and older saved lines stay as they are.
+  When the Pokémon read in a line can become more than one final, and the target set doesn't
+  fit them all, step 1 asks once per line: "Which will you battle with from Gloom's line:
+  Vileplume or Bellossom?". The answer is the line's target. The finals are the ones every
+  Pokémon read can reach, else any of theirs. Data quirks show up as asked: Pichu also lists
+  the costume Pikachus, and Rattata, whose Raticate hangs off Rattata (Alolan), is its own final.
 
 ## Order of work
 

@@ -4,6 +4,7 @@
 import type { Group } from '../core/screen/merge';
 import type { Reading, Totals } from '../core/screen/types';
 import { receiveShared } from '../share/receive';
+import { targetsOf } from './finals';
 import type { Grid } from './grid';
 import type { Lines } from './lines';
 import { knownOf, printsOf } from './savedBook';
@@ -38,6 +39,15 @@ interface Batch {
   first?: string;
 }
 
+// As if typed, so everything that follows the target updates.
+function setTarget(g: GridShots, name: string): void {
+  g.target.value = name;
+  g.target.dispatchEvent(new Event('change'));
+}
+
+// The target each line has, open or not.
+const targetOf = (g: GridShots) => (family: string) => g.lines.list().find((l) => l.family === family)?.target ?? '';
+
 // After a tile's fields are filled: the species, the form and the shared totals.
 function onRead(g: GridShots): (root: HTMLElement, reading: Reading) => void {
   // As if typed, so everything that follows the target updates.
@@ -57,6 +67,7 @@ function useGroup(g: GridShots, batch: Batch): (group: Group, shot?: File, print
     const src = shot && (await makeThumb(shot));
     const family = fill.familyOf(group.reading);
     if (family) g.lines.open(family);
+    if (group.target) setTarget(g, group.target);
     batch.first ??= g.lines.family();
     const root = fillTile(fill, group, prints);
     if (src) setThumb(g.grid.tileOf(root), src);
@@ -101,6 +112,7 @@ export function wireGridShots(g: GridShots): void {
     root: g.doc.querySelector('[data-shots]')!,
     familyOf: (r) => readingFamily(g.index, r),
     stagesOf: (r) => resolveSpecies(g.index, r),
+    targetsOf: targetsOf(g.index, targetOf(g)),
     use: useGroup(g, batch),
     useAccount: (totals: Totals) => fillResources(g.resources, totals, false),
     seen: () => printsOf(g.lines.book()),

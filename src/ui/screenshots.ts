@@ -9,6 +9,7 @@ import { type KnownTile, poweredQuestions } from './poweredUp';
 import { answer, questionsFor, type StagesOf } from './questions';
 import { askQuestions } from './questionsView';
 import { failedNote, progressNote, readImages } from './readImages';
+import { type ChoicesOf, targetQuestions } from './targetQuestions';
 import { pickShot } from './thumb';
 
 export interface ShotsWiring {
@@ -23,6 +24,8 @@ export interface ShotsWiring {
   use: (group: Group, shot?: File, prints?: string[]) => void | Promise<void>;
   /** The tiles already in every line, to ask about one read again at another CP. */
   known?: () => readonly KnownTile[];
+  /** The finals to ask about for each line read (ADR 0017). */
+  targetsOf?: ChoicesOf;
   /** The fingerprints of screenshots already read; those are skipped. */
   seen?: () => Iterable<string>;
   /** Fills the account values a bag or profile screenshot showed; returns a status note. */
@@ -45,7 +48,8 @@ function readNote(files: number, groups: Group[], accountNote: string): string {
 
 async function settle(w: ShotsWiring, groups: Group[]): Promise<Group[]> {
   const powered = poweredQuestions(groups, w.known?.() ?? [], w.familyOf);
-  const questions = [...questionsFor(groups, w.stagesOf), ...powered];
+  const targets = w.targetsOf ? targetQuestions(groups, w.familyOf, w.targetsOf) : [];
+  const questions = [...questionsFor(groups, w.stagesOf), ...targets, ...powered];
   if (!questions.length) return groups;
   return answer(groups, await askQuestions(q(w.root, '[data-questions]'), questions));
 }

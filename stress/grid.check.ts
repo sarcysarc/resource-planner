@@ -45,11 +45,21 @@ function allTiles(): ReturnType<typeof tiles> {
   return rows().flatMap((_, i) => (rows()[i].click(), tiles()));
 }
 
+// Which final a branching line battles with doesn't change its tiles: take the first (ADR 0017).
+async function answerTargets(): Promise<void> {
+  const box = q('[data-questions]');
+  if (box.hidden || !/^Which will you battle with/.test(box.textContent?.trim() ?? '')) return;
+  if ([...box.querySelectorAll('label')].some((l) => !/Which will you battle with/.test(l.textContent ?? ''))) return;
+  box.querySelector('button')!.click();
+  await vi.waitFor(() => expect(box.hidden).toBe(true));
+}
+
 async function upload(names: string[]): Promise<Omit<Outcome, 'scenario' | 'want'>> {
   mount();
   choose(names);
   const status = () => q('[data-shots-status]').textContent ?? '';
   await vi.waitFor(() => expect(status()).not.toMatch(/^Reading/), { timeout: 20_000 });
+  await answerTargets();
   const asked = q('[data-questions]').textContent?.trim() ?? '';
   if (!asked) await vi.waitFor(() => expect(q('[data-step="check"]').hidden).toBe(false));
   return { status: status(), asked, tiles: allTiles() };

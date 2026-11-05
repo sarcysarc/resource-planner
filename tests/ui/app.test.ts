@@ -67,11 +67,11 @@ describe('mountApp', () => {
     await vi.waitFor(() => expect(q('[data-shots-status]').textContent).toBe('Read 2 screenshots: 1 Pokémon.'));
     expect(tiles()).toHaveLength(1);
     const [root] = tiles();
-    expect([field(root, 'form').value, field(root, 'cp').value, q<HTMLInputElement>('#target').value]).toEqual(['lairon', '600', 'Lairon']);
+    expect([field(root, 'form').value, field(root, 'cp').value, q<HTMLInputElement>('#target').value]).toEqual(['lairon', '600', 'Aggron']);
     expect(tileOf(root).querySelector('[data-title]')!.textContent).toBe('Lairon, CP 600, IVs not known');
     const resource = (name: string) => field(q('[data-resources]'), name).value;
     expect([resource('stardust'), resource('candy')]).toEqual(['123456', '9']);
-    expect(q('[data-searches] code').textContent).toBe('+lairon');
+    expect(q('[data-searches] code').textContent).toBe('+aggron');
     expect(q('[data-step="check"]').hidden).toBe(false);
   });
 

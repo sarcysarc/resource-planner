@@ -17,6 +17,8 @@ export interface Group {
   sources?: Reading[];
   /** The CP of the tile it is, from before it was powered up or evolved (ADR 0017). */
   was?: number;
+  /** The final evolution its line battles with, when step 1 asked (ADR 0017). */
+  target?: string;
 }
 
 /** The Candy family a reading belongs to, when it can be told. */

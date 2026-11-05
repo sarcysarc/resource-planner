@@ -1,4 +1,5 @@
 import type { Reading } from '../core/screen/types';
+import { defaultTarget } from './finals';
 import { resolveSpecies } from './scanSpecies';
 import { evolutionLine, findSpecies, type Species, type SpeciesIndex } from './species';
 
@@ -37,14 +38,14 @@ function needsTarget(pick: SpeciesPick, species: Species): boolean {
 }
 
 /**
- * Uses the species a screenshot shows: fills or raises the target and picks the current
- * form. Returns whether that Pokémon shares the target's Candy family, so its Candy counts.
+ * Uses the species a screenshot shows: fills or raises the target to its final evolution
+ * (ADR 0017) and picks the current form. Returns whether that Pokémon shares the target's Candy family, so its Candy counts.
  */
 export function applySpecies(pick: SpeciesPick, reading: Reading): boolean {
   const found = resolveSpecies(pick.index, reading);
   if (found.length > 1) addStatus(pick.root, `Which is it: ${listNames(found)}? Pick it as the target or the form.`);
   if (found.length === 1 && needsTarget(pick, found[0])) {
-    pick.target.value = found[0].name;
+    pick.target.value = defaultTarget(pick.index, found[0]);
     pick.refresh();
   }
   if (found.length === 1) selectForm(pick, found[0]);

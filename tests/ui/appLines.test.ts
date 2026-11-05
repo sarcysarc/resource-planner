@@ -7,12 +7,15 @@ import { wordsOf } from '../core/screen/wordsOf';
 // Made-up Pokémon screens, so no OCR runs: a Gengar for files named so, else a Lairon. A file
 // named "ivs-<cp>.png" is a Lairon appraised at 12/3/14 at that CP, "cp-<cp>.png" one not appraised, and
 // "max-<cp>.png" one appraised at 15/15/15.
+// Each Lairon shows its Evolve button, so the Candy to evolve to Aggron, the target, is read.
 vi.mock('../../src/ocr/recognize', () => {
-  const lairon = (cp: string) => ({ words: wordsOf('Lairon\n80 / 80 HP\n123,456 9\nSTARDUST ARON CANDY'), cpText: cp, digits: { stardust: '123,456', candy: '9' } });
+  const EVOLVE = String.fromCharCode(10) + 'EVOLVE 100';
+  const lairon = (cp: string) => ({ words: wordsOf('Lairon\n80 / 80 HP\n123,456 9\nSTARDUST ARON CANDY' + EVOLVE), cpText: cp, digits: { stardust: '123,456', candy: '9' } });
+  const gloom = { words: wordsOf('Gloom\n80 / 80 HP\n123,456 40\nSTARDUST ODDISH CANDY'), cpText: '700', digits: { stardust: '123,456', candy: '40' } };
   const gengar = { words: wordsOf('Gengar\n120 / 120 HP\n123,456 30\nSTARDUST GASTLY CANDY'), cpText: '2000', digits: { stardust: '123,456', candy: '30' } };
   const appraised = (name: string) => ({ ...lairon(name.slice(4, -4)), ivs: name.startsWith('max') ? { atk: 15, def: 15, hp: 15 } : { atk: 12, def: 3, hp: 14 } });
   return {
-    readScreenshot: async ({ name }: File) => (name.startsWith('gengar') ? gengar : /^(ivs|max)-/.test(name) ? appraised(name) : name.startsWith('cp-') ? lairon(name.slice(3, -4)) : lairon('600')),
+    readScreenshot: async ({ name }: File) => (name.startsWith('gloom') ? gloom : name.startsWith('gengar') ? gengar : /^(ivs|max)-/.test(name) ? appraised(name) : name.startsWith('cp-') ? lairon(name.slice(3, -4)) : lairon('600')),
   };
 });
 
@@ -54,13 +57,23 @@ describe('mountApp with lines', () => {
       ['Gastly line · 1 · add another to compare', null],
       ['Aron line · 1 · add another to compare', 'true'],
     ]);
-    expect([titles(), q<HTMLInputElement>('#target').value]).toEqual([['Lairon, CP 600, IVs not known'], 'Lairon']);
+    expect([titles(), q<HTMLInputElement>('#target').value]).toEqual([['Lairon, CP 600, IVs not known'], 'Aggron']);
     rows()[0].click();
     expect([titles(), q<HTMLInputElement>('#target').value]).toEqual([['Gengar, CP 2000, IVs not known'], 'Gengar']);
     // Each line keeps its own Candy; the Stardust is the account's.
     expect(['candy', 'stardust'].map((n) => field(q('[data-resources]'), n).value)).toEqual(['30', '123456']);
     rows()[1].click();
     expect([titles(), field(q('[data-resources]'), 'candy').value]).toEqual([['Lairon, CP 600, IVs not known'], '9']);
+  });
+
+  it('asks in step 1 which final a branching line battles with, and makes it the target', async () => {
+    choose(['gloom.png']);
+    const box = q('[data-questions]');
+    await vi.waitFor(() => expect(box.textContent).toContain('Which will you battle with from Gloom’s line: Vileplume or Bellossom?'));
+    box.querySelector('select')!.value = '"Bellossom"';
+    box.querySelector('button')!.click();
+    await vi.waitFor(() => expect(tiles()).toHaveLength(1));
+    expect([q<HTMLInputElement>('#target').value, field(tiles()[0], 'form').value]).toEqual(['Bellossom', 'gloom']);
   });
 
   it('skips screenshots already read, in any line', async () => {

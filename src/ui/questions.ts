@@ -7,8 +7,11 @@ import { CONFLICT_NAMES, formatValue } from './conflicts';
 export interface Question {
   /** Which group it is about. */
   group: number;
-  /** `was`: whether it is a Pokémon already added, at another CP (see poweredUp). */
-  field: Conflict['field'] | 'was';
+  /**
+   * `was`: whether it is a Pokémon already added, at another CP (see poweredUp); `target`:
+   * which final its line battles with (see targetQuestions).
+   */
+  field: Conflict['field'] | 'was' | 'target';
   text: string;
   /** Each value is JSON, so any reading value fits in a select. */
   choices: { label: string; value: string }[];
@@ -53,6 +56,10 @@ export function answer(groups: readonly Group[], answers: readonly [Question, st
 function apply(group: Group, field: Question['field'], value: unknown): void {
   if (field === 'was') {
     group.was = typeof value === 'number' ? value : undefined;
+    return;
+  }
+  if (field === 'target') {
+    group.target = String(value);
     return;
   }
   Object.assign(group.reading, { [field]: value });

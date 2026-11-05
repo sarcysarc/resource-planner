@@ -113,6 +113,8 @@ The live site (current master build) was then run in Chrome on the phone, a moto
   read without IVs is noted on the tile it joined.
 - **Done, row calls** (ADR 0017): each row shows its line's biggest gain, or why it can't
   be compared, and rows are ordered by gain, then Pokédex number.
+- **Done, the target** (ADR 0017): each line's target is its final evolution; a branching
+  line asks for it in step 1.
 
 ### E. Reading takes about 4–5 s per screenshot
 
@@ -169,3 +171,7 @@ question is asked on the stress set.
 After row calls: unchanged, reading 19 misses and grid 3 failures, all cause C. Every line at
 once gives 33 lines; working out their calls took about 0.5 s in jsdom. The two lines that
 couldn't be compared with every IV known lacked the Candy to evolve, so they say so.
+
+After the target: unchanged, grid 3 failures, all cause C. Exeggcute and Rowlet now ask for
+their final in step 1; the grid check answers with the first. Every line at once: 4 lines
+with a gain, 26 needing another to compare, 2 needing the Candy to evolve and 1 IVs, as before.

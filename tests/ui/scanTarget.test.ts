@@ -27,9 +27,14 @@ describe('applySpecies', () => {
     root.querySelector('[data-scan-status]')!.textContent = 'Read CP 600.';
   });
 
-  it('sets an empty target to the species read and selects it as the form', () => {
+  it('sets an empty target to the final evolution and selects the species read as the form', () => {
     apply({ name: 'Lairon' });
-    expect([target.value, select().value]).toEqual(['Lairon', 'lairon']);
+    expect([target.value, select().value]).toEqual(['Aggron', 'lairon']);
+  });
+
+  it('sets an empty target to the species read when its line branches, to be asked in step 1', () => {
+    apply({ name: 'Gloom' });
+    expect([target.value, select().value]).toEqual(['Gloom', 'gloom']);
   });
 
   it('marks the form read as chosen, so a later target keeps it', () => {
@@ -44,11 +49,11 @@ describe('applySpecies', () => {
     expect([target.value, select().value]).toEqual(['Aggron', 'aron']);
   });
 
-  it('raises the target to a later evolution read, since none evolves backwards', () => {
+  it('raises the target past a later evolution read, since none evolves backwards', () => {
     target.value = 'Aron';
     refresh();
-    expect(apply({ name: 'Aggron' })).toBe(true);
-    expect([target.value, select().value, status()]).toEqual(['Aggron', 'aggron', 'Read CP 600.']);
+    expect(apply({ name: 'Lairon' })).toBe(true);
+    expect([target.value, select().value, status()]).toEqual(['Aggron', 'lairon', 'Read CP 600.']);
   });
 
   it('says so when the species is not in the target line', () => {
