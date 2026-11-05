@@ -99,6 +99,25 @@ repaired to 1161 by the added digit, and the Drifblim tile now matches the key. 
 covers all of its CP but "582" on its appraisal; the check repairs that to 3582, its real CP.
 No other field read worse.
 
+### Amendment (2026-11-04): name and family past the screen's quirks
+
+The stress test (cause F) found a name missed on three top screens and a family on two. In
+each case the text was read, but not where it was looked for. So:
+
+- **The name may be two lines over HP.** The rename pencil beside the name is often read as
+  a line of its own ("J]"), so when the line over HP holds no name, the one above it is tried.
+- **A family label may wrap,** the family on the line above "CANDY" on the bottom screen.
+- **The end of "STARDUST" is not a family.** When its start is cut off ("ARDUST"), it was
+  taken for one.
+
+Two causes were looked at and left: a one-letter misread ("NUMLL") that the near-match
+already turns into the right family, and the shadow flames on a top screen. Counting purple
+pixels scored the purple backgrounds of Celebi and Mewtwo above every shadow Pokémon, so it
+would mark normal Pokémon as shadow. A purified Pokémon's top screen shows nothing of it at
+all, so the answer key no longer expects it there.
+
+Afterwards, on the stress set: 4 screenshots with a misread (was 11), and every grid right.
+
 ## Consequences
 
 - No network request carries the screenshot or its text; it works offline once cached.

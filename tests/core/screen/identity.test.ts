@@ -21,6 +21,11 @@ describe('readName', () => {
     expect(readName(lines('LJ\n90 / 90 HP'))).toBeUndefined();
   });
 
+  // The pencil beside the name is read as a line of its own (fix F of the 2026-11-04 stress test).
+  it('looks past the rename pencil read on its own line', () => {
+    expect(readName(lines('Onix\nJ]\n95/95HP -'))).toBe('Onix');
+  });
+
   it('says nothing when neither is on screen', () => {
     expect(readName(lines('POWER UP 9,000 12'))).toBeUndefined();
   });
@@ -34,5 +39,13 @@ describe('readFamily', () => {
 
   it('ignores XL and Rare Candy', () => {
     expect(readFamily(lines('RARE CANDY\nCANDY XL\nXL CANDY\nSTARDUST CANDY CANDY'))).toBeUndefined();
+  });
+
+  it('ignores the Stardust label cut short', () => {
+    expect(readFamily(lines('‘ARDUST CANDY'))).toBeUndefined();
+  });
+
+  it('reads a label split over two lines, the family above CANDY', () => {
+    expect(readFamily(lines('STARDUST GROWLITHE GROWLITHE\nCANDY CANDY XL'))).toBe('GROWLITHE');
   });
 });

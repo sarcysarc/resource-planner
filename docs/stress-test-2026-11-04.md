@@ -152,6 +152,12 @@ The live site (current master build) was then run in Chrome on the phone, a moto
 - Purified isn't recognised on top screens. The badge may not show there, so this needs
   checking before any fix.
 - The item bag is classified as a Pokémon screen. It gives no tile, so this is harmless.
+- **Done** (ADR 0008 amendment): the names were read but sat two lines over HP, the rename
+  pencil read as a line between; the name is now looked for there too. A family label that
+  wraps onto two lines is read, and a cut-off "STARDUST" is no longer a family. Purified
+  doesn't show on the top screen at all, so the key no longer expects it there. Shadow flames
+  could not be told from purple backgrounds by colour, so they are left. "NUMLL" is left to
+  the near-match. The Riolu's HP was fixed by E.
 
 ### Fixes to the answer key
 
@@ -197,3 +203,6 @@ with a gain, 26 needing another to compare, 2 needing the Candy to evolve and 1 
 After E: reading 18 shots miss (was 19), the Riolu's HP now right; grid 3 failures, all cause C.
 
 After C: reading 11 shots miss (was 18), only one of them by CP; grid no failures (was 3).
+
+After F: reading 4 shots miss (was 11): the shadow Snorlax's CP and its top screen's flames,
+a Rattata appraisal whose family label is cut off, and "NUMLL"; grid no failures.
