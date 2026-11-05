@@ -1,6 +1,6 @@
 # 0017 - A grid per evolution line, from one batch of screenshots
 
-**Status:** proposed
+**Status:** accepted
 **Date:** 2026-11-04
 **Deciders:** project owner, Claude
 

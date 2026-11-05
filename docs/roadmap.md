@@ -116,9 +116,14 @@ not the data pipeline.
 | 0007 | Battle math formulas, move data (PvE from PokeMiners, credited) and meta opponents (accepted) | Before G5 |
 | 0008 | Screenshot reading runs on the device, nothing uploaded | Before F7 |
 | 0009 | Read screens by their labels, not by position (accepted) | Before screenshot-first S1 |
+| 0010 | Receive shared screenshots through an installed web app (accepted) | Before screenshot-first S7 |
 | 0011 | Raid value from the best moveset's damage per second, with an override (accepted) | Before F4 |
 | 0012 | PvP matchups against meta opponents, shown not scored; one `pvp.json` (amends 0007, accepted) | Before F5 |
 | 0013 | Weekly data refresh committed by a workflow, gated by the CI checks (accepted) | Before the G1 refresh |
+| 0014 | Three guided steps, screenshots first (accepted; partly superseded by 0015) | Before the guided page |
+| 0015 | A grid of Pokémon from one line, read from appraisals (accepted) | Before the grid |
+| 0016 | Stress-test the reading and the grid with real screenshots (accepted) | Before the stress run |
+| 0017 | A grid per evolution line, from one batch of screenshots (accepted) | Before several lines at once |
 
 ## Next: screenshot-first input
 
@@ -132,6 +137,16 @@ level from the profile, all in `src/core/screen/`; and search strings to find th
 game (`src/ui/searches.ts`); and sharing screenshots from the gallery to the installed app
 (`src/share/`, ADR 0010; Android only, iOS has no share target). It needs no new
 groundwork beyond G6, so it can run before or alongside Phase A's second half.
+
+## Since: guided steps, the grid and the stress test
+
+All done. The page became three guided steps, screenshots first (ADR 0014). Step 2 became a
+grid of Pokémon from one evolution line, read mostly from appraisals, with "Could transfer"
+labels and saved on the device (ADR 0015); then one grid per line, each with its own target
+and Clear, from one batch of screenshots (ADR 0017). A stress test on 229 real screenshots
+(ADR 0016, `docs/stress-test-2026-11-04.md`) found six causes, A to F, all fixed: every grid
+now comes out right, 4 screenshots still misread a field, and the phone reads 10 appraisals
+in about 19 s.
 
 ## Settled (2026-11-03)
 

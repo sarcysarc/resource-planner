@@ -1,6 +1,6 @@
 # 0016 - Stress-test the reading and the grid with real screenshots
 
-**Status:** proposed
+**Status:** accepted
 **Date:** 2026-11-04
 **Deciders:** project owner, Claude
 
