@@ -92,6 +92,11 @@ The live site (current master build) was then run in Chrome on the phone, a moto
      the readings with a digit added or changed and keep the only one that fits. Otherwise
      leave the CP blank and say so on the tile.
   2. Read the CP band again after keeping only near-white pixels and scaling it up.
+- **Done** (ADR 0008 amendment): the CP is checked against the species and HP, and repaired
+  only when one answer fits; otherwise it is left blank and the form says why. Scaling up
+  read no missed CP and read fewer right, so instead white patches too big or solid to be
+  digits are dropped from the band. Only the shadow Snorlax's CP is still missed; its digits
+  are tinted. Grid failures went from 3 to none.
 
 ### D. Other lines are silently renamed (the "every line at once" upload, and on the phone)
 
@@ -150,6 +155,8 @@ The live site (current master build) was then run in Chrome on the phone, a moto
 - The 3582-CP Mewtwo's CP is covered on both its screenshots. The tile is right to
   show no CP. The key should expect "Mewtwo, IVs 15/15/15" (3 of the 15 grid failures).
   **Done:** the key leaves the CP out of the title when no screenshot of the Pokémon shows it.
+  After C2 the appraisal reads the uncovered "582", which the CP check repairs to 3582, so
+  the key now expects that CP from the appraisal.
 
 After A, B and the answer-key fix: reading 21 misses, grid 3 failures (was 15): Drifblim
 and Skarmory (cause C) and every line at once (cause D).
@@ -185,3 +192,5 @@ their final in step 1; the grid check answers with the first. Every line at once
 with a gain, 26 needing another to compare, 2 needing the Candy to evolve and 1 IVs, as before.
 
 After E: reading 18 shots miss (was 19), the Riolu's HP now right; grid 3 failures, all cause C.
+
+After C: reading 11 shots miss (was 18), only one of them by CP; grid no failures (was 3).

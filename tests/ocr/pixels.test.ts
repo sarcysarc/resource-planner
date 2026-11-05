@@ -36,4 +36,13 @@ describe('cpBand', () => {
     expect([band.width, band.height]).toEqual([Math.round(720 * 0.7), Math.round(720 * 0.2)]);
     expect([at(360 - left, 110 - top), at(361 - left, 110 - top), at(0, 0)]).toEqual([0, 255, 255]);
   });
+
+  // A bright background beside the CP threw OCR off (fix C2 of the 2026-11-04 stress test).
+  it('leaves out white patches too big to be digits', () => {
+    const px = blankScreen();
+    px.data.fill(0);
+    for (let y = 100; y < 200; y++) for (let x = 500; x < 600; x++) paint(px, [x, y], [255, 255, 255]);
+    const band = cpBand(px);
+    expect(band.data[((150 - Math.round(720 * 0.05)) * band.width + 550 - Math.round(720 * 0.15)) * 4]).toBe(255);
+  });
 });

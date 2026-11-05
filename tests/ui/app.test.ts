@@ -5,7 +5,7 @@ import { wordsOf } from '../core/screen/wordsOf';
 
 // Made-up Pokémon screens, so no OCR runs: a Lairon for every file.
 vi.mock('../../src/ocr/recognize', () => ({
-  openReader: async () => ({ close: async () => undefined, read: async () => ({ words: wordsOf('Lairon\n80 / 80 HP\n123,456 9\nSTARDUST ARON CANDY'), cpText: '600', digits: { stardust: '123,456', candy: '9' } }) }),
+  openReader: async () => ({ close: async () => undefined, read: async () => ({ words: wordsOf('Lairon\n72 / 72 HP\n123,456 9\nSTARDUST ARON CANDY'), cpText: '600', digits: { stardust: '123,456', candy: '9' } }) }),
 }));
 
 const { mountApp } = await import('../../src/ui/app');

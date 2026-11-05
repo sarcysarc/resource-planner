@@ -19,6 +19,10 @@ vi.mock('../../src/ocr/recognize', () => {
   };
 });
 
+// These made-up screens keep one HP across powering up, which no real Pokémon does, so the CP
+// check (tested in cpCheck.test.ts and the stress grid check) is left out here.
+vi.mock('../../src/ui/cpCheck', () => ({ checkCp: (_index: unknown, reading: unknown) => reading }));
+
 const { mountApp } = await import('../../src/ui/app');
 
 const q = <T extends HTMLElement>(selector: string) => document.querySelector<T>(selector)!;

@@ -48,7 +48,8 @@ function fitsAppraisal(ivs: IVs, appraisal: Appraisal = {}): boolean {
   return (['atk', 'def', 'hp'] as const).every((s) => bars[s] === undefined || barFor(ivs[s]) === bars[s]);
 }
 
-function fitsLevel(level: number, obs: Observation): boolean {
+/** Whether a level fits the level and the next power-up's Stardust, when known. */
+export function fitsLevel(level: number, obs: Pick<Observation, 'level' | 'dust' | 'mods'>): boolean {
   if (obs.level !== undefined && level !== obs.level) return false;
   if (obs.dust === undefined) return true;
   if (level >= MAX_POWER_UP_LEVEL) return false;

@@ -1,4 +1,5 @@
 import type { IVs } from '../core/types';
+import { dropBlobs } from './blobs';
 
 /** Raw RGBA pixels; a browser `ImageData` fits this shape. */
 export interface Pixels {
@@ -62,7 +63,7 @@ export function appraisalBars(px: Pixels): IVs | undefined {
 // Where the CP sits, as fractions of the screenshot width.
 const CP_BAND = { left: 0.15, top: 0.05, width: 0.7, height: 0.2 };
 
-/** Crops the CP area and turns near-white text black on white, which OCR reads reliably. */
+/** Crops the CP area and turns near-white text black on white, which OCR reads reliably; patches too big to be digits are left out. */
 export function cpBand(px: Pixels): Pixels {
   const [left, top, width, height] = [CP_BAND.left, CP_BAND.top, CP_BAND.width, CP_BAND.height].map((f) => Math.round(f * px.width));
   const out = { width, height, data: new Uint8ClampedArray(width * height * 4) };
@@ -72,5 +73,6 @@ export function cpBand(px: Pixels): Pixels {
     out.data.fill(white ? 0 : 255, i * 4, i * 4 + 3);
     out.data[i * 4 + 3] = 255;
   }
+  dropBlobs(out, px.width);
   return out;
 }

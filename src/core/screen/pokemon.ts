@@ -4,10 +4,9 @@ import { halfLevels } from '../levels';
 import type { Modifiers } from '../types';
 import { findLabel, rightOf, textLines } from './anchors';
 import { HP } from './classify';
+import { CP, cpOptions, readCp } from './cpBand';
 import type { Reading, Region, RegionName, Scan, Word } from './types';
 
-// OCR often reads the small CP letters as "cpr" or "cr".
-const CP = /C[PR]{1,2}\s*(\d{2,5})/i;
 const POWER_UP = /POWER\s*UP/i;
 
 const numbers = (text: string) => [...text.matchAll(/\d{1,3}(?:,\d{3})+|\d+/g)].map((m) => Number(m[0].replaceAll(',', '')));
@@ -33,28 +32,6 @@ function readDust(scan: Scan, lines: string[], mods: Modifiers): number | undefi
   return pick(scan.digits.cost ?? '') ?? pick(firstPassCost(lines));
 }
 
-// No CP reaches five digits.
-const MAX_CP = 9999;
-
-/**
- * CP from the cropped CP band (see `cpBand`): the number after the CP label, else the
- * first number in it. The band holds no slash, but OCR reads the large 7 as one, so a
- * slash before a digit is a 7, unless that gives an impossible CP: then it was glare
- * ("cp137/8" for 1378). A CP label broken into another word ("Chk. 24") lost the
- * first digits with it.
- */
-export function readCp(bandText: string): number | undefined {
-  const asSeven = bandCp(bandText.replace(/\/(?=\d)/g, '7'));
-  return asSeven !== undefined && asSeven > MAX_CP ? bandCp(bandText.replace(/\/(?=\d)/g, '')) : asSeven;
-}
-
-function bandCp(text: string): number | undefined {
-  if (!CP.test(text) && /\bC\S+\s+\d/i.test(text)) return undefined;
-  // A Lucky's gold background can add junk digits above the label.
-  const digits = CP.exec(text)?.[1] ?? /\d{2,5}/.exec(text)?.[0];
-  return digits === undefined ? undefined : Number(digits);
-}
-
 /** Areas of the Pokémon screen worth reading again, digits only: the buttons' costs. */
 export function pokemonRegions(words: Word[]): Partial<Record<RegionName, Region>> {
   const [powerUp, evolve] = [findLabel(words, 'POWER UP'), findLabel(words, 'EVOLVE')];
@@ -74,10 +51,13 @@ export function readPokemon(scan: Scan, mods: Modifiers): Reading {
   // trusted anywhere. An appraisal (IV bars) shows the top, but on a Lucky's gold
   // background the band can be junk, so there the CP label must show too.
   const top = hp !== undefined || (scan.ivs !== undefined && CP.test(scan.cpText));
-  const band = !top || HP.test(scan.cpText) ? undefined : readCp(scan.cpText);
-  const cp = band ?? CP.exec(text)?.[1];
+  const useBand = top && !HP.test(scan.cpText);
+  const cp = (useBand ? readCp(scan.cpText) : undefined) ?? CP.exec(text)?.[1];
+  // The species, not known yet, settles which reading is right (fix C).
+  const options = useBand ? cpOptions(scan.cpText) : [];
   const reading: Reading = {
     cp: cp === undefined ? undefined : Number(cp),
+    cpOptions: options.length ? options : undefined,
     hp: hp === undefined ? undefined : Number(hp),
     dust: readDust(scan, lines, mods),
   };

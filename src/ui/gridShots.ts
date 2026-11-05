@@ -7,6 +7,7 @@ import { receiveShared } from '../share/receive';
 import { targetsOf } from './finals';
 import type { Grid } from './grid';
 import type { Lines } from './lines';
+import { checkCp } from './cpCheck';
 import { knownOf, printsOf } from './savedBook';
 import { fillResources } from './scanResources';
 import { readingFamily, resolveSpecies } from './scanSpecies';
@@ -117,6 +118,7 @@ export function wireGridShots(g: GridShots): void {
     useAccount: (totals: Totals) => fillResources(g.resources, totals, false),
     seen: () => printsOf(g.lines.book()),
     known: () => knownOf(g.lines.book(), (id) => findSpecies(g.index, id)?.name),
+    checkCp: (r) => checkCp(g.index, r),
     onDone: done(g, batch, reveal),
   });
   // Screenshots shared from the gallery to the installed app (ADR 0010).

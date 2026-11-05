@@ -69,6 +69,35 @@ Afterwards, on the same desktop: median 0.44 s (was 3.0 s), 90th percentile 1.0 
 appraisals 0.36 s, none over 5 s (was 57 of 229). Reading misses went from 21 fields to 20,
 and the grid failures stayed at the same three.
 
+### Amendment (2026-11-04): a CP must fit the species and HP
+
+The stress test (cause C) found the CP missed on 5 screenshots and read a digit short
+("crl161" for 1161) on 3. Nothing checked a CP against the rest, so CP 161 with HP 103 was
+taken for a Skarmory that can't have it, and made a Pokémon of its own. So:
+
+- **The CP is checked against the species and HP** (`ui/cpCheck.ts`, before screenshots
+  are sorted into Pokémon). `core/reachableCp.ts` lists every CP the species can show at a
+  level and IVs that give the HP read, keeping to IVs the appraisal read. Every form the
+  game shows by the same name counts (Armored Mewtwo is shown as "Mewtwo"). The Stardust
+  cost is left out: a Lucky the screen didn't show as one costs half, which would rule out
+  its real CP.
+- **A CP that doesn't fit is repaired only when one answer fits.** First the band's other
+  readings (`cpOptions`: letters OCR gives for digits, "l" for 1 and "b" for 6, read as those
+  digits; digits a space split joined up). Else the one CP a digit off, added or changed,
+  that fits. Otherwise the CP is left blank and the screenshot's form says the CP read can't
+  be right with this HP. With no HP or no species read, the CP is kept as read.
+- **White patches too big or solid to be digits are dropped from the CP band**
+  (`ocr/blobs.ts`). On bright backgrounds keeping near-white pixels also kept background,
+  and OCR read nothing. Reading the band again scaled up 2× or 3×, or at other thresholds,
+  was tried on the 83 screenshots with a CP: none read the missed CPs, and each read fewer
+  right (64–71 against 73). Dropping patches read 74, losing none, at no extra OCR call.
+
+Afterwards, on the stress set: CPs missed or wrong went from 8 screenshots to 1 (the shadow
+Snorlax, whose 7s are tinted purple), and grid failures from 3 to none. Skarmory's "161" is
+repaired to 1161 by the added digit, and the Drifblim tile now matches the key. The 3582 Mewtwo
+covers all of its CP but "582" on its appraisal; the check repairs that to 3582, its real CP.
+No other field read worse.
+
 ## Consequences
 
 - No network request carries the screenshot or its text; it works offline once cached.

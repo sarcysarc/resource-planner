@@ -26,6 +26,9 @@ function summarise(group: Group, found: Field[], details: string[]): string {
   return `Read ${from}${parts.join(', ')}. ${ivs ? 'Check them.' : 'Check them, then tap Find IVs.'}`;
 }
 
+// A CP that fit no level and IVs of the species with the HP read was left out (fix C).
+const doubtNote = ({ cpDoubt }: Group['reading']) => (cpDoubt === undefined ? '' : ` The CP read as ${cpDoubt} can’t be right with this HP. Type the CP.`);
+
 /** Fills a candidate from one Pokémon's screenshots and says what it read, what clashed and what failed. */
 export function fillCandidate(root: ParentNode, group: Group, failed = 0): void {
   const { reading } = group;
@@ -35,5 +38,5 @@ export function fillCandidate(root: ParentNode, group: Group, failed = 0): void 
   if (ivs) (['atk', 'def', 'hp'] as const).forEach((stat) => setValue(root, stat, ivs[stat]));
   else if (found.length) root.querySelector<HTMLDetailsElement>('details.finder')!.open = true;
   const summary = summarise(group, found, fillDetails(root, reading));
-  setStatus(root, summary + conflictNote(group.conflicts) + failedNote(failed));
+  setStatus(root, summary + doubtNote(reading) + conflictNote(group.conflicts) + failedNote(failed));
 }

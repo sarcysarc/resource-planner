@@ -30,6 +30,8 @@ export interface ShotsWiring {
   seen?: () => Iterable<string>;
   /** Fills the account values a bag or profile screenshot showed; returns a status note. */
   useAccount: (totals: Totals) => string;
+  /** Checks a screenshot's CP against its species and HP, before sorting (fix C). */
+  checkCp?: (reading: Reading) => Reading;
   /** Called once the screenshots have been read and any Pokémon added. */
   onDone?: () => void;
 }
@@ -81,8 +83,9 @@ async function readFresh(w: ShotsWiring, fresh: Fresh): Promise<void> {
   const progress = (n: number) => setStatus(w, progressNote(n, files.length));
   progress(1);
   const images = await readImages(files, { variant: 'normal', lucky: false }, progress);
-  const fileOf = new Map(images.readings.map((r, i) => [r, images.files[i]]));
-  const { pokemon, account } = splitAccount(images.readings);
+  const readings = w.checkCp ? images.readings.map(w.checkCp) : images.readings;
+  const fileOf = new Map(readings.map((r, i) => [r, images.files[i]]));
+  const { pokemon, account } = splitAccount(readings);
   const groups = groupReadings(pokemon, w.familyOf);
   const accountNote = Object.keys(account).length ? ` ${w.useAccount(account)}` : '';
   setStatus(w, readNote(files.length, groups, accountNote) + failedNote(images.failed) + skippedNote(fresh.skipped));

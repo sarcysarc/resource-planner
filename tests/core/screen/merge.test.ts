@@ -42,6 +42,14 @@ describe('mergeReadings', () => {
     expect([merged.reading.name, merged.conflicts]).toEqual(['Lairon', []]);
     expect(mergeReadings([{ ...top, name: 'Rocky' }, top]).reading.name).toBeUndefined();
   });
+
+  // A CP that fit nothing is kept only to say so (fix C); another screenshot's CP settles it.
+  it('keeps the first doubted CP without asking, and drops it when a CP was read', () => {
+    const noCp: Reading = { name: 'Lairon', hp: 80, dust: 1300 };
+    const doubted = mergeReadings([{ ...noCp, cpDoubt: 60 }, { ...noCp, cpDoubt: 61 }]);
+    expect([doubted.reading.cpDoubt, doubted.conflicts]).toEqual([60, []]);
+    expect(mergeReadings([{ ...noCp, cpDoubt: 60 }, top]).reading).toEqual(top);
+  });
 });
 
 describe('groupReadings', () => {

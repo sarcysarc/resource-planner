@@ -61,6 +61,10 @@ export interface Details {
 /** Values read off a screenshot; each is missing when it could not be found. */
 export interface Reading extends Details {
   cp?: number;
+  /** Other CPs the CP band could be read as, until the species settles which (fix C). */
+  cpOptions?: number[];
+  /** A CP read that fits no level and IVs of the species with the HP read; left out (fix C). */
+  cpDoubt?: number;
   hp?: number;
   dust?: number;
   ivs?: IVs;

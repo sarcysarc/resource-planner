@@ -1,6 +1,8 @@
 import type { Reading, Totals } from './types';
 
-type Field = Exclude<keyof Reading, 'totals'>;
+// Kept apart: totals change over time, and a doubted CP or the band's other readings are never asked about.
+type Field = Exclude<keyof Reading, 'totals' | 'cpOptions' | 'cpDoubt'>;
+const APART = new Set<keyof Reading>(['totals', 'name', 'cpOptions', 'cpDoubt']);
 
 /** A value two screenshots of the same Pokémon disagree on. The player picks. */
 export interface Conflict {
@@ -44,12 +46,13 @@ export function mergeReadings(readings: Reading[]): Group {
   const reading: Reading = {};
   const conflicts: Conflict[] = [];
   const fields = new Set(readings.flatMap((r) => Object.keys(r) as (keyof Reading)[]));
-  for (const field of fields) {
-    if (field === 'totals' || field === 'name') continue;
+  for (const field of [...fields].filter((f): f is Field => !APART.has(f))) {
     const values = distinct(readings, field);
     if (values.length === 1) Object.assign(reading, { [field]: values[0] });
     else conflicts.push({ field, values });
   }
+  const doubt = readings.find((r) => r.cpDoubt !== undefined)?.cpDoubt;
+  if (doubt !== undefined && !fields.has('cp')) reading.cpDoubt = doubt;
   const name = settleName(readings);
   if (name !== undefined) reading.name = name;
   const totals: Totals = Object.assign({}, ...readings.map((r) => r.totals ?? {}));

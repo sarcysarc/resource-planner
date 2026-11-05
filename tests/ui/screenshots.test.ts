@@ -23,6 +23,8 @@ const questions = () => document.querySelector<HTMLElement>('[data-questions]')!
 const picks = (r: Reading) => r.name;
 // Only "Dratini" could be more than one stage in these tests.
 const stagesOf = (r: Reading) => (r.name === 'Dratini' ? [{ name: 'Dratini' }, { name: 'Dragonair' }] : [{ name: r.name ?? '' }]);
+// Checks each screenshot's CP before sorting (fix C); as read, unless a test says otherwise.
+const checkCp = vi.fn((r: Reading) => r);
 const named = () => use.mock.calls.map(([group, shot]) => [(group as Group).reading.name, (group as Group).shots, shot?.name]);
 
 // Each file's bytes are its name, so files of the same name are the same screenshot.
@@ -35,12 +37,13 @@ async function choose(screens: Scan[], names = screens.map((_, i) => `${i}.png`)
 }
 
 describe('wireScreenshots', () => {
-  const wiring = () => ({ root: document.querySelector('[data-shots]')!, familyOf: picks, stagesOf, use, useAccount, onDone, seen: () => seen });
+  const wiring = () => ({ root: document.querySelector('[data-shots]')!, familyOf: picks, stagesOf, use, useAccount, onDone, seen: () => seen, checkCp });
 
   beforeEach(() => {
     const html = readFileSync('index.html', 'utf8');
     document.body.innerHTML = html.slice(html.indexOf('<body>') + 6, html.indexOf('</body>'));
     use.mockClear();
+    checkCp.mockReset().mockImplementation((r) => r);
     seen.clear();
     useAccount.mockClear();
     onDone.mockClear();
@@ -57,6 +60,13 @@ describe('wireScreenshots', () => {
     expect(status()).toBe('Read 4 screenshots: 3 Pokémon.');
     expect(questions().hidden).toBe(true);
     expect(onDone).toHaveBeenCalledOnce();
+  });
+
+  it('sorts screenshots by the CP their check gives, keeping each thumbnail', async () => {
+    checkCp.mockImplementation((r) => (r.cp === 600 ? { ...r, cp: 1600 } : r));
+    await choose([screen('Lairon', 80), screen('Lairon', 80)]);
+    const [group, shot] = use.mock.calls[0] as [Group, File];
+    expect([group.reading.cp, group.shots, shot.name]).toEqual([1600, 2, '0.png']);
   });
 
   it('gives each Pokémon the fingerprints of its screenshots', async () => {

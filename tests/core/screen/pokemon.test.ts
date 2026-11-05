@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { pokemonRegions, readCp, readPokemon } from '../../../src/core/screen/pokemon';
+import { readCp } from '../../../src/core/screen/cpBand';
+import { pokemonRegions, readPokemon } from '../../../src/core/screen/pokemon';
 import type { Scan } from '../../../src/core/screen/types';
 import type { Modifiers } from '../../../src/core/types';
 import { wordsOf } from './wordsOf';
@@ -55,6 +56,12 @@ describe('readPokemon', () => {
 
   it('prefers CP from the cropped CP band', () => {
     expect(readPokemon(scan('cr 999\n85 / 85 HP', { cpText: '«615 ou.' }), normal).cp).toBe(615);
+  });
+
+  // The species is not known yet, so the other readings are kept for the check (fix C).
+  it('keeps the other ways the band could read, with or without a CP', () => {
+    expect(readPokemon(scan('103 / 103 HP', { cpText: 'crl161\n' }), normal)).toEqual({ cp: 161, cpOptions: [1161], hp: 103 });
+    expect(readPokemon(scan('43 / 43 HP', { cpText: 'crb7/\n' }), normal)).toEqual({ cpOptions: [67], hp: 43 });
   });
 
   it('ignores the CP band on a screen scrolled past CP and HP', () => {

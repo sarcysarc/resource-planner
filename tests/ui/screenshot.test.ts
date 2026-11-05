@@ -38,6 +38,12 @@ describe('fillCandidate', () => {
     expect(finder().open).toBe(false);
   });
 
+  it('says when the CP read fit no Pokémon of its kind and was left out (fix C)', () => {
+    fillCandidate(root, { reading: { hp: 103, cpDoubt: 161 }, conflicts: [], shots: 1 });
+    expect(value('cp')).toBe('');
+    expect(status()).toContain('The CP read as 161 can’t be right with this HP. Type the CP.');
+  });
+
   it('fills Shadow or Purified, Lucky and the second move when the screen shows them', () => {
     const text = 'LUCKY POKEMON\n80 / 80 HP\nEVOLVE 50\nGYMS & RAIDS\nO Lick\nO Return\nO Thunder\nCAUGHT AFTER DEFEATING GRUNT';
     fillCandidate(root, group(scan(text, { cpText: '600' })));
