@@ -73,6 +73,17 @@ describe('lines', () => {
     expect(lines.book().lines.map((l) => l.call?.gain)).toEqual([0, undefined]);
   });
 
+  it('forgets the open line, leaving none open', () => {
+    lines.remove('FAMILY_ARON');
+    expect([lines.family(), cps(), value('#target'), value('[name="candy"]')]).toEqual(['', [], '', '']);
+    expect(lines.book().lines.map((l) => l.family)).toEqual(['FAMILY_GASTLY']);
+  });
+
+  it('forgets a closed line, leaving the open one as it is', () => {
+    lines.remove('FAMILY_GASTLY');
+    expect([lines.family(), cps(), lines.list().map((l) => l.family)]).toEqual(['FAMILY_ARON', ['900'], ['FAMILY_ARON']]);
+  });
+
   it('starts again from nothing', () => {
     lines.use();
     expect([lines.family(), lines.book().lines, cps()]).toEqual(['', [], []]);

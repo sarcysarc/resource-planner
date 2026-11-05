@@ -34,6 +34,8 @@ export interface Lines {
   use(book?: SavedBook): void;
   /** Keeps a line's call, shown in step 2's list. */
   setCall(family: string, call: LineCall): void;
+  /** Forgets a line; when it was open, none is open after. */
+  remove(family: string): void;
 }
 
 const OWN = ['candy', 'xl'] as const;
@@ -67,6 +69,12 @@ function summaries(p: LineParts, book: SavedBook): LineSummary[] {
   return [...others, open].filter((l) => l.count);
 }
 
+// The book without a line; with none open when it was the open one.
+function without(p: LineParts, book: SavedBook, family: string): SavedBook {
+  const lines = withOpen(p, book).lines.filter((l) => l.family !== family);
+  return { ...book, open: family === book.open ? '' : book.open, lines };
+}
+
 const EMPTY: SavedBook = { version: 2, open: '', lines: [] };
 
 export function createLines(p: LineParts, saved = EMPTY): Lines {
@@ -82,5 +90,10 @@ export function createLines(p: LineParts, saved = EMPTY): Lines {
     const line = lineOf(book, family) ?? { family, target: '', tiles: [] };
     book = putLine(book, { ...line, call });
   };
-  return { family: () => book.open, open, book: () => withOpen(p, book), list: () => summaries(p, book), use, setCall };
+  const remove = (family: string) => {
+    book = without(p, book, family);
+    if (!book.open) showLine(p, undefined);
+  };
+  const list = () => summaries(p, book);
+  return { family: () => book.open, open, book: () => withOpen(p, book), list, use, setCall, remove };
 }

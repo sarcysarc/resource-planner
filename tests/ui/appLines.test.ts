@@ -126,4 +126,31 @@ describe('mountApp with lines', () => {
     await vi.waitFor(() => expect(tiles()).toHaveLength(1));
     expect(q('[data-lines]').hidden).toBe(true);
   });
+
+  it('clears the open line only, once the player confirms, and opens the top of the list', async () => {
+    choose(['gengar.png', 'cp-600.png', 'cp-650.png']);
+    await vi.waitFor(() => expect(rows()).toHaveLength(2));
+    rows().find((b) => b.textContent!.startsWith('Aron'))!.click();
+    const clear = q('[data-clear-line]');
+    expect(clear.hidden).toBe(false);
+    vi.stubGlobal('confirm', vi.fn(() => false));
+    clear.click();
+    expect(rows()).toHaveLength(2);
+    vi.stubGlobal('confirm', vi.fn(() => true));
+    clear.click();
+    expect(confirm).toHaveBeenCalledWith('Remove the Aron line’s 2 Pokémon from the grid, and from this device?');
+    expect([titles(), q<HTMLInputElement>('#target').value, clear.hidden]).toEqual([['Gengar, CP 2000, IVs not known'], 'Gengar', true]);
+    vi.unstubAllGlobals();
+  });
+
+  it('reads a cleared line’s screenshots again', async () => {
+    choose(['gengar.png', 'cp-600.png']);
+    await vi.waitFor(() => expect(rows()).toHaveLength(2));
+    rows().find((b) => b.textContent!.startsWith('Aron'))!.click();
+    vi.stubGlobal('confirm', () => true);
+    q('[data-clear-line]').click();
+    vi.unstubAllGlobals();
+    choose(['cp-600.png']);
+    await vi.waitFor(() => expect(rows()).toHaveLength(2));
+  });
 });

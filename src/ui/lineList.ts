@@ -12,6 +12,8 @@ export interface LineList {
   index: SpeciesIndex;
   /** After the player opened a line. */
   onOpen?: () => void;
+  /** Clears the open line; shown, like the list, once there are two lines or more. */
+  clear?: HTMLElement;
 }
 
 const BY_HAND = 'Typed in by hand';
@@ -36,6 +38,7 @@ export function renderLines(l: LineList): void {
   const lines = l.lines.list().sort((a, b) => gainOf(b) - gainOf(a) || dexOf(l, a.family) - dexOf(l, b.family));
   l.nav.replaceChildren(...lines.map((line) => rowOf(l, line)));
   l.nav.hidden = lines.length < 2;
+  if (l.clear) l.clear.hidden = l.nav.hidden;
 }
 
 /** Wires the list; gives a function that redraws it. */

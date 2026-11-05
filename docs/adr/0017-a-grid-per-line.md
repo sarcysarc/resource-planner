@@ -102,6 +102,10 @@ Pokémon (10–50 at a time) and share them all; each line then gets its own adv
   Vileplume or Bellossom?". The answer is the line's target. The finals are the ones every
   Pokémon read can reach, else any of theirs. Data quirks show up as asked: Pichu also lists
   the costume Pikachus, and Rattata, whose Raticate hangs off Rattata (Alolan), is its own final.
+- **Slice 5 (2026-11-04): per-line Clear.** "Clear this line" sits beside Clear all and shows
+  with step 2's list, once there are two lines or more. It asks "Remove the Aron line's 2
+  Pokémon from the grid, and from this device?", then forgets the open line (tiles, Candy,
+  call and fingerprints, so its screenshots can be read again) and opens the top of the list.
 
 ## Order of work
 

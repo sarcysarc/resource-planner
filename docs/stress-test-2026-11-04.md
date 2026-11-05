@@ -115,6 +115,7 @@ The live site (current master build) was then run in Chrome on the phone, a moto
   be compared, and rows are ordered by gain, then Pokédex number.
 - **Done, the target** (ADR 0017): each line's target is its final evolution; a branching
   line asks for it in step 1.
+- **Done, per-line Clear** (ADR 0017): the open line can be cleared on its own.
 
 ### E. Reading takes about 4–5 s per screenshot
 

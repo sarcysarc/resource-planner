@@ -9,6 +9,7 @@ import { openStore, persistGrid } from './gridPersist';
 import { hideSaved, type SavedSummary, showSaved } from './steps';
 import { wireGridShots } from './gridShots';
 import { judgeLines } from './lineCall';
+import { wireLineClear } from './lineClear';
 import { wireLineList } from './lineList';
 import type { Lines } from './lines';
 import { wireMoves } from './moves';
@@ -75,6 +76,14 @@ function wireCalls(c: Calls, after: { batch: () => void }): void {
   });
 }
 
+// Step 2's list of lines and the open line's Clear; gives a function that redraws the list.
+function wireLines({ doc, index }: Page, lines: Lines, save: () => void): () => void {
+  const list = { nav: q(doc, '[data-lines]'), lines, index, clear: q(doc, '[data-clear-line]') };
+  const render = wireLineList({ ...list, grid: q(doc, '[data-grid]'), onOpen: save });
+  wireLineClear({ ...list, button: list.clear, after: () => (render(), save()) });
+  return render;
+}
+
 export function mountApp(doc: Document): void {
   const page = pageOf(doc);
   const { form, target, details: area, index } = page;
@@ -87,7 +96,7 @@ export function mountApp(doc: Document): void {
   const { lines, save } = persistGrid({ grid, target, resources: page.resources, area: form, ...saved }, openStore());
   const after = { batch: () => {} };
   wireGridShots({ doc, grid, index, target, resources: page.resources, useEvolve, save, lines, afterBatch: () => after.batch() });
-  const render = wireLineList({ nav: q(doc, '[data-lines]'), grid: q(doc, '[data-grid]'), lines, index, onOpen: save });
+  const render = wireLines(page, lines, save);
   fillSpeciesList(q(doc, '#species-list'), index);
   q(doc, '#data-info').textContent = dataCredit(index.timestamp);
   wireSearches({ target, root: q(doc, '[data-searches]'), index });
