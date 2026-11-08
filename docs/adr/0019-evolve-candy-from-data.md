@@ -1,6 +1,6 @@
 # 0019 - Candy to evolve from data, typed once where data has none
 
-**Status:** proposed
+**Status:** accepted
 **Date:** 2026-11-08
 **Spec:** [roadmap](../roadmap.md) F2; found in use on 2026-11-08 (a Pikachu line)
 **Deciders:** project owner, Claude

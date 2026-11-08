@@ -126,7 +126,7 @@ not the data pipeline.
 | 0016 | Stress-test the reading and the grid with real screenshots (accepted) | Before the stress run |
 | 0017 | A grid per evolution line, from one batch of screenshots (accepted) | Before several lines at once |
 | 0018 | An Android companion app with a floating capture button (proposed; amends 0001) | Before any native code |
-| 0019 | Candy to evolve from PokeMiners data, credited; typed once where data has none (proposed; amends 0005) | Before the fix |
+| 0019 | Candy to evolve from PokeMiners data, credited; typed once where data has none (accepted; amends 0005) | Before the fix |
 
 ## Next: screenshot-first input
 
