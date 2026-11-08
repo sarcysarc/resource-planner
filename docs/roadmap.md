@@ -32,7 +32,8 @@ allows more than two candidates (G4).
 (ADR 0005):
 - PvPoke `gamemaster.json` and `moves.json` (MIT): stats, family, second move cost,
   plus types, moves and legendary/mythical tags for F3–F5.
-- A small table we keep ourselves: purification cost by second-move cost tier (F3).
+- Purify cost per species, from PokeMiners' game master, credited (F3; ADR 0005's
+  2026-11-08 amendment replaced our own table by second-move tier).
 - Evolution Candy (F2) is read from the Pokémon screenshot (S2) or typed, not shipped
   as data. PokeMiners' game master has no licence; ADR 0007 uses it, credited, for
   PvE move stats only, since no licensed source has them.
@@ -77,8 +78,8 @@ not the data pipeline.
    then F7: CP, HP and Stardust from a Pokémon screen screenshot, and CP, HP and exact
    IVs from an appraisal screenshot (`src/core/screenText.ts`, `src/ocr/`, ADR 0008).
 3. **Phase A, second half.** G3 + F2. G3 is done: `src/data/pvpoke.ts` (schema and
-   transform, shared by the build and the app), types per species, and the purify table
-   in `src/data/purify.ts`. F2 is done: each step's evolve cost read from a screenshot
+   transform, shared by the build and the app), types per species, and per-species purify
+   costs from PokeMiners in `src/data/purify.json`. F2 is done: each step's evolve cost read from a screenshot
    is kept while the page is open (`src/ui/evolveMemory.ts`), and "Candy to evolve" is
    filled with the total from the candidate's form to the target once every step on the
    way is known. Until then the status line names the step still missing.
@@ -87,7 +88,7 @@ not the data pipeline.
    result carries what its value measures and its cost split into parts, which the
    results table lists per option column. F3 is done: each Shadow candidate is
    followed by its purified self (`src/core/purify.ts`, `src/ui/options.ts`), priced at
-   its current form's purify tier, and a verdict for it reads "Purify the current one"
+   its current form's purify cost from the game data, and a verdict for it reads "Purify the current one"
    or "Save to purify the current one".
 5. **Phase C — battle math.** G5, then F4, then F5. F5 is the largest feature: move
    choice per candidate, opponent list per league and a results view per opponent.
@@ -111,7 +112,7 @@ not the data pipeline.
 | ADR | Decision | When |
 |-----|----------|------|
 | 0004 | Hosting on GitHub Pages, CI on GitHub Actions | Before G1 |
-| 0005 | Data pipeline v2: PvPoke plus our own purify table (supersedes 0002) | Before G3 |
+| 0005 | Data pipeline v2: PvPoke, plus PokeMiners data, credited, since the 2026-11-08 amendment (supersedes 0002) | Before G3 |
 | 0006 | Options model and per-goal explanations (amends 0003, accepted) | Before G4 |
 | 0007 | Battle math formulas, move data (PvE from PokeMiners, credited) and meta opponents (accepted) | Before G5 |
 | 0008 | Screenshot reading runs on the device, nothing uploaded | Before F7 |
@@ -125,6 +126,7 @@ not the data pipeline.
 | 0016 | Stress-test the reading and the grid with real screenshots (accepted) | Before the stress run |
 | 0017 | A grid per evolution line, from one batch of screenshots (accepted) | Before several lines at once |
 | 0018 | An Android companion app with a floating capture button (proposed; amends 0001) | Before any native code |
+| 0019 | Candy to evolve from PokeMiners data, credited; typed once where data has none (accepted; amends 0005) | Before the fix |
 
 ## Next: screenshot-first input
 

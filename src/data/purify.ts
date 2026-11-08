@@ -1,19 +1,31 @@
-// Purify cost by the species' second-move Stardust cost (ADR 0005). Read from in-game
-// purify screens covering all four tiers; a purify screenshot that disagrees wins.
-export interface PurifyCost {
-  stardust: number;
-  candy: number;
-}
+// Purify cost per species (ADR 0005, amended 2026-11-08): the Stardust and Candy to
+// purify a Shadow, from PokeMiners' game master, credited in the app. It replaces a
+// table guessed from the second-move cost, which priced 97 species wrongly. Shared by
+// the build script and the app; imports only packages, so Node can run it directly.
+import { z } from 'zod';
+import { type GameSpecies, plainTemplate, readTemplates, templateOf } from './gameMaster.ts';
 
-const BY_SECOND_MOVE: ReadonlyMap<number, PurifyCost> = new Map([
-  [10000, { stardust: 1000, candy: 1 }],
-  [50000, { stardust: 3000, candy: 3 }],
-  [75000, { stardust: 5000, candy: 5 }],
-  [100000, { stardust: 20000, candy: 20 }],
-]);
+export const PURIFY_SCHEMA_VERSION = 1;
 
-/** The purify cost for a species, or null when its tier is unknown. */
-export function purifyCost(secondMoveDust: number | null): PurifyCost | null {
-  if (secondMoveDust === null) return null;
-  return BY_SECOND_MOVE.get(secondMoveDust) ?? null;
+const Cost = z.object({ stardust: z.number().int().nonnegative(), candy: z.number().int().nonnegative() });
+
+export const PurifyFileSchema = z.object({
+  schemaVersion: z.literal(PURIFY_SCHEMA_VERSION),
+  source: z.string(),
+  /** Species id to what purifying a Shadow of it costs. */
+  costs: z.record(z.string(), Cost),
+});
+
+export type PurifyFile = z.infer<typeof PurifyFileSchema>;
+export type PurifyCost = z.infer<typeof Cost>;
+
+/** Builds purify.json from our species and PokeMiners' game master. */
+export function toPurifyFile(input: { species: readonly GameSpecies[]; pve: unknown; source: string }): PurifyFile {
+  const t = readTemplates(input.pve);
+  const costs: Record<string, PurifyCost> = {};
+  for (const s of input.species) {
+    const shadow = templateOf(t, s)?.shadow ?? plainTemplate(t, s)?.shadow;
+    if (shadow) costs[s.id] = { stardust: shadow.purificationStardustNeeded, candy: shadow.purificationCandyNeeded };
+  }
+  return { schemaVersion: PURIFY_SCHEMA_VERSION, source: input.source, costs };
 }

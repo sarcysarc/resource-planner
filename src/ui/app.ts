@@ -1,6 +1,7 @@
 // Puts the page together (ADR 0014, 0015): screenshots fill a grid of Pokémon from one
 // evolution line, and the current one is compared with the rest.
 import { buildCandidateFields } from './candidateFields';
+import { loadBundledEvolve } from './evolveData';
 import { wireEvolve } from './evolveMemory';
 import { wireFinder } from './finder';
 import { wireFormChoices } from './formChoices';
@@ -33,7 +34,7 @@ const q = <T extends HTMLElement>(doc: Document, selector: string) => doc.queryS
 
 // Where the game data comes from, and whose it is (ADR 0011, 0012).
 const dataCredit = (timestamp: string) =>
-  `Game data: PvPoke game master and rankings, ${timestamp}; raid move stats from PokeMiners. ` +
+  `Game data: PvPoke game master and rankings, ${timestamp}; raid move stats, Candy to evolve and purify costs from PokeMiners. ` +
   'The game data belongs to Niantic and The Pokémon Company.';
 
 function fillSpeciesList(list: HTMLDataListElement, index: SpeciesIndex): void {
@@ -89,7 +90,7 @@ export function mountApp(doc: Document): void {
   const { form, target, details: area, index } = page;
   // The form lists follow the target before the evolve totals are refilled.
   wireFormChoices({ target, area, index });
-  const useEvolve = wireEvolve({ index, target, area });
+  const useEvolve = wireEvolve({ index, target, area, known: loadBundledEvolve() });
   const grid = mountGrid(page);
   trackEdits(area);
   const saved = { onRestore: (summary: SavedSummary) => showSaved(doc, summary), onClear: () => hideSaved(doc) };
