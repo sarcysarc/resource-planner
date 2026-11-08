@@ -2,7 +2,7 @@
 // one not marked for transfer, ranked, with the ones worth transferring suggested.
 import { compare, type CompareInput } from '../core/compare';
 import { powerUpLimit } from '../core/levels';
-import { purifyCost } from '../data/purify';
+import { purifyCostOf } from './purifyData';
 import { type Rare, readAccount } from './account';
 import { type ErrorPlace, showError } from './fieldError';
 import { formOf, readCandidate, readResources, type Result } from './form';
@@ -49,7 +49,7 @@ function readSide(p: Planner, root: HTMLElement, target: Species): Read<OptionSi
   if (!read.ok) return { ok: false, error: `${title}: ${read.error}`, at: { part: root, prefix: `${title}: ` } };
   const form = formOf(source)!;
   const candidate = { ...read.value, raidMoves: p.moves.raidMovesOf(root, target), pvpMoves: p.moves.pvp.movesOf(root, target) };
-  return { ok: true, value: { candidate, purify: purifyCost(form.secondMoveDust), formName: form.name, title } };
+  return { ok: true, value: { candidate, purify: purifyCostOf(form.id), formName: form.name, title } };
 }
 
 function readSides(p: Planner, roots: HTMLElement[], target: Species): Read<OptionSide[]> {

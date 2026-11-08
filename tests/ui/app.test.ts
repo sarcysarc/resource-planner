@@ -48,8 +48,8 @@ function load(): void {
   mountApp(document);
 }
 
-function compareTwo(ivs: string[][]): HTMLElement[] {
-  setField(q('#target'), 'Azumarill');
+function compareTwo(ivs: string[][], target = 'Azumarill'): HTMLElement[] {
+  setField(q('#target'), target);
   const roots = twoByHand();
   roots.forEach((root, i) => fillTile(root, ivs[i]));
   return roots;
@@ -140,12 +140,21 @@ describe('mountApp', () => {
     expect(q('#results').textContent).not.toContain('IVs 15/14/15');
   });
 
-  it('adds a purified option for a Shadow Pokémon', () => {
-    const [a] = compareTwo([['4', '15', '13'], ['15', '15', '15']]);
+  it('adds a purified option for a Shadow Pokémon, priced from the game data', () => {
+    const [a] = compareTwo([['4', '15', '13'], ['15', '15', '15']], 'Swampert');
     setField(field(a, 'variant'), 'shadow');
     submit();
     expect(q('#results').textContent).toContain('Current, purified');
     expect(q('#results').textContent).toContain('Purify 3,000 Stardust · 3 Candy');
+  });
+
+  // The game data has no Shadow Azumarill, so it has no purify price.
+  it('leaves purifying out, with a note, when the game data has no price', () => {
+    const [a] = compareTwo([['4', '15', '13'], ['15', '15', '15']]);
+    setField(field(a, 'variant'), 'shadow');
+    submit();
+    expect(q('#results').textContent).not.toContain('Current, purified');
+    expect(q('#results').textContent).toContain('The purify cost for Azumarill is not known');
   });
 
   it('powers up no further than ten levels above the trainer', () => {

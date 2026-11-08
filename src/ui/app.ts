@@ -34,7 +34,7 @@ const q = <T extends HTMLElement>(doc: Document, selector: string) => doc.queryS
 
 // Where the game data comes from, and whose it is (ADR 0011, 0012).
 const dataCredit = (timestamp: string) =>
-  `Game data: PvPoke game master and rankings, ${timestamp}; raid move stats and Candy to evolve from PokeMiners. ` +
+  `Game data: PvPoke game master and rankings, ${timestamp}; raid move stats, Candy to evolve and purify costs from PokeMiners. ` +
   'The game data belongs to Niantic and The Pokémon Company.';
 
 function fillSpeciesList(list: HTMLDataListElement, index: SpeciesIndex): void {
