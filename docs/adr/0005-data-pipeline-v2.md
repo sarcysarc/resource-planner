@@ -45,6 +45,8 @@ already reads the evolve cost from a Pokémon screen, so F2 no longer needs a da
 - **Evolve Candy is not a data file.** It comes from the screenshot (S2) or the user
   types it. F2 becomes: keep the value read from a screenshot for that species while
   the page is open, so it is not asked for twice.
+  *Amended by ADR 0019 (proposed):* evolve costs come from PokeMiners, credited; what a
+  screenshot shows or the player types still wins.
 - **No PokeMiners data** is downloaded, copied or used to derive values.
 - Refreshing stays one command (`npm run update-data`). A scheduled CI job may run it
   later (G1).
