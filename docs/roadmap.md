@@ -124,6 +124,7 @@ not the data pipeline.
 | 0015 | A grid of Pokémon from one line, read from appraisals (accepted) | Before the grid |
 | 0016 | Stress-test the reading and the grid with real screenshots (accepted) | Before the stress run |
 | 0017 | A grid per evolution line, from one batch of screenshots (accepted) | Before several lines at once |
+| 0018 | An Android companion app with a floating capture button (proposed; amends 0001) | Before any native code |
 
 ## Next: screenshot-first input
 
