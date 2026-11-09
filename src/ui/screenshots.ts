@@ -10,6 +10,7 @@ import { answer, questionsFor, type StagesOf } from './questions';
 import { askQuestions } from './questionsView';
 import { failedNote, progressNote, readImages } from './readImages';
 import { type ChoicesOf, targetQuestions } from './targetQuestions';
+import { queueBatches, waitingNote } from './shotQueue';
 import { pickShot } from './thumb';
 
 export interface ShotsWiring {
@@ -32,8 +33,8 @@ export interface ShotsWiring {
   useAccount: (totals: Totals) => string;
   /** Checks a screenshot's CP against its species and HP, before sorting (fix C). */
   checkCp?: (reading: Reading) => Reading;
-  /** Called once the screenshots have been read and any Pokémon added. */
-  onDone?: () => void;
+  /** Called once the screenshots have been read and any Pokémon added; the next batch waits for it. */
+  onDone?: () => void | Promise<void>;
 }
 
 const NONE = 'No Pokémon found in these screenshots. Use the appraisal screen.';
@@ -41,11 +42,18 @@ const q = <T extends Element>(root: ParentNode, selector: string) => root.queryS
 const setStatus = (w: ShotsWiring, text: string) => (q(w.root, '[data-shots-status]').textContent = text);
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
-// Bag and profile screenshots count as read even when no Pokémon is found.
-function readNote(files: number, groups: Group[], accountNote: string): string {
+/** What a batch held: its Pokémon, and the evolution lines they are in. */
+interface Found {
+  pokemon: number;
+  lines: number;
+}
+
+// Bag and profile screenshots count as read even when no Pokémon is found. The lines are
+// counted as ADR 0017 says (issue #6).
+function readNote(files: number, found: Found, accountNote: string): string {
   const shots = `Read ${plural(files, 'screenshot')}`;
-  if (!groups.length) return accountNote ? `${shots}.${accountNote}` : NONE;
-  return `${shots}: ${groups.length} Pokémon.${accountNote}`;
+  if (!found.pokemon) return accountNote ? `${shots}.${accountNote}` : NONE;
+  return `${shots}: ${found.pokemon} Pokémon in ${plural(found.lines, 'line')}.${accountNote}`;
 }
 
 async function settle(w: ShotsWiring, groups: Group[]): Promise<Group[]> {
@@ -75,7 +83,7 @@ async function useAll(w: ShotsWiring, groups: Group[], shots: Shots): Promise<vo
     const prints = (group.sources ?? []).map((r) => shots.printOf.get(shots.fileOf.get(r)!)!);
     await w.use(group, at === undefined ? undefined : shots.fileOf.get(shots.readings[at]), prints);
   }
-  w.onDone?.();
+  await w.onDone?.();
 }
 
 async function readFresh(w: ShotsWiring, fresh: Fresh): Promise<void> {
@@ -88,7 +96,8 @@ async function readFresh(w: ShotsWiring, fresh: Fresh): Promise<void> {
   const { pokemon, account } = splitAccount(readings);
   const groups = groupReadings(pokemon, w.familyOf);
   const accountNote = Object.keys(account).length ? ` ${w.useAccount(account)}` : '';
-  setStatus(w, readNote(files.length, groups, accountNote) + failedNote(images.failed) + skippedNote(fresh.skipped));
+  const found = { pokemon: groups.length, lines: new Set(groups.map((g) => w.familyOf(g.reading))).size };
+  setStatus(w, readNote(files.length, found, accountNote) + failedNote(images.failed) + skippedNote(fresh.skipped));
   await useAll(w, await settle(w, groups), { readings: pokemon, fileOf, printOf: fresh.printOf });
 }
 
@@ -98,17 +107,16 @@ async function readAll(w: ShotsWiring, files: File[]): Promise<void> {
   const fresh = await freshFiles(files, new Set(w.seen?.()));
   if (fresh.files.length) return readFresh(w, fresh);
   setStatus(w, skippedNote(fresh.skipped).trim());
-  w.onDone?.();
+  await w.onDone?.();
 }
 
 /**
  * Hooks up step 1's picker. Returns a function that reads files from elsewhere, such as
- * a share.
+ * a share. Each batch waits for the one before it to be in.
  */
 export function wireScreenshots(w: ShotsWiring): (files: File[]) => void {
-  const read = (files: File[]) => {
-    if (files.length) void readAll(w, files).catch(() => setStatus(w, 'Could not read those images. Try again.'));
-  };
+  const failed = (): void => void setStatus(w, 'Could not read those images. Try again.');
+  const read = queueBatches((files) => readAll(w, files).catch(failed), waitingNote(q(w.root, '[data-shots-waiting]')));
   const input = q<HTMLInputElement>(w.root, '[name="screenshots"]');
   input.addEventListener('change', () => read([...(input.files ?? [])]));
   return read;

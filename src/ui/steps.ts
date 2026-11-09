@@ -5,19 +5,46 @@
 const READ = 'Read from your screenshots. Check them against the game and fix anything that is wrong.';
 const TYPE = 'Type in what the game shows for each Pokémon. Its appraisal gives the IVs.';
 
+const WORKING = 'Working out each line…';
+
 export interface Steps {
-  /** Shows the later steps after screenshots were read. */
+  /** Shows the later steps after screenshots were read, scrolled to step 2 (issue #6). */
   reveal: () => void;
+  /** Runs a long task with step 1 saying each line is being worked out (issue #6). */
+  working: (task: () => void) => Promise<void>;
 }
 
+const stepOf = (doc: Document, name: string) => doc.querySelector<HTMLElement>(`[data-step="${name}"]`)!;
+
 function show(doc: Document, note: string): void {
-  for (const name of ['check', 'answer']) doc.querySelector<HTMLElement>(`[data-step="${name}"]`)!.hidden = false;
+  for (const name of ['check', 'answer']) stepOf(doc, name).hidden = false;
   doc.querySelector('[data-check-note]')!.textContent = note;
+}
+
+// Lets the page show a change before a task that blocks it; a hidden tab skips frames,
+// so a timer goes on without one.
+const painted = (view: Window) =>
+  new Promise<void>((resolve) => {
+    view.requestAnimationFrame(() => view.setTimeout(resolve));
+    view.setTimeout(resolve, 100);
+  });
+
+async function working(doc: Document, task: () => void): Promise<void> {
+  const status = doc.querySelector('[data-shots-status]')!;
+  const before = status.textContent;
+  status.textContent = WORKING;
+  await painted(doc.defaultView!);
+  try {
+    task();
+  } finally {
+    status.textContent = before;
+  }
 }
 
 export function wireSteps(doc: Document): Steps {
   doc.querySelector('[data-step-skip]')!.addEventListener('click', () => show(doc, TYPE));
-  return { reveal: () => show(doc, READ) };
+  const reveal = () => (show(doc, READ), stepOf(doc, 'check').scrollIntoView({ block: 'start' }));
+  return { reveal, working: (task) => working(doc, task) };
 }
 
 /** What was kept from last time: how many Pokémon, and the one to battle with. */

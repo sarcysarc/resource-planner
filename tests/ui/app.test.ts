@@ -64,7 +64,7 @@ describe('mountApp', () => {
 
   it('puts each Pokémon from the screenshots into the grid, with the target and form', async () => {
     choose(2);
-    await vi.waitFor(() => expect(q('[data-shots-status]').textContent).toBe('Read 2 screenshots: 1 Pokémon.'));
+    await vi.waitFor(() => expect(q('[data-shots-status]').textContent).toBe('Read 2 screenshots: 1 Pokémon in 1 line.'));
     expect(tiles()).toHaveLength(1);
     const [root] = tiles();
     expect([field(root, 'form').value, field(root, 'cp').value, q<HTMLInputElement>('#target').value]).toEqual(['lairon', '600', 'Aggron']);
@@ -88,7 +88,7 @@ describe('mountApp', () => {
     vi.stubGlobal('caches', { open: async () => cache });
     window.history.replaceState(null, '', '/?shared=1');
     load();
-    await vi.waitFor(() => expect(q('[data-shots-status]').textContent).toBe('Read 1 screenshot: 1 Pokémon.'));
+    await vi.waitFor(() => expect(q('[data-shots-status]').textContent).toBe('Read 1 screenshot: 1 Pokémon in 1 line.'));
     vi.unstubAllGlobals();
     window.history.replaceState(null, '', '/');
   });

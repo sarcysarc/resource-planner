@@ -54,7 +54,7 @@ describe('mountApp with lines', () => {
   // Cause D in the stress test: every Pokémon took the first line's name (ADR 0017).
   it('puts each line’s Pokémon in a grid of its own, listed in step 2 with the first read open', async () => {
     choose(['0.png', 'gengar.png', '1.png']);
-    await vi.waitFor(() => expect(q('[data-shots-status]').textContent).toBe('Read 3 screenshots: 2 Pokémon.'));
+    await vi.waitFor(() => expect(q('[data-shots-status]').textContent).toBe('Read 3 screenshots: 2 Pokémon in 2 lines.'));
     await vi.waitFor(() => expect(rows()).toHaveLength(2));
     // By Pokédex number: Gastly is #92, Aron #304.
     expect(rows().map((b) => [b.textContent, b.getAttribute('aria-current')])).toEqual([
@@ -121,8 +121,7 @@ describe('mountApp with lines', () => {
 
   it('puts the line with the biggest gain first', async () => {
     choose(['gengar.png', 'ivs-1118.png', 'max-1468.png']);
-    await vi.waitFor(() => expect(rows()).toHaveLength(2));
-    expect(rows()[0].textContent).toMatch(/^Aron line · 2 · Lairon, CP 1468, IVs 15\/15\/15: \d+% stronger in /);
+    await vi.waitFor(() => expect(rows()[0]?.textContent).toMatch(/^Aron line · 2 · Lairon, CP 1468, IVs 15\/15\/15: \d+% stronger in /));
   });
 
   // Issue #8: another line's results and error stayed up after switching.

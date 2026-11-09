@@ -57,7 +57,7 @@ describe('wireScreenshots', () => {
       ['Aggron', 1, '1.png'],
       ['Aron', 1, '3.png'],
     ]);
-    expect(status()).toBe('Read 4 screenshots: 3 Pokémon.');
+    expect(status()).toBe('Read 4 screenshots: 3 Pokémon in 3 lines.');
     expect(questions().hidden).toBe(true);
     expect(onDone).toHaveBeenCalledOnce();
   });
@@ -77,7 +77,7 @@ describe('wireScreenshots', () => {
   it('skips screenshots already read, without reading them again', async () => {
     await choose([screen('Lairon', 80), screen('Aggron', 120)]);
     await choose([screen('Aron', 50)], ['1.png', '0.png', 'new.png']);
-    expect(status()).toBe('Read 1 screenshot: 1 Pokémon. Skipped 2 already added.');
+    expect(status()).toBe('Read 1 screenshot: 1 Pokémon in 1 line. Skipped 2 already added.');
     expect(named().map(([name]) => name)).toEqual(['Lairon', 'Aggron', 'Aron']);
   });
 
@@ -116,7 +116,7 @@ describe('wireScreenshots', () => {
     await choose([profile, screen('Lairon', 80)]);
     expect(named()).toEqual([['Lairon', 1, '1.png']]);
     expect(useAccount).toHaveBeenCalledWith({ trainerLevel: 30 });
-    expect(status()).toBe('Read 2 screenshots: 1 Pokémon. Your totals: {"trainerLevel":30}.');
+    expect(status()).toBe('Read 2 screenshots: 1 Pokémon in 1 line. Your totals: {"trainerLevel":30}.');
   });
 
   it('reads a bag or profile screenshot on its own', async () => {
@@ -129,7 +129,7 @@ describe('wireScreenshots', () => {
     const read = wireScreenshots(wiring());
     readScreenshot.mockResolvedValueOnce(screen('Lairon', 80));
     read([new File(['x'], 'shared.png')]);
-    await vi.waitFor(() => expect(status()).toBe('Read 1 screenshot: 1 Pokémon.'));
+    await vi.waitFor(() => expect(status()).toBe('Read 1 screenshot: 1 Pokémon in 1 line.'));
     expect(named()).toEqual([['Lairon', 1, 'shared.png']]);
   });
 

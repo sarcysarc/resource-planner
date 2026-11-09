@@ -1,12 +1,14 @@
 // @vitest-environment jsdom
 import { readFileSync } from 'node:fs';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { hideSaved, savedNote, showSaved, wireSteps } from '../../src/ui/steps';
 
 const step = (name: string) => document.querySelector<HTMLElement>(`[data-step="${name}"]`)!;
 const note = () => document.querySelector('[data-check-note]')!.textContent;
 const saved = () => document.querySelector<HTMLElement>('[data-saved]')!;
 const shown = () => ['shots', 'check', 'answer'].filter((name) => !step(name).hidden);
+
+Element.prototype.scrollIntoView = () => undefined;
 
 describe('wireSteps', () => {
   let steps: ReturnType<typeof wireSteps>;
@@ -39,6 +41,23 @@ describe('wireSteps', () => {
     steps.reveal();
     expect(shown()).toEqual(['shots', 'check', 'answer']);
     expect(note()).toMatch(/^Read from your screenshots\. Check/);
+  });
+
+  // Issue #6: on a phone, step 2 opened below the fold.
+  it('scrolls to step 2 once screenshots are read', () => {
+    const scroll = vi.fn();
+    step('check').scrollIntoView = scroll;
+    steps.reveal();
+    expect(scroll).toHaveBeenCalledWith({ block: 'start' });
+  });
+
+  // Issue #6: the pause while each line's call is worked out said nothing.
+  it('says each line is being worked out meanwhile, then puts the status back', async () => {
+    const status = document.querySelector('[data-shots-status]')!;
+    status.textContent = 'Read 2 screenshots: 2 Pokémon in 2 lines.';
+    let during = '';
+    await steps.working(() => (during = status.textContent!));
+    expect([during, status.textContent]).toEqual(['Working out each line…', 'Read 2 screenshots: 2 Pokémon in 2 lines.']);
   });
   it('says in step 1 what was saved from last time, and opens the rest to show it', () => {
     expect(saved().hidden).toBe(true);

@@ -43,6 +43,14 @@ Pokémon (10–50 at a time) and share them all; each line then gets its own adv
   question below.
 - The status counts what was read: "Read 40 screenshots: 31 Pokémon in 12 lines,
   2 not Pokémon screens." Bag and profile screens still fill the shared values.
+- **One batch at a time** (amended 2026-11-08, issue #3; was: a new batch replaced one
+  waiting on a question, which was lost). A batch shared while step 1 reads or asks about
+  another waits its turn, and step 1 says how many screenshots wait. Its questions come
+  after the open ones are answered.
+- **The way into step 2** (amended 2026-11-08, issue #6). The questions say the Pokémon wait
+  on them ("1 question before your Pokémon are shown:"), and no answer is chosen in advance.
+  Step 1 says "Working out each line…" while each line's call is worked out. Step 2 is then
+  scrolled into view.
 
 ### Sharing again, without duplicates
 

@@ -14,7 +14,7 @@ import { readingFamily, resolveSpecies } from './scanSpecies';
 import { addStatus, applySpecies } from './scanTarget';
 import { wireScreenshots } from './screenshots';
 import { findSpecies, type SpeciesIndex } from './species';
-import { wireSteps } from './steps';
+import { type Steps, wireSteps } from './steps';
 import { makeThumb } from './thumb';
 import { markKnown } from './tileDescribe';
 import { fillTile } from './tileFill';
@@ -76,13 +76,17 @@ function useGroup(g: GridShots, batch: Batch): (group: Group, shot?: File, print
   };
 }
 
-function done(g: GridShots, batch: Batch, reveal: () => void): () => void {
-  return () => {
-    if (batch.first !== undefined) g.lines.open(batch.first);
-    if (batch.first !== undefined) g.afterBatch?.();
+// Each line's call is worked out with step 1 saying so, then step 2 is shown (issue #6).
+function done(g: GridShots, batch: Batch, steps: Steps): () => Promise<void> {
+  return async () => {
+    const first = batch.first;
     batch.first = undefined;
+    if (first !== undefined) {
+      g.lines.open(first);
+      await steps.working(() => g.afterBatch?.());
+    }
     g.save();
-    reveal();
+    steps.reveal();
   };
 }
 
@@ -106,7 +110,7 @@ function wireHand(g: GridShots): void {
 }
 
 export function wireGridShots(g: GridShots): void {
-  const { reveal } = wireSteps(g.doc);
+  const steps = wireSteps(g.doc);
   const batch: Batch = {};
   wireHand(g);
   const read = wireScreenshots({
@@ -119,7 +123,7 @@ export function wireGridShots(g: GridShots): void {
     seen: () => printsOf(g.lines.book()),
     known: () => knownOf(g.lines.book(), (id) => findSpecies(g.index, id)?.name),
     checkCp: (r) => checkCp(g.index, r),
-    onDone: done(g, batch, reveal),
+    onDone: done(g, batch, steps),
   });
   // Screenshots shared from the gallery to the installed app (ADR 0010).
   void receiveShared(window).then(read);
