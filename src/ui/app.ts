@@ -3,6 +3,7 @@
 import { buildCandidateFields } from './candidateFields';
 import { loadBundledEvolve } from './evolveData';
 import { wireEvolve } from './evolveMemory';
+import { showError } from './fieldError';
 import { wireFinder } from './finder';
 import { wireFormChoices } from './formChoices';
 import { createGrid, type Grid } from './grid';
@@ -77,11 +78,19 @@ function wireCalls(c: Calls, after: { batch: () => void }): void {
   });
 }
 
+// Results and errors belong to the line they were worked out for (issue #8).
+function dropShown({ doc, form }: Page): void {
+  q(doc, '#results').replaceChildren();
+  showError(form, '');
+}
+
 // Step 2's list of lines and the open line's Clear; gives a function that redraws the list.
-function wireLines({ doc, index }: Page, lines: Lines, save: () => void): () => void {
+function wireLines(page: Page, lines: Lines, save: () => void): () => void {
+  const { doc, index } = page;
   const list = { nav: q(doc, '[data-lines]'), lines, index, clear: q(doc, '[data-clear-line]') };
-  const render = wireLineList({ ...list, grid: q(doc, '[data-grid]'), onOpen: save });
-  wireLineClear({ ...list, button: list.clear, after: () => (render(), save()) });
+  const onOpen = () => (dropShown(page), save());
+  const render = wireLineList({ ...list, grid: q(doc, '[data-grid]'), onOpen });
+  wireLineClear({ ...list, button: list.clear, after: () => (render(), onOpen()) });
   return render;
 }
 

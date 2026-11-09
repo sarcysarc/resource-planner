@@ -125,6 +125,23 @@ describe('mountApp with lines', () => {
     expect(rows()[0].textContent).toMatch(/^Aron line · 2 · Lairon, CP 1468, IVs 15\/15\/15: \d+% stronger in /);
   });
 
+  // Issue #8: another line's results and error stayed up after switching.
+  it('drops the last line’s results and error when another line is opened', async () => {
+    choose(['gengar.png', 'ivs-1118.png', 'max-1468.png']);
+    await vi.waitFor(() => expect(rows()).toHaveLength(2));
+    const submit = () => q('form').dispatchEvent(new Event('submit', { cancelable: true }));
+    const shown = () => [q('#results').textContent, q('#error').textContent];
+    rows().find((b) => b.textContent!.startsWith('Aron'))!.click();
+    submit();
+    expect(q('#results').textContent).not.toBe('');
+    rows().find((b) => b.textContent!.startsWith('Gastly'))!.click();
+    expect(shown()).toEqual(['', '']);
+    submit();
+    expect(q('#error').textContent).not.toBe('');
+    rows().find((b) => b.textContent!.startsWith('Aron'))!.click();
+    expect(shown()).toEqual(['', '']);
+  });
+
   it('lists no lines while there is only one', async () => {
     choose(2);
     await vi.waitFor(() => expect(tiles()).toHaveLength(1));

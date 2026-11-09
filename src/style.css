@@ -30,6 +30,8 @@
 }
 
 * { box-sizing: border-box; }
+/* A class's display (.saved, .lines) would otherwise show a box marked hidden (issue #7). */
+[hidden] { display: none !important; }
 
 body {
   margin: 0;
