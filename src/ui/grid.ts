@@ -1,7 +1,7 @@
 // The grid of Pokémon from one line (ADR 0015). Each tile owns a hidden candidate
 // fieldset; tapping the tile shows its details, one at a time. The current tile and the
 // tiles marked for transfer decide what is compared.
-import { buildTile, isMarked, showSuggestion, showTile, type TileView } from './tileView';
+import { buildTile, isMarked, showProblem, showSuggestion, showTile, type TileView } from './tileView';
 
 export interface GridParts {
   /** Where the tiles go. */
@@ -27,6 +27,8 @@ export interface Grid {
   /** What to compare: the current one first, those marked for transfer left out. */
   compared(): HTMLElement[];
   open(root: HTMLElement): void;
+  /** Marks this tile with what stops the comparison and opens it, unmarking the rest; none unmarks all (issue #10). */
+  mark(root?: HTMLElement, problem?: string): void;
   /** Redraws a tile from its fields, or every tile. */
   refresh(root?: HTMLElement): void;
   /** Labels these tiles "Could transfer" with their reasons, and no others. */
@@ -74,8 +76,16 @@ function wireEvents(w: GridWiring, grid: Grid): void {
   w.parts.grid.addEventListener('change', () => listTransfers(w, grid.roots(), grid.tileOf));
   w.parts.details.addEventListener('change', (event) => {
     const root = (event.target as Element).closest<HTMLElement>('[data-tile]');
-    if (root) grid.refresh(root);
+    if (!root) return;
+    // A changed detail may fix the problem; it is checked again on Compare.
+    showProblem(grid.tileOf(root), undefined);
+    grid.refresh(root);
   });
+}
+
+function mark(grid: Grid, root?: HTMLElement, problem?: string): void {
+  for (const r of grid.roots()) showProblem(grid.tileOf(r), r === root ? problem : undefined);
+  if (root) grid.open(root);
 }
 
 interface Ctx {
@@ -110,6 +120,7 @@ export function createGrid(w: GridWiring): Grid {
     roots,
     compared: () => compared(roots(), tileOf),
     open: (root) => open(w, root),
+    mark: (root, problem) => mark(grid, root, problem),
     refresh: (root) => ((root ? [root] : roots()).forEach((r) => redraw(ctx, r)), listTransfers(w, roots(), tileOf)),
     suggest: (reasons) => tiles(w.parts).forEach((t) => showSuggestion(t, reasons.get(t.dataset.tile!))),
     tileOf,

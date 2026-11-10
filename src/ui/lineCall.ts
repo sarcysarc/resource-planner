@@ -19,11 +19,21 @@ export function callOf(labels: readonly OptionLabel[], rows: readonly Pick<Compa
   return { text: `${labels[gain.option].heading}: ${percent}% stronger in ${GOAL_LABELS[gain.goal].title}`, gain: gain.change };
 }
 
-/** Why a line with these Pokémon could not be compared, from the error comparing gave. */
-export function reasonOf(error: string, roots: readonly HTMLElement[]): string {
+// "Meowth, CP 437, IVs 14/10/14: No level gives…" reads "check Meowth, …: no level gives…" (issue #10).
+function check(error: string, title: string): string {
+  const problem = error.slice(title.length + 2);
+  return `check ${title}: ${problem.charAt(0).toLowerCase()}${problem.slice(1)}`;
+}
+
+/**
+ * Why a line with these Pokémon could not be compared, from the error comparing gave;
+ * `title` is the Pokémon the error is about, when it is about one.
+ */
+export function reasonOf(error: string, roots: readonly HTMLElement[], title?: string): string {
   if (error === MORE) return 'add another to compare';
   if (!roots.every(hasIvs)) return 'needs IVs';
-  return error.includes('Candy to evolve') ? 'needs Candy to evolve' : 'needs details';
+  if (error.includes('Candy to evolve')) return 'needs Candy to evolve';
+  return title && error.startsWith(`${title}: `) ? check(error, title) : 'needs details';
 }
 
 /** Opens each line in turn, out of sight, to work out its call; the open one stays open. */

@@ -43,6 +43,7 @@
         <section class="step" data-step="check" hidden>
           <h2><span class="num">2</span> Check the details</h2>
           <p class="muted" data-check-note></p>
+          <p class="hint" data-lines-hint hidden>Tap a line to see its Pokémon.</p>
           <nav class="lines" data-lines aria-label="Your evolution lines" hidden></nav>
           <section class="card" data-target-card>
             <label>Pokémon you will battle with
@@ -58,12 +59,13 @@
           </section>
           <section class="card" data-grid-card>
             <div class="card-head">
-              <h3>Your Pokémon</h3>
+              <h3 data-grid-heading>Your Pokémon</h3>
               <button type="button" class="link" data-clear-line hidden>Clear this line</button>
               <button type="button" class="link" data-clear-grid>Clear all and start again</button>
             </div>
             <p class="hint">Mark the one you are using now as Current. Tap a Pokémon to check or fix its details.
-              Tick Transfer to leave one out of the comparison.</p>
+              Tick Transfer to leave one out of the comparison.
+              A green edge marks the Current one; a blue edge, the one whose details are open below.</p>
             <div class="grid" data-grid></div>
             <button type="button" class="secondary" data-add-tile>Add a Pokémon by hand</button>
           </section>
@@ -96,6 +98,7 @@
         </section>
       </form>
       <section id="results" aria-live="polite"></section>
+      <button type="button" class="secondary" data-next-line hidden></button>
       <footer>
         <p class="muted">How it decides: for each kind of battle, each Pokémon is powered up as far as that battle allows,
           and the one that ends up strongest wins. If they end up within 1% of each other, the cheaper one wins.

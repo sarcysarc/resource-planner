@@ -85,24 +85,41 @@ function suggest(p: Planner, { options, roots }: Inputs, rows: ReturnType<typeof
   p.grid.suggest(transferSuggestions(rows, ids, names));
 }
 
-function fail(p: Planner, error: string, at?: ErrorPlace): LineCall {
-  showError(p.form, error, at);
-  if (at) p.grid.open(at.part);
-  return { text: reasonOf(error, p.grid.compared()) };
+// The Pokémon an error is about, from the start of the message that names it.
+const aboutOf = (at?: ErrorPlace) => at?.prefix.slice(0, -2);
+const reasonFor = (p: Planner, { error, at }: { error: string; at?: ErrorPlace }) => reasonOf(error, p.grid.compared(), aboutOf(at));
+
+// Marks the Pokémon the error is about, if any, with the error less its name (issue #10).
+function markFor(p: Planner, { error, at }: { error: string; at?: ErrorPlace }): void {
+  if (at) p.grid.mark(at.part, error.slice(at.prefix.length));
+  else p.grid.mark();
+}
+
+function fail(p: Planner, failed: { error: string; at?: ErrorPlace }): LineCall {
+  showError(p.form, failed.error, failed.at);
+  markFor(p, failed);
+  return { text: reasonFor(p, failed) };
 }
 
 /** The open line's call, worked out without showing anything (ADR 0017). */
 export function judgeLine(p: Planner): LineCall {
   const input = readInputs(p);
-  if (!input.ok) return { text: reasonOf(input.error, p.grid.compared()) };
+  if (!input.ok) return { text: reasonFor(p, input) };
   return callOf(input.value.options.labels, compare(input.value.compare));
+}
+
+/** Marks the open line's Pokémon whose details stop it being compared, and opens it (issue #10). */
+export function markProblem(p: Planner): void {
+  const input = readInputs(p);
+  markFor(p, input.ok ? { error: '' } : input);
 }
 
 /** Compares the open line and shows the results; gives the line's call. */
 export function runCompare(p: Planner): LineCall {
   const input = readInputs(p);
-  if (!input.ok) return fail(p, input.error, input.at);
+  if (!input.ok) return fail(p, input);
   showError(p.form, '');
+  p.grid.mark();
   const { compare: sides, rare, options } = input.value;
   const rows = compare(sides);
   suggest(p, input.value, rows);

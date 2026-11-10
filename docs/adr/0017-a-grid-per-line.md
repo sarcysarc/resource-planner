@@ -35,6 +35,16 @@ Pokémon (10–50 at a time) and share them all; each line then gets its own adv
 - **Order:** by the call's gain, biggest first, then by Pokédex number (amended in slice 3;
   was: switch or power-up calls first).
 - Each line has its own Clear; Clear all stays.
+- **Showing which line is open** (amended 2026-11-09, issue #9). The rows read as tabs: outlined,
+  with the open one filled and ticked, under the caption "Tap a line to see its Pokémon." The
+  grid's heading names the open line ("Your Pokémon: Aron line"), and a "Next: … line →" button
+  under the results opens the next row (round to the top) and scrolls back to its Pokémon. The
+  tile hint says what the green edge (Current) and blue edge (details open) mean.
+- **Naming what stops a line** (amended 2026-11-09, issue #10). When one Pokémon's details stop
+  the comparison, the row says which and why ("check Lairon, CP 9999, IVs 15/15/15: no level
+  gives CP 9999 with those IVs") instead of "needs details". On opening the line, that tile gets
+  an error-coloured edge and the problem in its own line, apart from its notes, which are only
+  hints; its details open. Changing its details clears the mark; Compare sets it again.
 
 ### Step 1: reading a batch
 

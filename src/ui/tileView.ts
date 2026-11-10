@@ -45,8 +45,19 @@ export function buildTile(doc: Document, id: string): HTMLElement {
   const could = el(doc, 'p', 'could');
   Object.assign(could, { hidden: true });
   could.dataset.could = '';
-  tile.append(thumb, open, notes, could, controls(doc, id));
+  const problem = el(doc, 'p', 'tile-problem');
+  Object.assign(problem, { hidden: true });
+  problem.dataset.problem = '';
+  tile.append(thumb, open, problem, notes, could, controls(doc, id));
   return tile;
+}
+
+/** Shows what stops it being compared, apart from the notes, which are only hints (issue #10); `undefined` clears it. */
+export function showProblem(tile: HTMLElement, problem: string | undefined): void {
+  const note = tile.querySelector<HTMLElement>('[data-problem]')!;
+  note.hidden = !problem;
+  note.textContent = problem ?? '';
+  tile.classList.toggle('problem', !!problem);
 }
 
 export function showTile(tile: HTMLElement, { title, notes }: TileView): void {

@@ -45,6 +45,13 @@ describe('why a line has no call', () => {
     expect(reasonOf(error, [tile(['1', '2', '3']), tile(['4', '5', '6'])])).toBe('needs Candy to evolve');
   });
 
+  // Issue #10: "needs details" didn't say which, so the row names the Pokémon and the problem.
+  it('names the Pokémon and its problem when one Pokémon’s details are wrong', () => {
+    const title = 'Meowth, CP 437, IVs 14/10/14';
+    const reason = reasonOf(`${title}: No level gives CP 437 with those IVs`, [tile(['1', '2', '3']), tile(['14', '10', '14'])], title);
+    expect(reason).toBe('check Meowth, CP 437, IVs 14/10/14: no level gives CP 437 with those IVs');
+  });
+
   it('says other details are needed otherwise', () => {
     expect(reasonOf('Resources: Trainer level', [tile(['1', '2', '3']), tile(['4', '5', '6'])])).toBe('needs details');
   });

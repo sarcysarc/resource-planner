@@ -7,12 +7,15 @@ import { loadBundledIndex } from '../../src/ui/species';
 const index = loadBundledIndex();
 const line = (family: string, call?: LineSummary['call']): LineSummary => ({ family, target: '', count: 2, open: false, call });
 
-function render(list: LineSummary[]): string[] {
-  const nav = document.createElement('nav');
+function parts(list: LineSummary[]) {
+  const make = <K extends keyof HTMLElementTagNameMap>(tag: K) => document.createElement(tag);
   const lines = { list: () => list } as unknown as Lines;
-  renderLines({ nav, grid: document.createElement('div'), lines, index });
-  return [...nav.querySelectorAll('button')].map((b) => b.textContent!);
+  const l = { nav: make('nav'), grid: make('div'), lines, index, hint: make('p'), heading: make('h3'), next: make('button') };
+  renderLines(l);
+  return l;
 }
+
+const render = (list: LineSummary[]) => [...parts(list).nav.querySelectorAll('button')].map((b) => b.textContent!);
 
 describe('step 2’s list of lines', () => {
   it('shows each line’s call, the biggest gain first, then the rest by Pokédex number', () => {
@@ -30,5 +33,16 @@ describe('step 2’s list of lines', () => {
       'Bulbasaur line · 2',
       'Aron line · 2 · needs IVs',
     ]);
+  });
+
+  // Issue #9: nothing said which line was open, or how to get to the next.
+  it('names the open line in the heading, and the one after it on Next, round to the top', () => {
+    const l = parts([line('FAMILY_GASTLY'), { ...line('FAMILY_ARON'), open: true }]);
+    expect([l.heading.textContent, l.next.textContent, l.next.hidden, l.hint.hidden]).toEqual(['Your Pokémon: Aron line', 'Next: Gastly line →', false, false]);
+  });
+
+  it('keeps the plain heading, and hides the caption and Next, with one line', () => {
+    const l = parts([{ ...line('FAMILY_ARON'), open: true }]);
+    expect([l.heading.textContent, l.next.hidden, l.hint.hidden]).toEqual(['Your Pokémon', true, true]);
   });
 });

@@ -16,7 +16,7 @@ import { wireLineList } from './lineList';
 import type { Lines } from './lines';
 import { wireMoves } from './moves';
 import { wirePvp } from './pvpWiring';
-import { judgeLine, type Planner, runCompare } from './runCompare';
+import { judgeLine, markProblem, type Planner, runCompare } from './runCompare';
 import { wireSearches } from './searchHelp';
 import { loadBundledIndex, type SpeciesIndex } from './species';
 import { describeTile } from './tileDescribe';
@@ -69,7 +69,7 @@ interface Calls {
 
 // Each line's call (ADR 0017): every line's after a batch, the open one's on Compare.
 function wireCalls(c: Calls, after: { batch: () => void }): void {
-  after.batch = () => (judgeLines(c.lines, () => judgeLine(c.planner)), c.render());
+  after.batch = () => (judgeLines(c.lines, () => judgeLine(c.planner)), markProblem(c.planner), c.render());
   c.planner.form.addEventListener('submit', (event) => {
     event.preventDefault();
     c.lines.setCall(c.lines.family(), runCompare(c.planner));
@@ -85,11 +85,13 @@ function dropShown({ doc, form }: Page): void {
 }
 
 // Step 2's list of lines and the open line's Clear; gives a function that redraws the list.
-function wireLines(page: Page, lines: Lines, save: () => void): () => void {
+// A newly open line shows what stops it being compared (issue #10).
+function wireLines(page: Page, c: Omit<Calls, 'render'>): () => void {
   const { doc, index } = page;
-  const list = { nav: q(doc, '[data-lines]'), lines, index, clear: q(doc, '[data-clear-line]') };
-  const onOpen = () => (dropShown(page), save());
-  const render = wireLineList({ ...list, grid: q(doc, '[data-grid]'), onOpen });
+  const list = { nav: q(doc, '[data-lines]'), lines: c.lines, index, clear: q(doc, '[data-clear-line]') };
+  const onOpen = () => (dropShown(page), markProblem(c.planner), c.save());
+  const parts = { hint: q(doc, '[data-lines-hint]'), heading: q(doc, '[data-grid-heading]'), next: q(doc, '[data-next-line]') };
+  const render = wireLineList({ ...list, ...parts, grid: q(doc, '[data-grid]'), onOpen });
   wireLineClear({ ...list, button: list.clear, after: () => (render(), onOpen()) });
   return render;
 }
@@ -106,11 +108,11 @@ export function mountApp(doc: Document): void {
   const { lines, save } = persistGrid({ grid, target, resources: page.resources, area: form, ...saved }, openStore());
   const after = { batch: () => {} };
   wireGridShots({ doc, grid, index, target, resources: page.resources, useEvolve, save, lines, afterBatch: () => after.batch() });
-  const render = wireLines(page, lines, save);
   fillSpeciesList(q(doc, '#species-list'), index);
   q(doc, '#data-info').textContent = dataCredit(index.timestamp);
   wireSearches({ target, root: q(doc, '[data-searches]'), index });
   const moves = { raidMovesOf: wireMoves({ target, area, index }), pvp: wirePvp({ target, area, index }) };
   const planner = { form, target, resources: page.resources, results: q(doc, '#results'), index, moves, grid };
+  const render = wireLines(page, { planner, lines, save });
   wireCalls({ planner, lines, render, save }, after);
 }
