@@ -142,6 +142,22 @@ all, so the answer key no longer expects it there.
 
 Afterwards, on the stress set: 4 screenshots with a misread (was 11), and every grid right.
 
+### Amendment (2026-11-09): Shadow from the sky (issue #13)
+
+An appraisal and a top screen carry no Shadow label, so a Shadow Pokémon seen only there was
+taken as not Shadow. Its sky is the sign: dark indigo behind the Pokémon, where other types
+show their own colours. `shadowBackground` (src/ocr/shadow.ts) averages a strip at the left
+edge, from 12% to 30% down, above the card and clear of the Pokémon, and calls it Shadow when
+red is under 36, green under 28 and not above red, and blue between 65 and 100. On every local
+screenshot, Shadow skies averaged about (12–30, 10–22, 72–84); the nearest others were
+Ghost-type nights (green above red), Psychic purples (red near 50 or more) and Electric navies
+(blue near 60). Counting purple flame pixels was rejected again, as Psychic skies are purple.
+
+The scan carries `shadow: true`, read as the variant when no label names one. A top screen
+counts as knowing whether the Pokémon is Shadow, so its tile's note no longer asks for the
+Pokémon screen; with only the variant left unseen (Purified) it asks for the screen scrolled
+down.
+
 ## Consequences
 
 - No network request carries the screenshot or its text; it works offline once cached.

@@ -1,7 +1,8 @@
 // Each line's call in step 2's list (ADR 0017): the biggest gain over the current one, or a
 // short reason it can't be compared yet. Worked out after each batch and on Compare.
 import type { Comparison } from '../core/compare';
-import { bestGain } from '../core/gain';
+import { bestGain, type Gain } from '../core/gain';
+import { VALUE_THRESHOLD } from '../core/verdict';
 import { GOAL_LABELS, type OptionLabel } from './format';
 import type { Lines } from './lines';
 import type { LineCall } from './savedBook';
@@ -11,12 +12,19 @@ export const MORE = 'Add another Pokémon to compare with: add a screenshot of i
 const BEST: LineCall = { text: 'the current one is best', gain: 0 };
 const hasIvs = (root: HTMLElement) => ['atk', 'def', 'hp'].every((n) => root.querySelector<HTMLInputElement>(`[name="${n}"]`)?.value);
 
-/** The option that beats the current one by the most, by how much, and in which battle. */
-export function callOf(labels: readonly OptionLabel[], rows: readonly Pick<Comparison, 'goal' | 'changes'>[]): LineCall {
+// Within the 1% tie the verdict picks one only when it costs less (issue #12).
+function howMuch({ goal, change }: Gain): string {
+  const battle = GOAL_LABELS[goal].title;
+  if (change === null) return `can enter ${battle}`;
+  if (change < VALUE_THRESHOLD) return `as strong in ${battle}, for less`;
+  return `${Math.round(change * 100)}% stronger in ${battle}`;
+}
+
+/** The verdicts' pick that beats the current one by the most, by how much, and in which battle. */
+export function callOf(labels: readonly OptionLabel[], rows: readonly Pick<Comparison, 'goal' | 'changes' | 'verdict'>[]): LineCall {
   const gain = bestGain(rows);
   if (!gain) return BEST;
-  const percent = Math.max(1, Math.round(gain.change * 100));
-  return { text: `${labels[gain.option].heading}: ${percent}% stronger in ${GOAL_LABELS[gain.goal].title}`, gain: gain.change };
+  return { text: `${labels[gain.option].heading}: ${howMuch(gain)}`, gain: Math.max(0, gain.change ?? 0) };
 }
 
 // "Meowth, CP 437, IVs 14/10/14: No level gives…" reads "check Meowth, …: no level gives…" (issue #10).

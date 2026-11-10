@@ -35,6 +35,13 @@ describe('tileNotes', () => {
     expect(notes(['variant', 'lucky'])).toEqual([]);
   });
 
+  // Issue #13: its top screen showed the sky, Shadow or not, so only the screen below is asked for.
+  it('asks for the screen scrolled down once the sky was seen', () => {
+    const notes = (known: string[]) => tileNotes({ ivs: true, needsEvolve: false, known: new Set([...known, 'secondMove']) });
+    expect(notes(['shadow'])).toEqual(['Taken as not Purified or Lucky. Add its screen scrolled down to check.']);
+    expect(notes(['shadow', 'lucky'])).toEqual(['Taken as not Purified. Add its screen scrolled down to check.']);
+  });
+
   it('names the screenshot that fills each gap', () => {
     expect(tileNotes({ ivs: false, needsEvolve: true, known: new Set() })).toEqual([
       'Add its appraisal for the IVs.',

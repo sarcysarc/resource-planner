@@ -34,3 +34,11 @@ export function appraisalScreen(ivs: [number, number, number]): Pixels {
   BAR_ROWS.forEach((top, i) => drawBar(px, top, ivs[i]));
   return px;
 }
+
+/** A screen whose sky above the card is one colour, with a few white stars in it. */
+export function skyScreen(rgb: number[]): Pixels {
+  const px = blankScreen();
+  for (let y = 0; y < 520; y++) for (let x = 0; x < px.width; x++) paint(px, [x, y], rgb);
+  for (let y = 200; y < 480; y += 40) paint(px, [20, y], [255, 255, 255]);
+  return px;
+}

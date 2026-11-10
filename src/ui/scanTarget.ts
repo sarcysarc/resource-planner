@@ -1,5 +1,6 @@
 import type { Reading } from '../core/screen/types';
 import { defaultTarget } from './finals';
+import { selectRead } from './formChoices';
 import { resolveSpecies } from './scanSpecies';
 import { evolutionLine, findSpecies, type Species, type SpeciesIndex } from './species';
 
@@ -27,8 +28,8 @@ function selectForm(pick: SpeciesPick, species: Species): void {
   const select = pick.root.querySelector<HTMLSelectElement>('select[name="form"]')!;
   // Marked as chosen, so raising the target later keeps it (see updateFormChoices).
   select.dataset.chosen = species.id;
-  if ([...select.options].some((o) => o.value === species.id)) select.value = species.id;
-  else addStatus(pick.root, `This is ${species.name}, which does not evolve into ${pick.target.value}.`);
+  if (![...select.options].some((o) => o.value === species.id)) addStatus(pick.root, `This is ${species.name}, which does not evolve into ${pick.target.value}.`);
+  selectRead(select, species);
 }
 
 // The target is unset, or comes before the species read in its line: none evolves backwards.

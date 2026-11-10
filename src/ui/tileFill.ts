@@ -32,9 +32,10 @@ export function trackEdits(area: HTMLElement): void {
 
 // A Pokémon screen (its Stardust or move list) shows the Shadow and Lucky labels if they apply.
 // Its own evolve Candy on screen is marked as evolveStep, so the tile asks for the next form's.
-function readFields({ variant, lucky, secondMove, dust, evolveCandy }: Reading): string[] {
+// Its HP shows on its top screen, whose sky is read for Shadow (issue #13).
+function readFields({ variant, lucky, secondMove, dust, evolveCandy, hp }: Reading): string[] {
   const screen = dust !== undefined || secondMove !== undefined;
-  const fields = [variant || screen ? 'variant' : '', lucky || screen ? 'lucky' : ''];
+  const fields = [variant || screen ? 'variant' : '', lucky || screen ? 'lucky' : '', hp === undefined ? '' : 'shadow'];
   const read = [secondMove === undefined ? '' : 'secondMove', evolveCandy === undefined ? '' : 'evolveStep'];
   return [...fields, ...read].filter(Boolean);
 }

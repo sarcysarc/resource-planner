@@ -45,6 +45,16 @@ Pokémon (10–50 at a time) and share them all; each line then gets its own adv
   gives CP 9999 with those IVs") instead of "needs details". On opening the line, that tile gets
   an error-coloured edge and the problem in its own line, apart from its notes, which are only
   hints; its details open. Changing its details clears the mark; Compare sets it again.
+- **The call follows the verdict** (amended 2026-11-09, issue #12; was: the biggest gain,
+  whatever the verdict). A row's call is the verdict's pick in a battle where it isn't the
+  current one, taking the battle where that pick gains the most. A gain within the verdict's 1%
+  tie that costs more is a keep, not a call, so the row and the results never disagree. A pick
+  as strong for less reads "as strong in Raids & gyms, for less"; one where the current can't
+  enter reads "can enter Great League".
+- **A form read from outside the line** (amended 2026-11-09, issue #11). When the screen names a
+  species outside the line's choices (an Alolan Meowth in a Kantonian line), the form list keeps
+  it as an extra choice, selected, so the tile's title names what was read and the "outside the
+  line" error can be seen beside it.
 
 ### Step 1: reading a batch
 
@@ -104,6 +114,7 @@ Pokémon (10–50 at a time) and share them all; each line then gets its own adv
   one at 4/5/6."
 - **Slice 3 (2026-11-04): row calls and order.** The call is the biggest gain: over every
   battle, the option that beats the current one by the most, whatever the verdict there
+  (since amended for issue #12: the verdict's pick)
   (raids, then Master, Ultra and Great League on a tie). A row reads `Name line · count ·
   call`, e.g. "Magikarp line · 3 · Gyarados, CP 2802, IVs 12/3/14: 20% stronger in Raids &
   gyms", or "the current one is best". A line that can't be compared says why: "add another

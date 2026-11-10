@@ -18,7 +18,8 @@ function readDetails(lines: string[], scan: Scan): Details {
   return defined({
     name: readName(lines),
     family: readFamily(lines),
-    variant: readVariant(lines),
+    // The text says Purified or Shadow; an appraisal or top screen shows only the Shadow sky.
+    variant: readVariant(lines) ?? (scan.shadow && 'shadow'),
     lucky: readLucky(lines),
     secondMove: readSecondMove(lines),
     evolveCandy: readEvolveCandy(lines, scan.digits.evolve),

@@ -39,11 +39,15 @@ function scrolledDown({ needsEvolve, known, later }: TileGaps): string | undefin
   return parts.length ? `Add its screen scrolled down, together with its top screen, for ${listNames(parts)}.` : undefined;
 }
 
-// An appraisal shows the Lucky label but not Shadow or Purified, so either can still be a guess.
+// An appraisal shows the Lucky label and the Shadow sky (issue #13), but not Purified, so
+// that can still be a guess; the screen scrolled down shows it.
 function guesses(known: ReadonlySet<string>): string | undefined {
-  const parts = [known.has('variant') ? '' : 'Shadow', known.has('variant') ? '' : 'Purified', known.has('lucky') ? '' : 'Lucky'];
+  const variant = known.has('variant');
+  const parts = [variant || known.has('shadow') ? '' : 'Shadow', variant ? '' : 'Purified', known.has('lucky') ? '' : 'Lucky'];
   const taken = parts.filter(Boolean);
-  return taken.length ? `Taken as not ${listOr(taken)}.` : undefined;
+  if (!taken.length) return undefined;
+  const screen = known.has('shadow') ? 'its screen scrolled down' : 'its Pokémon screen';
+  return `Taken as not ${listOr(taken)}. Add ${screen} to check.`;
 }
 
 const listOr = (names: string[]) => (names.length > 1 ? `${names.slice(0, -1).join(', ')} or ${names.at(-1)}` : names[0]);
@@ -53,7 +57,7 @@ export function tileNotes(gaps: TileGaps): string[] {
   const notes = [];
   if (!gaps.ivs) notes.push('Add its appraisal for the IVs.');
   const guessed = guesses(gaps.known);
-  if (guessed) notes.push(`${guessed} Add its Pokémon screen to check.`);
+  if (guessed) notes.push(guessed);
   if (gaps.needsEvolve && gaps.later) notes.push(`Add a ${gaps.later}’s screen scrolled down for the Candy to evolve it, or type the total.`);
   const scrolled = scrolledDown(gaps);
   if (scrolled) notes.push(scrolled);

@@ -60,7 +60,8 @@ describe('applySpecies', () => {
     target.value = 'Aggron';
     refresh();
     apply({ name: 'Snorlax' });
-    expect(select().value).toBe('aron');
+    // Issue #11: the form list shows what was read, so the tile is titled by it.
+    expect([select().value, select().selectedOptions[0].text]).toEqual(['snorlax', 'Snorlax']);
     expect(status()).toBe('Read CP 600. This is Snorlax, which does not evolve into Aggron.');
   });
 

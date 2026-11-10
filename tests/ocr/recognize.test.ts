@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
-import { appraisalScreen, blankScreen } from './fakeScreen';
+import { appraisalScreen, blankScreen, skyScreen } from './fakeScreen';
 
 // Made-up words; the place name is not real.
 const line = (y0: number, ...words: [string, number][]) => ({ words: words.map(([text, x0]) => ({ text, bbox: { x0, y0, x1: x0 + 60, y1: y0 + 20 } })) });
@@ -29,7 +29,13 @@ describe('readScreenshot', () => {
     expect(scan.words.map((w) => w.text)).toEqual(['POWER', 'UP', '§7,O00', 'CAUGHT', 'IN']);
     expect(scan.words[0].box.x0).toBeCloseTo(100 / 720);
     expect(scan).toMatchObject({ cpText: '7,000 8', cpBright: '7,000 8', digits: { cost: '7,000 8' } });
-    expect(scan.ivs).toBeUndefined();
+    expect([scan.ivs, scan.shadow]).toEqual([undefined, undefined]);
+  });
+
+  // Issue #13: the Shadow sky marks a Shadow Pokémon on screens without its label.
+  it('notes a Shadow sky', async () => {
+    imagePixels.mockResolvedValueOnce(skyScreen([16, 12, 77]));
+    expect((await readScreenshot(new Blob())).shadow).toBe(true);
   });
 
   // Set for each call only, so a worker reused for the next screenshot reads its page as text.

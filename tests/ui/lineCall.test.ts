@@ -8,7 +8,7 @@ const labels = [
   { heading: 'Current, purified', name: 'the purified current one' },
   { heading: 'Gyarados, CP 2802', name: 'Gyarados, CP 2802' },
 ];
-const row = (goal: GoalId, changes: (number | null)[]) => ({ goal, changes });
+const row = (goal: GoalId, changes: (number | null)[], option = 0) => ({ goal, changes, verdict: { kind: option ? ('switch' as const) : ('keep' as const), option } });
 
 function tile(ivs: string[]): HTMLElement {
   const root = document.createElement('fieldset');
@@ -18,16 +18,22 @@ function tile(ivs: string[]): HTMLElement {
 
 describe('a line’s call', () => {
   it('names the option with the biggest gain, how much and in which battle', () => {
-    const call = callOf(labels, [row('great', [0, 0.05, 0.01]), row('raid', [0, 0, 0.2])]);
+    const call = callOf(labels, [row('great', [0, 0.05, 0.01], 1), row('raid', [0, 0, 0.2], 2)]);
     expect(call).toEqual({ text: 'Gyarados, CP 2802: 20% stronger in Raids & gyms', gain: 0.2 });
   });
 
-  it('shows a gain under 1% as 1%', () => {
-    expect(callOf(labels, [row('great', [0, 0.004])]).text).toBe('Current, purified: 1% stronger in Great League');
+  // Issue #12: the verdict picks one within the 1% tie only when it costs less.
+  it('says one within 1% is as strong for less, not 1% stronger', () => {
+    expect(callOf(labels, [row('great', [0, 0.006], 1)])).toEqual({ text: 'Current, purified: as strong in Great League, for less', gain: 0.006 });
+    expect(callOf(labels, [row('great', [0, -0.004], 1)])).toEqual({ text: 'Current, purified: as strong in Great League, for less', gain: 0 });
+  });
+
+  it('says one can enter a battle the current one can’t', () => {
+    expect(callOf(labels, [row('great', [null, null, null], 2)])).toEqual({ text: 'Gyarados, CP 2802: can enter Great League', gain: 0 });
   });
 
   it('says the current one is best when nothing beats it', () => {
-    expect(callOf(labels, [row('great', [0, -0.1])])).toEqual({ text: 'the current one is best', gain: 0 });
+    expect(callOf(labels, [row('great', [0, 0.3])])).toEqual({ text: 'the current one is best', gain: 0 });
   });
 });
 

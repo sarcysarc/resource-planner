@@ -42,7 +42,7 @@ describe('fillTile', () => {
     expect(use({ cp: 900, hp: 100, family: 'dratini', dust: 4000, secondMove: true, evolveCandy: 25 })).toBe(a);
     expect(grid.roots()).toHaveLength(1);
     expect([field(a, 'cp').value, field(a, 'dust').value, field(a, 'secondMove').checked]).toEqual(['990', '4000', true]);
-    expect(a.dataset.known!.split(',').sort()).toEqual(['cp', 'evolveStep', 'lucky', 'secondMove', 'variant']);
+    expect(a.dataset.known!.split(',').sort()).toEqual(['cp', 'evolveStep', 'lucky', 'secondMove', 'shadow', 'variant']);
   });
 
   it('adds another tile for one at the same CP and HP with other IVs, and keeps the prints', () => {
@@ -73,5 +73,10 @@ describe('fillTile', () => {
   it('counts a Shadow label as knowing the type, but not luck', () => {
     const a = use({ cp: 900, variant: 'shadow' });
     expect(a.dataset.known).toBe('variant');
+  });
+
+  // Issue #13: a screen showing its HP shows the sky above it, which is read for Shadow.
+  it('counts a top screen as knowing whether it is Shadow', () => {
+    expect(use({ cp: 67, hp: 43 }).dataset.known).toBe('shadow');
   });
 });

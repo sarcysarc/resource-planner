@@ -52,6 +52,14 @@ describe('readScan', () => {
     expect(readScan(scan(text), normal)).toMatchObject({ family: 'ARON', variant: 'purified', lucky: true, secondMove: true, evolveCandy: 50 });
   });
 
+  // Issue #13: an appraisal shows no Shadow label, but the Shadow sky behind the Pokémon.
+  it('reads Shadow from the sky behind the Pokémon', () => {
+    const top = scan('Magikarp\n43 / 43 HP');
+    expect(readScan({ ...top, ivs: { atk: 1, def: 14, hp: 3 }, shadow: true }, normal)).toMatchObject({ variant: 'shadow' });
+    expect(readScan({ ...top, shadow: true }, normal)).toMatchObject({ variant: 'shadow' });
+    expect(readScan(top, normal).variant).toBeUndefined();
+  });
+
   it('judges the Stardust cost by the variant on the screen, not the form', () => {
     expect(readScan(scan('80 / 80 HP\nPURIFY\nPOWER UP 14,400 24'), normal)).toMatchObject({ variant: 'shadow', dust: 14400 });
     expect(readScan(scan('LUCKY POKEMON\n80 / 80 HP\nPOWER UP 7,500 20'), normal)).toMatchObject({ lucky: true, dust: 7500 });

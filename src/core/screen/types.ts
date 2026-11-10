@@ -48,6 +48,8 @@ export interface Scan {
   cpBright?: string;
   digits: Partial<Record<RegionName, string>>;
   ivs?: IVs;
+  /** The Shadow sky shows behind the Pokémon (issue #13). */
+  shadow?: true;
 }
 
 /** What the screen says about the Pokémon besides its numbers. Names are as printed. */
