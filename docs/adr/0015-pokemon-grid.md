@@ -67,6 +67,14 @@ What limits the app to two is the page.
   and IVs, it is taken. Otherwise step 1 asks which form it is, like a stage question,
   rather than guessing the first form and noting it on the tile: every question is asked
   before the grid.
+- **A species name the game also shows its forms by** (amended 2026-11-08, issue #4). The
+  game shows "Mewtwo" for Armored Mewtwo and "Meowth" for Alolan Meowth, and both names
+  match a plain species exactly. When a CP was read, the name's forms with stats of their
+  own are tried along with the plain species, and those that fit the CP, HP and IVs are
+  kept (by CP and HP alone when the IVs fit none). One left is taken; several are asked
+  about in step 1, as above. Forms with the plain species' stats (Pikachu's costumes,
+  Castform's weathers, Alolan Graveler) are left out: the numbers cannot tell them apart,
+  and costs and results are the same. With no CP read, the plain species is taken.
 
 ### The grid
 

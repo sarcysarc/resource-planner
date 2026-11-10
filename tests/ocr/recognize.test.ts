@@ -28,7 +28,7 @@ describe('readScreenshot', () => {
     const scan = await readScreenshot(new Blob());
     expect(scan.words.map((w) => w.text)).toEqual(['POWER', 'UP', '§7,O00', 'CAUGHT', 'IN']);
     expect(scan.words[0].box.x0).toBeCloseTo(100 / 720);
-    expect(scan).toMatchObject({ cpText: '7,000 8', digits: { cost: '7,000 8' } });
+    expect(scan).toMatchObject({ cpText: '7,000 8', cpBright: '7,000 8', digits: { cost: '7,000 8' } });
     expect(scan.ivs).toBeUndefined();
   });
 
@@ -37,7 +37,7 @@ describe('readScreenshot', () => {
     worker.recognize.mockClear();
     await readScreenshot(new Blob());
     const digits = { tessedit_char_whitelist: '0123456789,/', tessedit_pageseg_mode: '7' };
-    expect(worker.recognize.mock.calls.map((call) => (call as unknown[])[1])).toEqual([{}, {}, undefined, digits]);
+    expect(worker.recognize.mock.calls.map((call) => (call as unknown[])[1])).toEqual([{}, {}, undefined, undefined, digits]);
     expect(worker.setParameters).not.toHaveBeenCalled();
   });
 
@@ -53,11 +53,12 @@ describe('readScreenshot', () => {
   });
 
   it('skips the dark-ink pass on an appraisal whose name and HP the plain pass read', async () => {
+    // The page, the CP band and the bright CP band.
     const top = { text: '', blocks: [{ paragraphs: [{ lines: [line(100, ['Riolu', 100]), line(140, ['79', 100], ['/', 170], ['79', 240], ['HP', 310])] }] }] };
     imagePixels.mockResolvedValueOnce(appraisalScreen([12, 13, 15]));
     worker.recognize.mockClear().mockResolvedValueOnce({ data: top });
     const scan = await readScreenshot(new Blob());
-    expect([scan.words.map((w) => w.text), worker.recognize.mock.calls.length]).toEqual([['Riolu', '79', '/', '79', 'HP'], 2]);
+    expect([scan.words.map((w) => w.text), worker.recognize.mock.calls.length]).toEqual([['Riolu', '79', '/', '79', 'HP'], 3]);
   });
 
   it('re-reads the resource totals above their labels', async () => {

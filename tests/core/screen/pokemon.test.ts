@@ -64,6 +64,24 @@ describe('readPokemon', () => {
     expect(readPokemon(scan('43 / 43 HP', { cpText: 'crb7/\n' }), normal)).toEqual({ cpOptions: [67], hp: 43 });
   });
 
+  // The band read again with only the brightest white, for CPs on a pale sky (issue #5).
+  describe('the bright band', () => {
+    it('gives the CP when the first band has none', () => {
+      expect(readPokemon(scan('56 / 56 HP', { cpText: '', cpBright: 'cr368\n' }), normal)).toEqual({ cp: 368, hp: 56 });
+    });
+
+    // A bare number may have lost digits to a sparkle erased with them, so it is only an option.
+    it('adds its readings to the other ways the band could read', () => {
+      const read = readPokemon(scan('87 / 87 HP', { cpText: '1\n', cpBright: '51\n' }), normal);
+      expect(read).toEqual({ cpOptions: [51], hp: 87 });
+    });
+
+    it('leaves the first band’s CP first', () => {
+      const read = readPokemon(scan('70 / 70 HP', { cpText: 'cr/72\n', cpBright: 'cpl72\n' }), normal);
+      expect(read).toMatchObject({ cp: 772, cpOptions: expect.arrayContaining([172]) as unknown });
+    });
+  });
+
   it('ignores the CP band on a screen scrolled past CP and HP', () => {
     const scrolled = scan('135,770 8\nSTARDUST ARON CANDY\nPOWER UP 7,000 8', { cpText: '135,770 8' });
     expect(readPokemon(scrolled, normal)).toEqual({ dust: 7000 });

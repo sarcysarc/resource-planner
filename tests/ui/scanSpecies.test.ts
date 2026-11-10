@@ -65,6 +65,37 @@ describe('resolveSpecies', () => {
     });
   });
 
+  // The game shows "Mewtwo" for Armored Mewtwo and "Meowth" for Alolan Meowth (issue #4).
+  describe('a species name the game also shows its forms by', () => {
+    const shows = (id: string, ivs = { atk: 15, def: 15, hp: 15 }, level = 20) => {
+      const pokemon = { base: findSpecies(index, id)!.base, ivs, level };
+      return { cp: cp(pokemon), hp: battleStats(pokemon).hp, ivs };
+    };
+
+    it('takes the form whose stats fit the numbers', () => {
+      expect(ids({ name: 'Mewtwo', ...shows('mewtwo_armored') })).toEqual(['mewtwo_armored']);
+      expect(ids({ name: 'Electrode', ...shows('electrode_hisuian') })).toEqual(['electrode_hisuian']);
+    });
+
+    it('keeps the plain species when its stats fit and no form’s do', () => {
+      expect(ids({ name: 'Mewtwo', ...shows('mewtwo') })).toEqual(['mewtwo']);
+    });
+
+    it('keeps each form that fits, so step 1 asks', () => {
+      const { cp, hp } = shows('meowth_alolan', undefined, 10);
+      expect(ids({ name: 'Meowth', cp, hp })).toEqual(['meowth', 'meowth_alolan', 'meowth_galarian']);
+    });
+
+    it('leaves out forms with the plain species’ stats, which the numbers cannot tell apart', () => {
+      expect(ids({ name: 'Pikachu', ...shows('pikachu') })).toEqual(['pikachu']);
+      expect(ids({ name: 'Castform', ...shows('castform') })).toEqual(['castform']);
+    });
+
+    it('takes the plain species when no CP was read', () => {
+      expect(ids({ name: 'Mewtwo', hp: 150 })).toEqual(['mewtwo']);
+    });
+  });
+
   it('finds nothing for an unknown name and family', () => {
     expect(ids({ name: 'Rocky', family: 'QZQX' })).toEqual([]);
   });

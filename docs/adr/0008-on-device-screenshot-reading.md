@@ -99,6 +99,30 @@ repaired to 1161 by the added digit, and the Drifblim tile now matches the key. 
 covers all of its CP but "582" on its appraisal; the check repairs that to 3582, its real CP.
 No other field read worse.
 
+### Amendment (2026-11-08): a second, brighter CP band (issue #5)
+
+On a pale sky the CP band read nothing on three screenshots (Graveler 368, Onix 851 and
+720), so the CP check had no CP to check. Sky as pale as 220–245 in every channel passed the
+215 threshold and joined the digits into patches too big to keep, and on the 851 a sparkle as
+white as the digits touched the 8.
+
+- **The band is read a second time, keeping only the purest white** (`brightCpBand`:
+  above 245 in every channel). Solid ink squares 1.7% of the screen wide, which no digit
+  stroke holds, are erased first (`ocr/solid.ts`), so a sparkle no longer takes the digits
+  beside it with it. Then patches are dropped as before. This costs one more OCR call per
+  screenshot.
+- **The first band still leads.** Alone, the bright band read one CP fewer than the first
+  (130 against 131 of 153) and lost different ones, so neither replaces the other. Its CP is
+  taken only when the first band has none and the number sits by the CP label. Every other
+  reading it gives, a bare number included, is only an option for the CP check. A bare
+  number may have lost digits erased with a sparkle.
+
+Afterwards, on the stress and multiples sets: CPs neither read nor among the options went
+from 9 screenshots to 3, losing none. Graveler 368 and Onix 720 are read, as are four CPs
+whose first digit was lost before (Meowth 437, Onix 462, Froakie 414, the 3582 Mewtwo). Onix
+851's bright band reads "51", only an option; the CP check repairs it to 851, the one CP a
+digit off that fits its HP and IVs.
+
 ### Amendment (2026-11-04): name and family past the screen's quirks
 
 The stress test (cause F) found a name missed on three top screens and a family on two. In

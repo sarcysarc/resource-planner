@@ -1,7 +1,7 @@
 import { isNear } from '../core/screen/fuzzy';
 import type { Reading } from '../core/screen/types';
 import { findSpecies, type Species, type SpeciesIndex } from './species';
-import { narrowByNumbers } from './speciesFit';
+import { fittingOnly, narrowByNumbers } from './speciesFit';
 
 const letters = (text: string) => text.toUpperCase().replace(/[^A-Z]/g, '');
 const only = <T>(found: T[]) => (found.length === 1 ? found[0] : undefined);
@@ -34,10 +34,22 @@ function familyMembers(index: SpeciesIndex, reading: Reading): Species[] {
   return narrowByNumbers(members, reading);
 }
 
+const sameStats = ({ base: a }: Species, { base: b }: Species) => a.atk === b.atk && a.def === b.def && a.hp === b.hp;
+
+// The game shows some forms by the species' own name: "Mewtwo" for Armored Mewtwo, "Meowth"
+// for Alolan Meowth (issue #4). With a CP read, the numbers decide; when several fit, step 1
+// asks. A form with the species' stats can't be told by numbers, so the species stands for it.
+function withForms(index: SpeciesIndex, named: Species, reading: Reading): Species[] {
+  if (reading.cp === undefined) return [named];
+  const forms = index.all.filter((s) => s !== named && baseName(s) === named.name && !sameStats(s, named));
+  const fitting = forms.length ? fittingOnly([named, ...forms], reading) : [];
+  return fitting.length ? fitting : [named];
+}
+
 /** The species a screenshot shows: one when it is certain, several to choose from, or none. */
 export function resolveSpecies(index: SpeciesIndex, reading: Reading): Species[] {
   const named = reading.name ? nearName(index, reading.name) : undefined;
-  if (named) return [named];
+  if (named) return withForms(index, named, reading);
   const forms = reading.name ? formsNamed(index, reading.name) : [];
   if (forms.length) return narrowByNumbers(forms, reading);
   return reading.family ? familyMembers(index, reading) : [];

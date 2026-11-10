@@ -9,7 +9,7 @@ import type { Region, RegionName, Scan, Word } from '../core/screen/types';
 import { inkCrop } from './crop';
 import { textInk } from './ink';
 import { imagePixels, pixelsBlob } from './image';
-import { appraisalBars, cpBand, type Pixels } from './pixels';
+import { appraisalBars, brightCpBand, cpBand, type Pixels } from './pixels';
 import { toWords } from './words';
 
 // Self-hosted copies made by scripts/copy-ocr-assets.mjs; see docs/adr/0008.
@@ -54,8 +54,9 @@ async function readWith(worker: Worker, image: Blob): Promise<Scan> {
   const ivs = appraisalBars(px);
   const words = await readWords(worker, { image, px, bars: ivs !== undefined });
   const cpText = (await worker.recognize(await pixelsBlob(cpBand(px)))).data.text;
+  const cpBright = (await worker.recognize(await pixelsBlob(brightCpBand(px)))).data.text;
   const digits = await readDigits(worker, px, words);
-  return ivs ? { words, cpText, digits, ivs } : { words, cpText, digits };
+  return { words, cpText, cpBright, digits, ...(ivs && { ivs }) };
 }
 
 /** Reads screenshots one after another with one OCR worker, started once (fix E). */

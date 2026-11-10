@@ -1,5 +1,6 @@
 import type { IVs } from '../core/types';
 import { dropBlobs } from './blobs';
+import { eraseSolid } from './solid';
 
 /** Raw RGBA pixels; a browser `ImageData` fits this shape. */
 export interface Pixels {
@@ -63,16 +64,34 @@ export function appraisalBars(px: Pixels): IVs | undefined {
 // Where the CP sits, as fractions of the screenshot width.
 const CP_BAND = { left: 0.15, top: 0.05, width: 0.7, height: 0.2 };
 
-/** Crops the CP area and turns near-white text black on white, which OCR reads reliably; patches too big to be digits are left out. */
-export function cpBand(px: Pixels): Pixels {
+// Crops the CP area, turning pixels whose every channel is above `white` black, the rest white.
+function whiteInk(px: Pixels, white: number): Pixels {
   const [left, top, width, height] = [CP_BAND.left, CP_BAND.top, CP_BAND.width, CP_BAND.height].map((f) => Math.round(f * px.width));
   const out = { width, height, data: new Uint8ClampedArray(width * height * 4) };
   for (let i = 0; i < width * height; i++) {
     const from = ((top + Math.floor(i / width)) * px.width + left + (i % width)) * 4;
-    const white = Math.min(px.data[from], px.data[from + 1], px.data[from + 2]) > 215;
-    out.data.fill(white ? 0 : 255, i * 4, i * 4 + 3);
+    const ink = Math.min(px.data[from], px.data[from + 1], px.data[from + 2]) > white;
+    out.data.fill(ink ? 0 : 255, i * 4, i * 4 + 3);
     out.data[i * 4 + 3] = 255;
   }
+  return out;
+}
+
+/** Crops the CP area and turns near-white text black on white, which OCR reads reliably; patches too big to be digits are left out. */
+export function cpBand(px: Pixels): Pixels {
+  const out = whiteInk(px, 215);
+  dropBlobs(out, px.width);
+  return out;
+}
+
+/**
+ * The CP area again, keeping only the purest white, for a CP on a pale sky that the first
+ * band takes in with it (issue #5). Solid white patches, as from a sparkle touching a digit,
+ * are erased first, so the digits beside them survive the patch-size check.
+ */
+export function brightCpBand(px: Pixels): Pixels {
+  const out = whiteInk(px, 245);
+  eraseSolid(out, Math.round(0.017 * px.width));
   dropBlobs(out, px.width);
   return out;
 }

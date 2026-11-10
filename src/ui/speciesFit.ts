@@ -19,8 +19,13 @@ function fits(species: Species, reading: Reading): boolean {
  */
 export function narrowByNumbers(candidates: Species[], reading: Reading): Species[] {
   if (reading.cp === undefined) return candidates;
+  const loose = fittingOnly(candidates, reading);
+  return loose.length ? loose : candidates;
+}
+
+/** The candidates whose stats fit the numbers (as `narrowByNumbers`), none when none do. */
+export function fittingOnly(candidates: Species[], reading: Reading): Species[] {
   const fitting = candidates.filter((s) => fits(s, reading));
   const screenOnly = { ...reading, ivs: undefined, lucky: undefined };
-  const loose = fitting.length ? fitting : candidates.filter((s) => fits(s, screenOnly));
-  return loose.length ? loose : candidates;
+  return fitting.length ? fitting : candidates.filter((s) => fits(s, screenOnly));
 }

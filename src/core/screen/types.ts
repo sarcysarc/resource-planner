@@ -44,6 +44,8 @@ export type RegionName = 'cost' | 'evolve' | TotalName | 'trainerLevel';
 export interface Scan {
   words: Word[];
   cpText: string;
+  /** The CP band read again keeping only the purest white, for a CP on a pale sky (issue #5). */
+  cpBright?: string;
   digits: Partial<Record<RegionName, string>>;
   ivs?: IVs;
 }
